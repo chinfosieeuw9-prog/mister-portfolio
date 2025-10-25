@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mister</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            line-height: 1.6;
+            font-size: 15px;
+        }
+        
+        .container {
+            max-width: 640px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+        
+        .avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0 auto 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .name {
+            font-size: 32px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 8px;
+        }
+        
+        .title {
+            font-size: 18px;
+            color: #aaa;
+            font-weight: 400;
+        }
+        
+        /* Social Links */
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin: 24px 0 48px;
+            flex-wrap: wrap;
+        }
+        
+        .social-link {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 4px;
+            text-decoration: none;
+            color: #ffffff;
+            font-weight: 400;
+            font-size: 12px;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+        
+        .social-link:hover {
+            border-color: #00d4ff;
+            background: #222;
+        }
+        
+        /* Cards Grid */
+        .cards-grid {
+            display: grid;
+            gap: 16px;
+            margin-bottom: 40px;
+        }
+        
+        .card {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 24px;
+            transition: all 0.2s ease;
+        }
+        
+        .card:hover {
+            border-color: #00d4ff;
+            box-shadow: 0 2px 8px rgba(0, 212, 255, 0.15);
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            background: #2a2a2a;
+        }
+        
+        .card h2 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #ffffff;
+            margin: 0;
+        }
+        
+        .card p {
+            color: #aaa;
+            font-size: 15px;
+            line-height: 1.5;
+            margin: 0;
+        }
+        
+        /* Featured Section */
+        .featured {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 16px;
+        }
+        
+        .featured h2 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 16px;
+        }
+        
+        .featured-content {
+            background: #2a2a2a;
+            border-radius: 8px;
+            padding: 16px;
+            border: 1px solid #333;
+        }
+        
+        .featured-title {
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 4px;
+        }
+        
+        .featured-desc {
+            color: #aaa;
+            font-size: 14px;
+        }
+        
+        /* Skills Grid */
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-top: 16px;
+        }
+        
+        .skill-item {
+            background: #2a2a2a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 500;
+            color: #ffffff;
+            transition: all 0.2s ease;
+        }
+        
+        .skill-item:hover {
+            background: #333;
+            border-color: #00d4ff;
+        }
+        
+        /* Contact Form */
+        .contact-form {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 16px;
+        }
+        
+        .contact-form h2 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 16px;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #333;
+            border-radius: 8px;
+            font-size: 15px;
+            background: #2a2a2a;
+            color: #ffffff;
+            transition: all 0.2s ease;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #00d4ff;
+            background: #333;
+        }
+        
+        .form-input::placeholder {
+            color: #666;
+        }
+        
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+            font-family: inherit;
+        }
+        
+        .submit-btn {
+            background: #00d4ff;
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .submit-btn:hover {
+            background: #0099cc;
+        }
+        
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 40px 0;
+            border-top: 1px solid #333;
+            margin-top: 40px;
+        }
+        
+        .footer-text {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        /* Links */
+        .text-link {
+            color: #00d4ff;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .text-link:hover {
+            text-decoration: underline;
+        }
+        
+        /* Responsive */
+        @media (max-width: 640px) {
+            .container {
+                padding: 24px 16px;
+            }
+            
+            .social-links {
+                flex-wrap: wrap;
+                gap: 12px;
+            }
+            
+            .name {
+                font-size: 28px;
+            }
+            
+            .title {
+                font-size: 16px;
+            }
+            
+            .skills-grid {
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="avatar">M</div>
+            <h1 class="name">Mister</h1>
+            <p class="title">Code Craftsman & Problem Solver</p>
+        </div>
+        
+        <!-- Social Links -->
+        <div class="social-links">
+            <a href="#" class="social-link">
+                <span>🌐</span>Website
+            </a>
+            <a href="#" class="social-link">
+                <span>💼</span>LinkedIn
+            </a>
+            <a href="#" class="social-link">
+                <span>📧</span>Email
+            </a>
+            <a href="#" class="social-link">
+                <span>📱</span>Github
+            </a>
+        </div>
+        
+        <!-- Main Cards -->
+        <div class="cards-grid">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">🏢</div>
+                    <h2>MPlace Studio</h2>
+                </div>
+                <p>Digital agency waar design, code en creativiteit samenkomen om betekenisvolle digitale ervaringen te creëren.</p>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">👨‍💻</div>
+                    <h2>Portfolio</h2>
+                </div>
+                <p>Bekijk mijn werk, projecten en ontdek hoe ik complexe problemen oplos met elegante code en design.</p>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">📝</div>
+                    <h2>Blog</h2>
+                </div>
+                <p>Gedachten, inzichten en tutorials over web development, design en de nieuwste tech trends.</p>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">🛠️</div>
+                    <h2>Services</h2>
+                </div>
+                <p>Web development, UI/UX design, consulting en technische oplossingen voor jouw digitale uitdagingen.</p>
+            </div>
+        </div>
+        
+        <!-- Featured Project -->
+        <div class="featured">
+            <h2>🚀 Recent Project</h2>
+            <div class="featured-content">
+                <div class="featured-title">Portfolio Website</div>
+                <div class="featured-desc">Moderne, responsive portfolio gebouwd met HTML, CSS en JavaScript. Deployed via Netlify met custom domain mister.us.kg</div>
+            </div>
+        </div>
+        
+        <!-- Skills -->
+        <div class="card">
+            <h2>⚡ Tech Stack</h2>
+            <div class="skills-grid">
+                <div class="skill-item">HTML5</div>
+                <div class="skill-item">CSS3</div>
+                <div class="skill-item">JavaScript</div>
+                <div class="skill-item">React</div>
+                <div class="skill-item">Node.js</div>
+                <div class="skill-item">Python</div>
+                <div class="skill-item">Git</div>
+                <div class="skill-item">Netlify</div>
+                <div class="skill-item">Docker</div>
+                <div class="skill-item">VS Code</div>
+            </div>
+        </div>
+        
+        <!-- Contact Form -->
+        <div class="contact-form">
+            <h2>📧 Drop a line</h2>
+            <form>
+                <div class="form-group">
+                    <input type="text" class="form-input" placeholder="Your name" required>
+                </div>
+                <div class="form-group">
+                    <input type="email" class="form-input" placeholder="your.email@example.com" required>
+                </div>
+                <div class="form-group">
+                    <textarea class="form-input form-textarea" placeholder="Your message..." required></textarea>
+                </div>
+                <button type="submit" class="submit-btn">Send message</button>
+            </form>
+        </div>
+        
+        <!-- Newsletter -->
+        <div class="card">
+            <h2>📬 Newsletter</h2>
+            <p style="margin-bottom: 16px;">Sharing thoughts, ideas, updates van mijn stack en projecten, één keer per maand.</p>
+            <div style="display: flex; gap: 12px;">
+                <input type="email" class="form-input" placeholder="your.email@example.com" style="flex: 1;">
+                <button class="submit-btn">Subscribe</button>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <p class="footer-text">
+                Made with ❤️ by Mister • 
+                <a href="#" class="text-link">chattgbt@gmail.com</a>
+            </p>
+        </div>
+    </div>
+    
+    <script>
+        // Simple form handling
+        document.querySelector('form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Bedankt voor je bericht! Ik neem zo snel mogelijk contact met je op.');
+        });
+        
+        // Newsletter subscription
+        document.querySelectorAll('.submit-btn').forEach(btn => {
+            if (btn.textContent === 'Subscribe') {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    alert('Bedankt voor je aanmelding! Je ontvangt binnenkort de eerste nieuwsbrief.');
+                });
+            }
+        });
+    </script>
+</body>
+</html>

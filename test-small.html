@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mister - Portfolio</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            line-height: 1.6;
+            font-size: 15px;
+        }
+        
+        .container {
+            max-width: 640px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+        
+        .avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0 auto 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .name {
+            font-size: 32px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 8px;
+        }
+        
+        .title {
+            font-size: 18px;
+            color: #aaa;
+            font-weight: 400;
+        }
+        
+        /* MICRO BADGE Social Links */
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 2px;
+            margin: 12px 0 24px;
+            flex-wrap: wrap;
+        }
+        
+        .social-link {
+            display: inline-block;
+            padding: 0px 3px;
+            background: transparent;
+            border: none;
+            text-decoration: none;
+            color: #00d4ff;
+            font-weight: 400;
+            font-size: 7px;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            height: auto;
+            line-height: 1;
+        }
+        
+        .social-link:hover {
+            color: #ffffff;
+            text-decoration: underline;
+        }
+        
+        .social-link span {
+            font-size: 6px;
+            margin-right: 0px;
+        }
+        
+        /* Cards Grid */
+        .cards-grid {
+            display: grid;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+        
+        /* Compacte Cards */
+        .card {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 12px 16px;
+            transition: all 0.2s ease;
+        }
+        
+        .card:hover {
+            border-color: #00d4ff;
+            box-shadow: 0 2px 8px rgba(0, 212, 255, 0.15);
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .card-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            background: #2a2a2a;
+        }
+        
+        .card h2 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #ffffff;
+            margin: 0;
+        }
+        
+        .card p {
+            color: #aaa;
+            font-size: 12px;
+            line-height: 1.4;
+            margin: 0;
+        }
+        
+        /* Skills Grid */
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-top: 16px;
+        }
+        
+        .skill-item {
+            background: #2a2a2a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 500;
+            color: #ffffff;
+            transition: all 0.2s ease;
+        }
+        
+        .skill-item:hover {
+            background: #333;
+            border-color: #00d4ff;
+        }
+        
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 40px 0;
+            border-top: 1px solid #333;
+            margin-top: 40px;
+        }
+        
+        .footer-text {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .text-link {
+            color: #00d4ff;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .text-link:hover {
+            text-decoration: underline;
+        }
+        
+        /* Responsive */
+        @media (max-width: 640px) {
+            .container {
+                padding: 24px 16px;
+            }
+            
+            .social-links {
+                gap: 4px;
+            }
+            
+            .name {
+                font-size: 28px;
+            }
+            
+            .title {
+                font-size: 16px;
+            }
+            
+            .skills-grid {
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="avatar">M</div>
+            <h1 class="name">Mister</h1>
+            <p class="title">Code Craftsman & Problem Solver</p>
+        </div>
+        
+        <!-- SUPER KLEINE Social Links -->
+        <div class="social-links">
+            <a href="#" class="social-link">
+                <span>🌐</span>Website
+            </a>
+            <a href="#" class="social-link">
+                <span>💼</span>LinkedIn
+            </a>
+            <a href="#" class="social-link">
+                <span>📧</span>Email
+            </a>
+            <a href="#" class="social-link">
+                <span>📱</span>Github
+            </a>
+        </div>
+        
+        <!-- Main Cards -->
+        <div class="cards-grid">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">🏢</div>
+                    <h2>MPlace Studio</h2>
+                </div>
+                <p>Digital agency waar design, code en creativiteit samenkomen om betekenisvolle digitale ervaringen te creëren.</p>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">👨‍💻</div>
+                    <h2>Portfolio</h2>
+                </div>
+                <p>Bekijk mijn werk, projecten en ontdek hoe ik complexe problemen oplos met elegante code en design.</p>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">📝</div>
+                    <h2>Blog</h2>
+                </div>
+                <p>Gedachten, inzichten en tutorials over web development, design en de nieuwste tech trends.</p>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">🛠️</div>
+                    <h2>Services</h2>
+                </div>
+                <p>Web development, UI/UX design, consulting en technische oplossingen voor jouw digitale uitdagingen.</p>
+            </div>
+        </div>
+        
+        <!-- Skills -->
+        <div class="card">
+            <h2>⚡ Tech Stack</h2>
+            <div class="skills-grid">
+                <div class="skill-item">HTML5</div>
+                <div class="skill-item">CSS3</div>
+                <div class="skill-item">JavaScript</div>
+                <div class="skill-item">React</div>
+                <div class="skill-item">Node.js</div>
+                <div class="skill-item">Python</div>
+                <div class="skill-item">Git</div>
+                <div class="skill-item">Netlify</div>
+                <div class="skill-item">Docker</div>
+                <div class="skill-item">VS Code</div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <p class="footer-text">
+                Made with ❤️ by Mister • 
+                <a href="#" class="text-link">chattgbt@gmail.com</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mister</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            line-height: 1.6;
+            font-size: 15px;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .name {
+            font-size: 28px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 6px;
+        }
+        
+        .title {
+            font-size: 16px;
+            color: #aaa;
+            font-weight: 400;
+        }
+        
+        /* Social Links - originele grootte */
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin: 24px 0 32px;
+            flex-wrap: wrap;
+        }
+        
+        .social-link {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 6px;
+            text-decoration: none;
+            color: #ffffff;
+            font-weight: 400;
+            font-size: 13px;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+        
+        .social-link:hover {
+            border-color: #00d4ff;
+            background: #222;
+        }
+        
+        /* Cards - zoals originele Linx */
+        .cards-grid {
+            display: grid;
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+        
+        .card {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card:hover {
+            border-color: #00d4ff;
+            box-shadow: 0 4px 12px rgba(0, 212, 255, 0.1);
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        
+        .card-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            background: #2a2a2a;
+            flex-shrink: 0;
+        }
+        
+        .card h2 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #ffffff;
+            margin: 0;
+        }
+        
+        .card p {
+            color: #aaa;
+            font-size: 14px;
+            line-height: 1.5;
+            margin: 0;
+        }
+        
+        /* Featured card met afbeelding */
+        .featured-card {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 0;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+        
+        .featured-image {
+            width: 100%;
+            height: 120px;
+            background: linear-gradient(45deg, #667eea 0%, #764ba2 50%, #ff6b6b 100%);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .featured-content {
+            padding: 20px;
+        }
+        
+        .featured-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 6px;
+        }
+        
+        .featured-desc {
+            color: #aaa;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        /* Skills compact */
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 8px;
+            margin-top: 12px;
+        }
+        
+        .skill-item {
+            background: #2a2a2a;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 8px 6px;
+            text-align: center;
+            font-size: 11px;
+            font-weight: 500;
+            color: #ffffff;
+            transition: all 0.2s ease;
+        }
+        
+        .skill-item:hover {
+            background: #333;
+            border-color: #00d4ff;
+        }
+        
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 24px 0;
+            border-top: 1px solid #333;
+            margin-top: 32px;
+        }
+        
+        .footer-text {
+            color: #666;
+            font-size: 13px;
+        }
+        
+        .text-link {
+            color: #00d4ff;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .text-link:hover {
+            text-decoration: underline;
+        }
+        
+        /* Responsive */
+        @media (max-width: 640px) {
+            .container {
+                padding: 24px 16px;
+            }
+            
+            .social-links {
+                gap: 8px;
+            }
+            
+            .name {
+                font-size: 24px;
+            }
+            
+            .skills-grid {
+                grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="avatar">M</div>
+            <h1 class="name">Mister</h1>
+            <p class="title">Code Craftsman & Problem Solver</p>
+        </div>
+        
+        <!-- Social Links -->
+        <div class="social-links">
+            <a href="#" class="social-link">
+                <span>🌐</span>Website
+            </a>
+            <a href="#" class="social-link">
+                <span>💼</span>LinkedIn
+            </a>
+            <a href="#" class="social-link">
+                <span>📧</span>Email
+            </a>
+            <a href="#" class="social-link">
+                <span>📱</span>Github
+            </a>
+        </div>
+        
+        <!-- Featured Card met "afbeelding" -->
+        <div class="featured-card">
+            <div class="featured-image">
+                🏢 MPlace Studio
+            </div>
+            <div class="featured-content">
+                <div class="featured-title">Digital Agency</div>
+                <div class="featured-desc">Bridging Design, Code, and Creativity</div>
+            </div>
+        </div>
+        
+        <!-- Main Cards -->
+        <div class="cards-grid">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">🔗</div>
+                    <h2>Personal Website</h2>
+                </div>
+                <p>Find my blog, stack, and more!</p>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">📧</div>
+                    <h2>Newsletter</h2>
+                </div>
+                <p>Sign up to my newsletter</p>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">🎨</div>
+                    <h2>Portfolio Templates</h2>
+                </div>
+                <p>Discover high quality portfolio templates</p>
+            </div>
+        </div>
+        
+        <!-- Skills -->
+        <div class="card">
+            <h2>⚡ Tech Stack</h2>
+            <div class="skills-grid">
+                <div class="skill-item">HTML</div>
+                <div class="skill-item">CSS</div>
+                <div class="skill-item">JS</div>
+                <div class="skill-item">React</div>
+                <div class="skill-item">Node</div>
+                <div class="skill-item">Python</div>
+                <div class="skill-item">Git</div>
+                <div class="skill-item">Docker</div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <p class="footer-text">
+                Made with ❤️ by Mister • 
+                <a href="#" class="text-link">chattgbt@gmail.com</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>
