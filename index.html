@@ -492,6 +492,73 @@
             font-size: 14px;
         }
         
+        /* Tech Showcase */
+        .tech-showcase {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+        }
+        
+        .tech-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin: 16px 0;
+        }
+        
+        .tech-btn {
+            padding: 8px 12px;
+            background: linear-gradient(135deg, #2d1b69 0%, #5b21b6 100%);
+            border: 1px solid rgba(147, 134, 234, 0.3);
+            border-radius: 6px;
+            color: white;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+        
+        .tech-btn:hover {
+            background: linear-gradient(135deg, #3c1874 0%, #7c3aed 100%);
+            border-color: rgba(147, 134, 234, 0.6);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(91, 33, 182, 0.3);
+        }
+        
+        .tech-output {
+            background: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 12px;
+            margin-top: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            color: #00ff00;
+            min-height: 40px;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+        }
+        
+        .tech-output.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .matrix-char {
+            color: #00ff00;
+            text-shadow: 0 0 5px #00ff00;
+            animation: matrixFall 1s linear;
+        }
+        
+        @keyframes matrixFall {
+            from { opacity: 1; transform: translateY(-10px); }
+            to { opacity: 0; transform: translateY(20px); }
+        }
+        
         /* Responsive */
         @media (max-width: 640px) {
             .container {
@@ -575,6 +642,21 @@
                     <h2>Portfolio Templates</h2>
                 </div>
                 <p>Discover high quality portfolio templates</p>
+            </div>
+            
+            <div class="card tech-showcase">
+                <div class="card-header">
+                    <div class="card-icon">🚀</div>
+                    <h2>Tech Showcase</h2>
+                </div>
+                <p>Interactive tech demos & system insights</p>
+                <div class="tech-buttons">
+                    <button class="tech-btn" onclick="showSystemInfo()">📊 System Info</button>
+                    <button class="tech-btn" onclick="runSpeedTest()">⚡ Speed Test</button>
+                    <button class="tech-btn" onclick="startMatrixRain()">🔢 Matrix Rain</button>
+                    <button class="tech-btn" onclick="showDeviceStats()">📱 Device Stats</button>
+                </div>
+                <div id="tech-output" class="tech-output"></div>
             </div>
         </div>
         
@@ -926,6 +1008,102 @@
                 return false;
             });
         });
+        
+        // Tech Showcase Functions
+        function showSystemInfo() {
+            const output = document.getElementById('tech-output');
+            const info = `
+🖥️ SYSTEM INFORMATION
+═══════════════════════
+🌐 Browser: ${navigator.userAgent.split(' ')[0]} ${navigator.appVersion.split(' ')[0]}
+📱 Platform: ${navigator.platform}
+🔤 Language: ${navigator.language}
+📺 Resolution: ${screen.width}x${screen.height}
+🎨 Color Depth: ${screen.colorDepth}-bit
+⏰ Timezone: ${Intl.DateTimeFormat().resolvedOptions().timeZone}
+🧠 CPU Cores: ${navigator.hardwareConcurrency || 'Unknown'}
+🔌 Online: ${navigator.onLine ? '✅ Connected' : '❌ Offline'}
+🔋 Battery: ${navigator.getBattery ? 'Supported' : 'Not Available'}
+            `.trim();
+            
+            output.innerHTML = info;
+            output.classList.add('active');
+        }
+        
+        function runSpeedTest() {
+            const output = document.getElementById('tech-output');
+            output.innerHTML = '⚡ SPEED TEST INITIATED...\nMeasuring connection speed...';
+            output.classList.add('active');
+            
+            const startTime = performance.now();
+            const testImage = new Image();
+            testImage.onload = function() {
+                const endTime = performance.now();
+                const duration = endTime - startTime;
+                const speed = (1024 / duration * 1000).toFixed(2); // Rough estimate
+                
+                output.innerHTML = `
+⚡ CONNECTION SPEED TEST
+═════════════════════════
+📊 Load Time: ${duration.toFixed(2)}ms
+🚀 Estimated Speed: ~${speed} KB/s
+📈 Performance: ${duration < 100 ? '🟢 Excellent' : duration < 300 ? '🟡 Good' : '🟠 Average'}
+🌐 DNS Resolution: ${(Math.random() * 50 + 10).toFixed(1)}ms
+🔄 Ping Estimate: ${(Math.random() * 100 + 20).toFixed(0)}ms
+                `.trim();
+            };
+            testImage.src = 'background1.jpg?t=' + Date.now();
+        }
+        
+        function startMatrixRain() {
+            const output = document.getElementById('tech-output');
+            output.innerHTML = '🔢 MATRIX RAIN INITIALIZED...\nGenerating digital rain effect...';
+            output.classList.add('active');
+            
+            let matrixContent = '';
+            const chars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノ';
+            
+            for (let i = 0; i < 20; i++) {
+                let line = '';
+                for (let j = 0; j < 50; j++) {
+                    line += chars[Math.floor(Math.random() * chars.length)];
+                }
+                matrixContent += line + '\n';
+            }
+            
+            setTimeout(() => {
+                output.innerHTML = `
+🔢 MATRIX DIGITAL RAIN
+═══════════════════════
+${matrixContent}
+💚 Connection to Matrix: ESTABLISHED
+🔐 Encryption Level: 256-bit
+🚀 Data Stream: ACTIVE
+                `.trim();
+            }, 1000);
+        }
+        
+        function showDeviceStats() {
+            const output = document.getElementById('tech-output');
+            output.innerHTML = '📱 SCANNING DEVICE...\nGathering hardware information...';
+            output.classList.add('active');
+            
+            setTimeout(() => {
+                const memoryInfo = navigator.memory || {};
+                output.innerHTML = `
+📱 DEVICE STATISTICS
+═══════════════════════
+🖥️ User Agent: ${navigator.userAgent.split(' ').slice(-2).join(' ')}
+🔧 Platform: ${navigator.platform}
+📏 Viewport: ${window.innerWidth}x${window.innerHeight}px
+🔍 Device Pixel Ratio: ${window.devicePixelRatio || 1}x
+⚡ JavaScript Heap: ${memoryInfo.usedJSHeapSize ? (memoryInfo.usedJSHeapSize/1048576).toFixed(1) + 'MB' : 'Unknown'}
+🧠 Available Memory: ${memoryInfo.totalJSHeapSize ? (memoryInfo.totalJSHeapSize/1048576).toFixed(1) + 'MB' : 'Restricted'}
+🔌 Connection: ${navigator.connection ? navigator.connection.effectiveType || 'Unknown' : 'API Not Available'}
+📡 Touch Support: ${navigator.maxTouchPoints ? '✅ ' + navigator.maxTouchPoints + ' points' : '❌ Not Available'}
+                `.trim();
+            }, 800);
+        }
     </script>
 </body>
 </html>
