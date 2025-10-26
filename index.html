@@ -592,6 +592,334 @@
             max-width: 300px;
         }
         
+        /* Explorer Interface */
+        .explorer-container {
+            display: flex;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            height: 500px;
+            overflow: hidden;
+        }
+        
+        .explorer-sidebar {
+            width: 200px;
+            background: #222;
+            border-right: 1px solid #333;
+            padding: 12px;
+            overflow-y: auto;
+        }
+        
+        .explorer-sidebar h4 {
+            color: #8b5cf6;
+            margin: 0 0 12px 0;
+            font-size: 14px;
+        }
+        
+        .folder-tree {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .folder-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 14px;
+            color: #ccc;
+        }
+        
+        .folder-item:hover {
+            background: #333;
+            color: #fff;
+        }
+        
+        .folder-item.active {
+            background: #8b5cf6;
+            color: #fff;
+        }
+        
+        .folder-icon {
+            margin-right: 8px;
+            font-size: 16px;
+        }
+        
+        .explorer-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .explorer-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            background: #2a2a2a;
+            border-bottom: 1px solid #333;
+        }
+        
+        .explorer-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: #333;
+            border: none;
+            border-radius: 4px;
+            color: #ccc;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+        
+        .explorer-btn:hover {
+            background: #444;
+            color: #fff;
+        }
+        
+        .btn-icon {
+            font-size: 14px;
+        }
+        
+        .view-toggle {
+            display: flex;
+            gap: 2px;
+        }
+        
+        .view-btn {
+            padding: 6px 8px;
+            background: #333;
+            border: none;
+            color: #ccc;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+        
+        .view-btn:first-child {
+            border-radius: 4px 0 0 4px;
+        }
+        
+        .view-btn:last-child {
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .view-btn.active {
+            background: #8b5cf6;
+            color: #fff;
+        }
+        
+        .explorer-breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            background: #2a2a2a;
+            border-bottom: 1px solid #333;
+            font-size: 13px;
+            color: #ccc;
+        }
+        
+        .breadcrumb-item {
+            color: #8b5cf6;
+        }
+        
+        .breadcrumb-separator {
+            color: #666;
+        }
+        
+        .breadcrumb-current {
+            color: #fff;
+            font-weight: 500;
+        }
+        
+        .explorer-content {
+            flex: 1;
+            padding: 12px;
+            overflow-y: auto;
+            background: #1a1a1a;
+        }
+        
+        .software-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 12px;
+        }
+        
+        .software-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 12px;
+            background: #222;
+            border: 1px solid #333;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+        
+        .software-item:hover {
+            background: #2a2a2a;
+            border-color: #8b5cf6;
+            transform: translateY(-2px);
+        }
+        
+        .software-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+        
+        .software-name {
+            font-size: 12px;
+            color: #fff;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+        
+        .software-size {
+            font-size: 10px;
+            color: #888;
+        }
+        
+        .software-list-view {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .software-list-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            background: #222;
+            border: 1px solid #333;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .software-list-item:hover {
+            background: #2a2a2a;
+            border-color: #8b5cf6;
+        }
+        
+        .software-list-icon {
+            font-size: 20px;
+            margin-right: 12px;
+        }
+        
+        .software-list-info {
+            flex: 1;
+        }
+        
+        .software-list-name {
+            font-size: 14px;
+            color: #fff;
+            font-weight: 500;
+        }
+        
+        .software-list-details {
+            font-size: 12px;
+            color: #888;
+        }
+        
+        .upload-dialog {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .upload-dialog-content {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 24px;
+            width: 400px;
+            max-width: 90vw;
+        }
+        
+        .upload-dialog h4 {
+            color: #8b5cf6;
+            margin: 0 0 16px 0;
+            text-align: center;
+        }
+        
+        .upload-dropzone {
+            border: 2px dashed #333;
+            border-radius: 8px;
+            padding: 32px 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 16px;
+        }
+        
+        .upload-dropzone:hover {
+            border-color: #8b5cf6;
+            background: rgba(139, 92, 246, 0.05);
+        }
+        
+        .dropzone-icon {
+            font-size: 48px;
+            margin-bottom: 8px;
+        }
+        
+        .dropzone-text {
+            color: #fff;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+        
+        .dropzone-hint {
+            color: #888;
+            font-size: 12px;
+        }
+        
+        .upload-buttons {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 16px;
+        }
+        
+        .cancel-btn {
+            background: #666 !important;
+        }
+        
+        .hidden-file-input {
+            display: none !important;
+        }
+        
+        .form-margin {
+            margin: 8px 0 !important;
+        }
+        
+        .description-height {
+            height: 60px !important;
+        }
+        
+        .logout-spacing {
+            margin-top: 16px !important;
+            background: #dc2626 !important;
+        }
+        
+        .logs-height {
+            height: 200px !important;
+        }
+        
         /* Hidden elements */
         .hidden {
             display: none !important;
@@ -946,17 +1274,92 @@
                 </div>
                 
                 <div id="admin-software" class="admin-content">
-                    <h3>Software Management</h3>
-                    <div class="software-upload">
-                        <input type="file" id="software-file" accept=".exe,.msi,.zip,.rar" style="display: none;">
-                        <button class="tech-btn" onclick="document.getElementById('software-file').click()">📂 Select File</button>
-                        <input type="text" id="software-name" placeholder="Software Name" class="form-input" style="margin: 8px 0;">
-                        <input type="text" id="software-category" placeholder="Category (Tools/Utilities/Security)" class="form-input" style="margin: 8px 0;">
-                        <button class="tech-btn" onclick="uploadSoftware()">⬆️ Upload Software</button>
+                    <h3>📁 Software Explorer</h3>
+                    
+                    <!-- Explorer View -->
+                    <div class="explorer-container">
+                        <div class="explorer-sidebar">
+                            <h4>📂 Folders</h4>
+                            <div class="folder-tree">
+                                <div class="folder-item active" onclick="selectFolder('all')" data-folder="all">
+                                    <span class="folder-icon">🗂️</span> All Software
+                                </div>
+                                <div class="folder-item" onclick="selectFolder('utilities')" data-folder="utilities">
+                                    <span class="folder-icon">🔧</span> Utilities
+                                </div>
+                                <div class="folder-item" onclick="selectFolder('development')" data-folder="development">
+                                    <span class="folder-icon">💻</span> Development
+                                </div>
+                                <div class="folder-item" onclick="selectFolder('security')" data-folder="security">
+                                    <span class="folder-icon">🛡️</span> Security
+                                </div>
+                                <div class="folder-item" onclick="selectFolder('multimedia')" data-folder="multimedia">
+                                    <span class="folder-icon">🎵</span> Multimedia
+                                </div>
+                                <div class="folder-item" onclick="selectFolder('games')" data-folder="games">
+                                    <span class="folder-icon">🎮</span> Games
+                                </div>
+                                <div class="folder-item" onclick="selectFolder('office')" data-folder="office">
+                                    <span class="folder-icon">📊</span> Office
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="explorer-main">
+                            <div class="explorer-toolbar">
+                                <button class="explorer-btn" onclick="showUploadDialog()">
+                                    <span class="btn-icon">⬆️</span> Upload
+                                </button>
+                                <button class="explorer-btn" onclick="refreshExplorer()">
+                                    <span class="btn-icon">🔄</span> Refresh
+                                </button>
+                                <button class="explorer-btn" onclick="createNewFolder()">
+                                    <span class="btn-icon">📁</span> New Folder
+                                </button>
+                                <div class="view-toggle">
+                                    <button class="view-btn active" onclick="setViewMode('grid')" data-view="grid">⊞</button>
+                                    <button class="view-btn" onclick="setViewMode('list')" data-view="list">☰</button>
+                                </div>
+                            </div>
+                            
+                            <div class="explorer-breadcrumb">
+                                <span class="breadcrumb-item">📁 Software Explorer</span>
+                                <span class="breadcrumb-separator">></span>
+                                <span class="breadcrumb-current" id="current-folder">All Software</span>
+                            </div>
+                            
+                            <div class="explorer-content" id="explorer-content">
+                                <!-- Software items will be displayed here -->
+                            </div>
+                        </div>
                     </div>
-                    <div class="software-list" id="software-list">
-                        <h4>Current Software:</h4>
-                        <div id="uploaded-software"></div>
+                    
+                    <!-- Upload Dialog -->
+                    <div class="upload-dialog hidden" id="upload-dialog">
+                        <div class="upload-dialog-content">
+                            <h4>📤 Upload Software</h4>
+                            <input type="file" id="software-file" accept=".exe,.msi,.zip,.rar,.dmg,.deb" class="hidden-file-input">
+                            <div class="upload-dropzone" onclick="document.getElementById('software-file').click()">
+                                <div class="dropzone-icon">📂</div>
+                                <div class="dropzone-text">Click to select file or drag & drop</div>
+                                <div class="dropzone-hint">Supported: .exe, .msi, .zip, .rar, .dmg, .deb</div>
+                            </div>
+                            <input type="text" id="software-name" placeholder="Software Name" class="form-input form-margin">
+                            <select id="software-category" class="form-input form-margin">
+                                <option value="">Select Category</option>
+                                <option value="utilities">🔧 Utilities</option>
+                                <option value="development">💻 Development</option>
+                                <option value="security">🛡️ Security</option>
+                                <option value="multimedia">🎵 Multimedia</option>
+                                <option value="games">🎮 Games</option>
+                                <option value="office">📊 Office</option>
+                            </select>
+                            <textarea id="software-description" placeholder="Description (optional)" class="form-input form-margin description-height"></textarea>
+                            <div class="upload-buttons">
+                                <button class="tech-btn" onclick="uploadSoftware()">⬆️ Upload</button>
+                                <button class="tech-btn cancel-btn" onclick="closeUploadDialog()">❌ Cancel</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
@@ -968,10 +1371,10 @@
                 
                 <div id="admin-logs" class="admin-content">
                     <h3>Activity Logs</h3>
-                    <div id="activity-logs" class="news-log" style="height: 200px;"></div>
+                    <div id="activity-logs" class="news-log logs-height"></div>
                 </div>
                 
-                <button class="tech-btn" onclick="logoutAdmin()" style="margin-top: 16px; background: #dc2626;">🚪 Logout</button>
+                <button class="tech-btn logout-spacing" onclick="logoutAdmin()">🚪 Logout</button>
             </div>
         </div>
         
@@ -1044,7 +1447,8 @@
                     alert('🎉 Admin Login Successful!\n\nWelcome to the Admin Panel!\n\n🔒 Secure session established');
                     document.getElementById('admin-access').style.display = 'none';
                     document.getElementById('admin-panel').style.display = 'block';
-                    loadAdminData();
+                    showAdminTab('software'); // Start met software tab voor verkenner
+                    loadSoftwareList();
                     document.getElementById('admin-panel').scrollIntoView({ behavior: 'smooth' });
                 } else {
                     alert(`❌ Incorrect password. ${MAX_ATTEMPTS - loginAttempts} attempts remaining.`);
@@ -1424,9 +1828,10 @@ ${matrixContent}
             const fileInput = document.getElementById('software-file');
             const nameInput = document.getElementById('software-name');
             const categoryInput = document.getElementById('software-category');
+            const descriptionInput = document.getElementById('software-description');
             
             if (!fileInput.files[0] || !nameInput.value || !categoryInput.value) {
-                alert('❌ Please fill all fields and select a file');
+                alert('❌ Please fill all required fields and select a file');
                 return;
             }
             
@@ -1435,47 +1840,204 @@ ${matrixContent}
                 id: Date.now(),
                 name: nameInput.value,
                 category: categoryInput.value,
+                description: descriptionInput.value || '',
                 filename: file.name,
                 size: file.size,
                 uploadDate: new Date().toISOString(),
-                downloads: 0
+                downloads: 0,
+                icon: getFileIcon(file.name)
             };
             
             uploadedSoftware.push(software);
             localStorage.setItem('uploadedSoftware', JSON.stringify(uploadedSoftware));
             
             // Add to activity log
-            addActivityLog(`📁 Software uploaded: ${software.name}`);
+            addActivityLog(`📁 Software uploaded: ${software.name} in ${software.category}`);
             
             // Clear form
             nameInput.value = '';
             categoryInput.value = '';
+            descriptionInput.value = '';
             fileInput.value = '';
             
             alert(`✅ Software "${software.name}" uploaded successfully!`);
-            loadSoftwareList();
+            closeUploadDialog();
+            loadExplorerContent();
             updatePublicSoftwareList();
         }
         
-        function loadSoftwareList() {
-            const container = document.getElementById('uploaded-software');
+        // Explorer functions
+        let currentFolder = 'all';
+        let viewMode = 'grid';
+        
+        function selectFolder(folder) {
+            currentFolder = folder;
+            
+            // Update UI
+            document.querySelectorAll('.folder-item').forEach(item => {
+                item.classList.remove('active');
+                if (item.dataset.folder === folder) {
+                    item.classList.add('active');
+                }
+            });
+            
+            // Update breadcrumb
+            const folderNames = {
+                'all': 'All Software',
+                'utilities': 'Utilities',
+                'development': 'Development',
+                'security': 'Security',
+                'multimedia': 'Multimedia',
+                'games': 'Games',
+                'office': 'Office'
+            };
+            document.getElementById('current-folder').textContent = folderNames[folder];
+            
+            loadExplorerContent();
+        }
+        
+        function showUploadDialog() {
+            document.getElementById('upload-dialog').classList.remove('hidden');
+        }
+        
+        function closeUploadDialog() {
+            document.getElementById('upload-dialog').classList.add('hidden');
+            document.getElementById('software-file').value = '';
+            document.getElementById('software-name').value = '';
+            document.getElementById('software-category').value = '';
+            document.getElementById('software-description').value = '';
+        }
+        
+        function refreshExplorer() {
+            loadExplorerContent();
+            addActivityLog('🔄 Software explorer refreshed');
+        }
+        
+        function createNewFolder() {
+            const folderName = prompt('Enter new folder name:');
+            if (folderName) {
+                alert(`📁 In production, this would create a new folder: "${folderName}"`);
+                addActivityLog(`📁 New folder requested: ${folderName}`);
+            }
+        }
+        
+        function setViewMode(mode) {
+            viewMode = mode;
+            
+            // Update UI
+            document.querySelectorAll('.view-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.view === mode) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            loadExplorerContent();
+        }
+        
+        function loadExplorerContent() {
+            const container = document.getElementById('explorer-content');
             container.innerHTML = '';
             
-            uploadedSoftware.forEach(software => {
-                const entry = document.createElement('div');
-                entry.className = 'software-entry';
-                entry.innerHTML = `
-                    <div>
-                        <strong>${software.name}</strong><br>
-                        <small>${software.category} • ${(software.size/1024/1024).toFixed(2)}MB • ${software.downloads} downloads</small>
-                    </div>
-                    <div class="software-actions">
-                        <button class="software-action" onclick="editSoftware(${software.id})">✏️</button>
-                        <button class="software-action delete" onclick="deleteSoftware(${software.id})">🗑️</button>
+            // Filter software by category
+            let filteredSoftware = uploadedSoftware;
+            if (currentFolder !== 'all') {
+                filteredSoftware = uploadedSoftware.filter(software => software.category === currentFolder);
+            }
+            
+            if (filteredSoftware.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; color: #888; margin-top: 50px;">
+                        <div style="font-size: 48px; margin-bottom: 16px;">📂</div>
+                        <div>No software found in this category</div>
+                        <button class="tech-btn" onclick="showUploadDialog()" style="margin-top: 16px;">
+                            ⬆️ Upload Software
+                        </button>
                     </div>
                 `;
-                container.appendChild(entry);
-            });
+                return;
+            }
+            
+            if (viewMode === 'grid') {
+                container.innerHTML = '<div class="software-grid" id="software-grid"></div>';
+                const grid = document.getElementById('software-grid');
+                
+                filteredSoftware.forEach(software => {
+                    const item = document.createElement('div');
+                    item.className = 'software-item';
+                    item.onclick = () => openSoftwareDetails(software);
+                    item.innerHTML = `
+                        <div class="software-icon">${software.icon}</div>
+                        <div class="software-name">${software.name}</div>
+                        <div class="software-size">${formatFileSize(software.size)}</div>
+                    `;
+                    grid.appendChild(item);
+                });
+            } else {
+                container.innerHTML = '<div class="software-list-view" id="software-list"></div>';
+                const list = document.getElementById('software-list');
+                
+                filteredSoftware.forEach(software => {
+                    const item = document.createElement('div');
+                    item.className = 'software-list-item';
+                    item.onclick = () => openSoftwareDetails(software);
+                    item.innerHTML = `
+                        <div class="software-list-icon">${software.icon}</div>
+                        <div class="software-list-info">
+                            <div class="software-list-name">${software.name}</div>
+                            <div class="software-list-details">
+                                ${formatFileSize(software.size)} • ${software.downloads} downloads • 
+                                ${new Date(software.uploadDate).toLocaleDateString()}
+                            </div>
+                        </div>
+                    `;
+                    list.appendChild(item);
+                });
+            }
+        }
+        
+        function getFileIcon(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            const iconMap = {
+                'exe': '⚙️',
+                'msi': '📦',
+                'zip': '🗜️',
+                'rar': '🗜️',
+                '7z': '🗜️',
+                'dmg': '💿',
+                'deb': '📦',
+                'rpm': '📦',
+                'app': '📱',
+                'jar': '☕',
+                'apk': '🤖'
+            };
+            return iconMap[ext] || '📄';
+        }
+        
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        function openSoftwareDetails(software) {
+            alert(`📋 Software Details\n\n` +
+                  `Name: ${software.name}\n` +
+                  `Category: ${software.category}\n` +
+                  `Size: ${formatFileSize(software.size)}\n` +
+                  `Downloads: ${software.downloads}\n` +
+                  `Uploaded: ${new Date(software.uploadDate).toLocaleDateString()}\n` +
+                  `File: ${software.filename}\n` +
+                  `Description: ${software.description || 'No description'}\n\n` +
+                  `In production this would show full details and download options.`);
+        }
+        
+        function loadSoftwareList() {
+            // Initialize explorer with all software
+            selectFolder('all');
+            loadExplorerContent();
         }
         
         function deleteSoftware(id) {
