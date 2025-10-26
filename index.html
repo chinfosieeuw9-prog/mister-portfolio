@@ -1644,6 +1644,7 @@
         
         document.querySelector('.footer').addEventListener('click', function() {
             clickCount++;
+            console.log(`🖱️ Footer click ${clickCount}/3`);
             
             if (clickCount === 1) {
                 clickTimer = setTimeout(() => {
@@ -1652,6 +1653,7 @@
             } else if (clickCount === 3) {
                 clearTimeout(clickTimer);
                 clickCount = 0;
+                console.log('🔓 Triple-click detected - opening admin access');
                 toggleAdminAccess();
             }
         });
@@ -2462,6 +2464,13 @@ ${matrixContent}
             if (e.key === 'Escape' && !document.getElementById('profile-modal').classList.contains('hidden')) {
                 closeProfileModal();
             }
+            
+            // Admin shortcut: Ctrl+Shift+A
+            if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+                e.preventDefault();
+                console.log('🔑 Admin keyboard shortcut activated');
+                toggleAdminAccess();
+            }
         });
         
         // Update existing newsletter form handler - REMOVED DUPLICATE
@@ -2487,12 +2496,24 @@ ${matrixContent}
             if (adminLoginBtn) {
                 adminLoginBtn.addEventListener('click', function(e) {
                     e.preventDefault();
+                    console.log('🔐 Admin button clicked');
                     toggleAdminAccess();
                 });
                 console.log('✅ Admin login button handler attached');
             } else {
                 console.error('❌ Admin login button not found');
             }
+            
+            // Debug: Test admin button visibility
+            setTimeout(() => {
+                const btn = document.getElementById('admin-login-btn');
+                if (btn) {
+                    console.log('🔍 Admin button found after load:', btn);
+                    console.log('🔍 Button is visible:', btn.offsetParent !== null);
+                } else {
+                    console.error('🔍 Admin button still not found after load');
+                }
+            }, 1000);
             
             // Setup admin login form handler
             const adminLoginForm = document.getElementById('admin-login');
