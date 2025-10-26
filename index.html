@@ -1232,7 +1232,7 @@
         
         <!-- Newsletter -->
         <div class="card">
-            <h2>� Personal Newsletter</h2>
+            <h2>📰 Latest News</h2>
             <p class="newsletter-text">Sharing thoughts, ideas, updates van mijn stack en projecten, één keer per maand.</p>
             <form name="newsletter" method="POST" data-netlify="true" class="newsletter-form">
                 <input type="hidden" name="form-name" value="newsletter">
@@ -1406,11 +1406,8 @@
             }
         });
         
-        // Admin login button click handler
-        document.getElementById('admin-login-btn').addEventListener('click', function(e) {
-            e.preventDefault();
-            toggleAdminAccess();
-        });
+        // Admin login button click handler - MOVED TO DOMContentLoaded
+        // Admin login form handler - MOVED TO DOMContentLoaded
         
         function toggleAdminAccess() {
             const adminAccess = document.getElementById('admin-access');
@@ -1422,40 +1419,7 @@
             }
         }
         
-        // Secure admin login
-        document.getElementById('admin-login').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            if (!checkRateLimit()) {
-                alert('❌ Too many login attempts. Please wait 5 minutes before trying again.');
-                return;
-            }
-            
-            const password = document.getElementById('admin-password').value;
-            loginAttempts++;
-            lastAttemptTime = Date.now();
-            
-            // Stronger password check with timing attack protection
-            const correctPassword = 'mister2025';
-            const isValid = password.length === correctPassword.length && 
-                           password === correctPassword;
-            
-            // Add artificial delay to prevent timing attacks
-            setTimeout(() => {
-                if (isValid) {
-                    loginAttempts = 0; // Reset on successful login
-                    alert('🎉 Admin Login Successful!\n\nWelcome to the Admin Panel!\n\n🔒 Secure session established');
-                    document.getElementById('admin-access').style.display = 'none';
-                    document.getElementById('admin-panel').style.display = 'block';
-                    showAdminTab('software'); // Start met software tab voor verkenner
-                    loadSoftwareList();
-                    document.getElementById('admin-panel').scrollIntoView({ behavior: 'smooth' });
-                } else {
-                    alert(`❌ Incorrect password. ${MAX_ATTEMPTS - loginAttempts} attempts remaining.`);
-                    document.getElementById('admin-password').value = '';
-                }
-            }, 500 + Math.random() * 500); // Random delay 500-1000ms
-        });
+        // Secure admin login - MOVED TO DOMContentLoaded
         
         // Create admin panel
         function createAdminPanel() {
@@ -2209,6 +2173,59 @@ ${matrixContent}
             }
             if (!localStorage.getItem('activityLogs')) {
                 localStorage.setItem('activityLogs', JSON.stringify([]));
+            }
+            
+            // Setup admin login button click handler
+            const adminLoginBtn = document.getElementById('admin-login-btn');
+            if (adminLoginBtn) {
+                adminLoginBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    toggleAdminAccess();
+                });
+                console.log('✅ Admin login button handler attached');
+            } else {
+                console.error('❌ Admin login button not found');
+            }
+            
+            // Setup admin login form handler
+            const adminLoginForm = document.getElementById('admin-login');
+            if (adminLoginForm) {
+                adminLoginForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    if (!checkRateLimit()) {
+                        alert('❌ Too many login attempts. Please wait 5 minutes before trying again.');
+                        return;
+                    }
+                    
+                    const password = document.getElementById('admin-password').value;
+                    loginAttempts++;
+                    lastAttemptTime = Date.now();
+                    
+                    // Stronger password check with timing attack protection
+                    const correctPassword = 'mister2025';
+                    const isValid = password.length === correctPassword.length && 
+                                   password === correctPassword;
+                    
+                    // Add artificial delay to prevent timing attacks
+                    setTimeout(() => {
+                        if (isValid) {
+                            loginAttempts = 0; // Reset on successful login
+                            alert('🎉 Admin Login Successful!\n\nWelcome to the Admin Panel!\n\n🔒 Secure session established');
+                            document.getElementById('admin-access').style.display = 'none';
+                            document.getElementById('admin-panel').style.display = 'block';
+                            showAdminTab('software'); // Start met software tab voor verkenner
+                            loadSoftwareList();
+                            document.getElementById('admin-panel').scrollIntoView({ behavior: 'smooth' });
+                        } else {
+                            alert(`❌ Incorrect password. ${MAX_ATTEMPTS - loginAttempts} attempts remaining.`);
+                            document.getElementById('admin-password').value = '';
+                        }
+                    }, 500 + Math.random() * 500); // Random delay 500-1000ms
+                });
+                console.log('✅ Admin login form handler attached');
+            } else {
+                console.error('❌ Admin login form not found');
             }
             
             // Log initialization
