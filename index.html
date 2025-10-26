@@ -476,6 +476,118 @@
             margin-top: 24px;
         }
         
+        .admin-panel {
+            display: none;
+            margin-top: 24px;
+        }
+        
+        .admin-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 8px;
+        }
+        
+        .admin-tab {
+            padding: 8px 16px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 6px 6px 0 0;
+            color: #aaa;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 12px;
+        }
+        
+        .admin-tab.active {
+            background: linear-gradient(135deg, #2d1b69 0%, #5b21b6 100%);
+            color: white;
+            border-color: rgba(147, 134, 234, 0.3);
+        }
+        
+        .admin-tab:hover {
+            background: #2a2a2a;
+            color: white;
+        }
+        
+        .admin-content {
+            display: none;
+            padding: 16px 0;
+        }
+        
+        .admin-content.active {
+            display: block;
+        }
+        
+        .admin-textarea {
+            width: 100%;
+            height: 120px;
+            background: #0f0f0f;
+            border: 1px solid #333;
+            border-radius: 6px;
+            color: #fff;
+            padding: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            resize: vertical;
+            margin-bottom: 12px;
+        }
+        
+        .software-upload {
+            background: #0f0f0f;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .software-list {
+            background: #0f0f0f;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .software-entry {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            border-bottom: 1px solid #222;
+            color: #aaa;
+            font-size: 12px;
+        }
+        
+        .software-entry:last-child {
+            border-bottom: none;
+        }
+        
+        .software-actions {
+            display: flex;
+            gap: 4px;
+        }
+        
+        .software-action {
+            padding: 2px 6px;
+            background: #333;
+            border: none;
+            border-radius: 3px;
+            color: white;
+            cursor: pointer;
+            font-size: 10px;
+        }
+        
+        .software-action:hover {
+            background: #555;
+        }
+        
+        .software-action.delete {
+            background: #dc2626;
+        }
+        
         .admin-form {
             max-width: 300px;
         }
@@ -816,6 +928,53 @@
             </div>
         </div>
         
+        <!-- Admin Panel (Hidden) -->
+        <div class="admin-panel" id="admin-panel" style="display: none;">
+            <div class="card">
+                <h2>🛠️ Admin Panel</h2>
+                <div class="admin-tabs">
+                    <button class="admin-tab active" onclick="showAdminTab('content')">📝 Content</button>
+                    <button class="admin-tab" onclick="showAdminTab('software')">💾 Software</button>
+                    <button class="admin-tab" onclick="showAdminTab('newsletter')">📧 Newsletter</button>
+                    <button class="admin-tab" onclick="showAdminTab('logs')">📊 Logs</button>
+                </div>
+                
+                <div id="admin-content" class="admin-content active">
+                    <h3>Content Editor</h3>
+                    <textarea class="admin-textarea" placeholder="Edit site content..."></textarea>
+                    <button class="tech-btn">💾 Save Content</button>
+                </div>
+                
+                <div id="admin-software" class="admin-content">
+                    <h3>Software Management</h3>
+                    <div class="software-upload">
+                        <input type="file" id="software-file" accept=".exe,.msi,.zip,.rar" style="display: none;">
+                        <button class="tech-btn" onclick="document.getElementById('software-file').click()">📂 Select File</button>
+                        <input type="text" id="software-name" placeholder="Software Name" class="form-input" style="margin: 8px 0;">
+                        <input type="text" id="software-category" placeholder="Category (Tools/Utilities/Security)" class="form-input" style="margin: 8px 0;">
+                        <button class="tech-btn" onclick="uploadSoftware()">⬆️ Upload Software</button>
+                    </div>
+                    <div class="software-list" id="software-list">
+                        <h4>Current Software:</h4>
+                        <div id="uploaded-software"></div>
+                    </div>
+                </div>
+                
+                <div id="admin-newsletter" class="admin-content">
+                    <h3>Newsletter Subscribers</h3>
+                    <div id="subscriber-list"></div>
+                    <button class="tech-btn" onclick="exportSubscribers()">📤 Export List</button>
+                </div>
+                
+                <div id="admin-logs" class="admin-content">
+                    <h3>Activity Logs</h3>
+                    <div id="activity-logs" class="news-log" style="height: 200px;"></div>
+                </div>
+                
+                <button class="tech-btn" onclick="logoutAdmin()" style="margin-top: 16px; background: #dc2626;">🚪 Logout</button>
+            </div>
+        </div>
+        
         <!-- Footer -->
         <div class="footer">
             <p class="footer-text">
@@ -882,9 +1041,11 @@
             setTimeout(() => {
                 if (isValid) {
                     loginAttempts = 0; // Reset on successful login
-                    alert('🎉 Admin Login Successful!\n\nAdmin panel features:\n• Upload CV\n• Manage content\n• Edit portfolio\n• View analytics\n\n🔒 Secure session established');
+                    alert('🎉 Admin Login Successful!\n\nWelcome to the Admin Panel!\n\n🔒 Secure session established');
                     document.getElementById('admin-access').style.display = 'none';
-                    createAdminPanel();
+                    document.getElementById('admin-panel').style.display = 'block';
+                    loadAdminData();
+                    document.getElementById('admin-panel').scrollIntoView({ behavior: 'smooth' });
                 } else {
                     alert(`❌ Incorrect password. ${MAX_ATTEMPTS - loginAttempts} attempts remaining.`);
                     document.getElementById('admin-password').value = '';
@@ -1240,6 +1401,205 @@ ${matrixContent}
             return newsletterSubscribers;
         }
         
+        // Admin Panel Functions
+        let uploadedSoftware = JSON.parse(localStorage.getItem('uploadedSoftware') || '[]');
+        let activityLogs = JSON.parse(localStorage.getItem('activityLogs') || '[]');
+        
+        function showAdminTab(tabName) {
+            // Hide all tabs and content
+            document.querySelectorAll('.admin-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.admin-content').forEach(content => content.classList.remove('active'));
+            
+            // Show selected tab and content
+            document.querySelector(`[onclick="showAdminTab('${tabName}')"]`).classList.add('active');
+            document.getElementById(`admin-${tabName}`).classList.add('active');
+            
+            // Load specific data
+            if (tabName === 'software') loadSoftwareList();
+            if (tabName === 'newsletter') loadSubscriberList();
+            if (tabName === 'logs') loadActivityLogs();
+        }
+        
+        function uploadSoftware() {
+            const fileInput = document.getElementById('software-file');
+            const nameInput = document.getElementById('software-name');
+            const categoryInput = document.getElementById('software-category');
+            
+            if (!fileInput.files[0] || !nameInput.value || !categoryInput.value) {
+                alert('❌ Please fill all fields and select a file');
+                return;
+            }
+            
+            const file = fileInput.files[0];
+            const software = {
+                id: Date.now(),
+                name: nameInput.value,
+                category: categoryInput.value,
+                filename: file.name,
+                size: file.size,
+                uploadDate: new Date().toISOString(),
+                downloads: 0
+            };
+            
+            uploadedSoftware.push(software);
+            localStorage.setItem('uploadedSoftware', JSON.stringify(uploadedSoftware));
+            
+            // Add to activity log
+            addActivityLog(`📁 Software uploaded: ${software.name}`);
+            
+            // Clear form
+            nameInput.value = '';
+            categoryInput.value = '';
+            fileInput.value = '';
+            
+            alert(`✅ Software "${software.name}" uploaded successfully!`);
+            loadSoftwareList();
+            updatePublicSoftwareList();
+        }
+        
+        function loadSoftwareList() {
+            const container = document.getElementById('uploaded-software');
+            container.innerHTML = '';
+            
+            uploadedSoftware.forEach(software => {
+                const entry = document.createElement('div');
+                entry.className = 'software-entry';
+                entry.innerHTML = `
+                    <div>
+                        <strong>${software.name}</strong><br>
+                        <small>${software.category} • ${(software.size/1024/1024).toFixed(2)}MB • ${software.downloads} downloads</small>
+                    </div>
+                    <div class="software-actions">
+                        <button class="software-action" onclick="editSoftware(${software.id})">✏️</button>
+                        <button class="software-action delete" onclick="deleteSoftware(${software.id})">🗑️</button>
+                    </div>
+                `;
+                container.appendChild(entry);
+            });
+        }
+        
+        function deleteSoftware(id) {
+            if (confirm('Are you sure you want to delete this software?')) {
+                const software = uploadedSoftware.find(s => s.id === id);
+                uploadedSoftware = uploadedSoftware.filter(s => s.id !== id);
+                localStorage.setItem('uploadedSoftware', JSON.stringify(uploadedSoftware));
+                addActivityLog(`🗑️ Software deleted: ${software.name}`);
+                loadSoftwareList();
+                updatePublicSoftwareList();
+            }
+        }
+        
+        function updatePublicSoftwareList() {
+            const publicExplorer = document.getElementById('software-explorer');
+            publicExplorer.innerHTML = '';
+            
+            const categories = {};
+            uploadedSoftware.forEach(software => {
+                if (!categories[software.category]) categories[software.category] = [];
+                categories[software.category].push(software);
+            });
+            
+            Object.keys(categories).forEach(category => {
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = 'software-item';
+                categoryDiv.innerHTML = `📁 ${category} (${categories[category].length} items)`;
+                categoryDiv.onclick = () => showCategoryFiles(category, categories[category]);
+                publicExplorer.appendChild(categoryDiv);
+            });
+        }
+        
+        function showCategoryFiles(category, files) {
+            const explorer = document.getElementById('software-explorer');
+            explorer.innerHTML = `<div class="software-item" onclick="updatePublicSoftwareList()" style="color: #00d4ff;">← Back to Categories</div>`;
+            
+            files.forEach(file => {
+                const fileDiv = document.createElement('div');
+                fileDiv.className = 'software-item';
+                fileDiv.innerHTML = `💾 ${file.name} (${(file.size/1024/1024).toFixed(2)}MB)`;
+                fileDiv.onclick = () => downloadSoftwareFile(file);
+                explorer.appendChild(fileDiv);
+            });
+        }
+        
+        function downloadSoftwareFile(software) {
+            software.downloads++;
+            localStorage.setItem('uploadedSoftware', JSON.stringify(uploadedSoftware));
+            addActivityLog(`📥 Download: ${software.name}`);
+            alert(`📥 Downloading ${software.name}...\n\nFile: ${software.filename}\nSize: ${(software.size/1024/1024).toFixed(2)}MB`);
+        }
+        
+        function loadSubscriberList() {
+            const container = document.getElementById('subscriber-list');
+            container.innerHTML = '';
+            
+            newsletterSubscribers.forEach((subscriber, index) => {
+                const entry = document.createElement('div');
+                entry.className = 'software-entry';
+                entry.innerHTML = `
+                    <div>
+                        <strong>${subscriber.email}</strong><br>
+                        <small>Subscribed: ${new Date(subscriber.date).toLocaleDateString()}</small>
+                    </div>
+                    <div class="software-actions">
+                        <button class="software-action delete" onclick="removeSubscriber(${index})">🗑️</button>
+                    </div>
+                `;
+                container.appendChild(entry);
+            });
+        }
+        
+        function removeSubscriber(index) {
+            if (confirm('Remove this subscriber?')) {
+                newsletterSubscribers.splice(index, 1);
+                localStorage.setItem('newsletterSubscribers', JSON.stringify(newsletterSubscribers));
+                loadSubscriberList();
+            }
+        }
+        
+        function exportSubscribers() {
+            const data = newsletterSubscribers.map(s => s.email).join('\n');
+            const blob = new Blob([data], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'newsletter-subscribers.txt';
+            a.click();
+        }
+        
+        function addActivityLog(message) {
+            activityLogs.unshift({
+                timestamp: new Date().toISOString(),
+                message: message
+            });
+            if (activityLogs.length > 100) activityLogs = activityLogs.slice(0, 100);
+            localStorage.setItem('activityLogs', JSON.stringify(activityLogs));
+        }
+        
+        function loadActivityLogs() {
+            const container = document.getElementById('activity-logs');
+            container.innerHTML = '';
+            
+            activityLogs.forEach(log => {
+                const entry = document.createElement('div');
+                entry.className = 'news-item';
+                entry.innerHTML = `${new Date(log.timestamp).toLocaleString()} - ${log.message}`;
+                container.appendChild(entry);
+            });
+        }
+        
+        function loadAdminData() {
+            loadSoftwareList();
+            updatePublicSoftwareList();
+            loadSubscriberList();
+            loadActivityLogs();
+        }
+        
+        function logoutAdmin() {
+            document.getElementById('admin-panel').style.display = 'none';
+            document.getElementById('admin-password').value = '';
+            alert('👋 Logged out successfully');
+        }
+        
         // Update existing newsletter form handler
         document.addEventListener('DOMContentLoaded', function() {
             const newsletterForm = document.querySelector('.newsletter-form');
@@ -1249,11 +1609,15 @@ ${matrixContent}
                     const emailInput = this.querySelector('input[type="email"]');
                     if (emailInput && emailInput.value) {
                         addNewsletterSubscriber(emailInput.value);
+                        addActivityLog(`📧 Newsletter signup: ${emailInput.value}`);
                         alert('📧 Newsletter subscription successful!\n\nYou have been added to our mailing list.');
                         emailInput.value = '';
                     }
                 });
             }
+            
+            // Initialize data
+            loadAdminData();
         });
     </script>
 </body>
