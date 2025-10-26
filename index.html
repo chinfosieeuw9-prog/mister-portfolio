@@ -1519,10 +1519,41 @@
         });
         
         document.querySelector('form[name="newsletter"]').addEventListener('submit', function(e) {
-            // Let Netlify handle the form, but show feedback
-            setTimeout(() => {
-                alert('📬 Newsletter subscription successful!\n\nWelcome! You\'ll receive monthly updates about my projects and tech insights.');
-            }, 100);
+            e.preventDefault(); // Stop default form submission
+            
+            const emailInput = this.querySelector('input[name="email"]');
+            const email = emailInput.value.trim();
+            
+            if (!email) {
+                alert('❌ Please enter a valid email address');
+                return;
+            }
+            
+            // Email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                alert('❌ Please enter a valid email address format');
+                return;
+            }
+            
+            // Check if already subscribed
+            if (newsletterSubscribers.some(sub => sub.email === email)) {
+                alert('📬 You\'re already subscribed!\n\nThank you for your continued interest.');
+                emailInput.value = '';
+                return;
+            }
+            
+            // Add subscriber
+            addNewsletterSubscriber(email);
+            
+            // Show success message
+            alert('📬 Newsletter subscription successful!\n\nWelcome! You\'ll receive monthly updates about my projects and tech insights.');
+            
+            // Clear form
+            emailInput.value = '';
+            
+            // Add to activity log
+            addActivityLog(`📧 New newsletter subscriber: ${email}`);
         });
         
         // Social links
@@ -2162,24 +2193,31 @@ ${matrixContent}
             alert('👋 Logged out successfully');
         }
         
-        // Update existing newsletter form handler
+        // Update existing newsletter form handler - REMOVED DUPLICATE
+        // Newsletter form is now handled by the main event listener above
+        
+        // Initialize all systems when page loads
         document.addEventListener('DOMContentLoaded', function() {
-            const newsletterForm = document.querySelector('.newsletter-form');
-            if (newsletterForm) {
-                newsletterForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    const emailInput = this.querySelector('input[type="email"]');
-                    if (emailInput && emailInput.value) {
-                        addNewsletterSubscriber(emailInput.value);
-                        addActivityLog(`📧 Newsletter signup: ${emailInput.value}`);
-                        alert('📧 Newsletter subscription successful!\n\nYou have been added to our mailing list.');
-                        emailInput.value = '';
-                    }
-                });
+            console.log('🚀 Initializing website systems...');
+            
+            // Initialize data arrays if they don't exist
+            if (!localStorage.getItem('uploadedSoftware')) {
+                localStorage.setItem('uploadedSoftware', JSON.stringify([]));
+            }
+            if (!localStorage.getItem('newsletterSubscribers')) {
+                localStorage.setItem('newsletterSubscribers', JSON.stringify([]));
+            }
+            if (!localStorage.getItem('activityLogs')) {
+                localStorage.setItem('activityLogs', JSON.stringify([]));
             }
             
-            // Initialize data
-            loadAdminData();
+            // Log initialization
+            addActivityLog('🚀 Website initialized');
+            
+            // Update public software display
+            updatePublicSoftwareList();
+            
+            console.log('✅ All systems initialized');
         });
     </script>
 </body>
