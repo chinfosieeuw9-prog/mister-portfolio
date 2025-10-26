@@ -123,7 +123,7 @@
             width: 100px;
             height: 100px;
             border-radius: 50%;
-            background-image: url('faceP1.png');
+            background-image: url('facep2.jpg');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -145,7 +145,7 @@
         }
         
         .avatar:hover {
-            background-image: url('facep2.jpg');
+            background-image: url('faceP1.png');
             transform: scale(1.05);
             box-shadow: 
                 0 15px 50px rgba(91, 33, 182, 0.6),
@@ -559,6 +559,79 @@
             to { opacity: 0; transform: translateY(20px); }
         }
         
+        /* News Log Styling */
+        .news-log {
+            background: #0f0f0f;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 8px;
+            margin-top: 8px;
+            max-height: 120px;
+            overflow-y: auto;
+        }
+        
+        .news-item {
+            color: #aaa;
+            font-size: 11px;
+            margin: 4px 0;
+            padding: 2px 0;
+            border-bottom: 1px solid #222;
+        }
+        
+        .news-item:last-child {
+            border-bottom: none;
+        }
+        
+        /* Links Container */
+        .links-container {
+            margin-top: 8px;
+        }
+        
+        .link-item {
+            display: block;
+            color: #00d4ff;
+            text-decoration: none;
+            font-size: 12px;
+            margin: 4px 0;
+            padding: 4px 8px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+        
+        .link-item:hover {
+            background: #2a2a2a;
+            border-color: #00d4ff;
+        }
+        
+        /* Software Explorer */
+        .software-explorer {
+            background: #0f0f0f;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 8px;
+            margin-top: 8px;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+        
+        .software-item {
+            color: #aaa;
+            font-size: 11px;
+            margin: 4px 0;
+            padding: 4px 8px;
+            background: #1a1a1a;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .software-item:hover {
+            background: #2a2a2a;
+            color: #fff;
+        }
+        
         /* Responsive */
         @media (max-width: 640px) {
             .container {
@@ -585,7 +658,7 @@
         <div class="header">
             <div class="avatar"></div>
             <h1 class="name">Mister</h1>
-            <p class="title">Code Craftsman & Problem Solver</p>
+            <p class="title">Cloud | Azure | 365 | Python\C\C+ | Automation | Cybersecurity analyse</p>
         </div>
         
         <!-- Social Links -->
@@ -593,7 +666,7 @@
             <a href="https://mister.us.kg" target="_blank" rel="noopener noreferrer" class="social-link">
                 <span>🌐</span>Website
             </a>
-            <a href="https://linkedin.com/in/mister-dev" target="_blank" rel="noopener noreferrer" class="social-link">
+            <a href="https://www.linkedin.com/comm/mynetwork/discovery-see-all?usecase=PEOPLE_FOLLOWS&followMember=james-chin-fo-sieeuw-b96117b" target="_blank" rel="noopener noreferrer" class="social-link">
                 <span>💼</span>LinkedIn
             </a>
             <a href="mailto:chattgbt@gmail.com" class="social-link">
@@ -610,11 +683,11 @@
         <!-- Featured Card met afbeelding -->
         <div class="featured-card">
             <div class="featured-image">
-                <img src="background1.jpg?v=3" alt="MPlace Studio" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
+                <img src="background1.jpg?v=3" alt="Who I Am" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
             </div>
             <div class="featured-content">
-                <div class="featured-title">Digital Agency</div>
-                <div class="featured-desc">Bridging Design, Code, and Creativity</div>
+                <div class="featured-title">Who I Am</div>
+                <div class="featured-desc">Cloud Engineer | Azure Specialist | Security Analyst</div>
             </div>
         </div>
         
@@ -622,10 +695,15 @@
         <div class="cards-grid">
             <div class="card">
                 <div class="card-header">
-                    <div class="card-icon">🔗</div>
-                    <h2>Personal Website</h2>
+                    <div class="card-icon">�</div>
+                    <h2>Latest News</h2>
                 </div>
-                <p>Find my blog, stack, and more!</p>
+                <p>Recent updates and activity log</p>
+                <div class="news-log" id="news-log">
+                    <div class="news-item">🔹 Website launched with new security features</div>
+                    <div class="news-item">🔹 Added interactive tech showcase</div>
+                    <div class="news-item">🔹 Enhanced Azure integration tools</div>
+                </div>
             </div>
             
             <div class="card">
@@ -638,10 +716,29 @@
             
             <div class="card">
                 <div class="card-header">
-                    <div class="card-icon">🎨</div>
-                    <h2>Portfolio Templates</h2>
+                    <div class="card-icon">🔗</div>
+                    <h2>Links</h2>
                 </div>
-                <p>Discover high quality portfolio templates</p>
+                <p>Useful resources and external links</p>
+                <div class="links-container">
+                    <a href="https://azure.microsoft.com" target="_blank" rel="noopener noreferrer" class="link-item">🌐 Azure Portal</a>
+                    <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="link-item">💻 GitHub</a>
+                    <a href="https://docs.microsoft.com" target="_blank" rel="noopener noreferrer" class="link-item">📚 Microsoft Docs</a>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">💾</div>
+                    <h2>Software & Helpdesk</h2>
+                </div>
+                <p>Download tools and get support</p>
+                <div class="software-explorer" id="software-explorer">
+                    <div class="software-item">📁 System Tools</div>
+                    <div class="software-item">🔧 Network Utilities</div>
+                    <div class="software-item">🛡️ Security Software</div>
+                </div>
+                <button class="tech-btn" onclick="openSoftwareManager()" style="margin-top: 10px;">📂 Manage Software</button>
             </div>
             
             <div class="card tech-showcase">
@@ -1104,6 +1201,60 @@ ${matrixContent}
                 `.trim();
             }, 800);
         }
+        
+        // Software Manager Function
+        function openSoftwareManager() {
+            const explorer = document.getElementById('software-explorer');
+            explorer.innerHTML = `
+                <div class="software-item" onclick="downloadSoftware('System Tools')">📁 System Tools - Download</div>
+                <div class="software-item" onclick="downloadSoftware('Network Utilities')">🔧 Network Utilities - Download</div>
+                <div class="software-item" onclick="downloadSoftware('Security Software')">🛡️ Security Software - Download</div>
+                <div class="software-item" onclick="showAdminUpload()" style="color: #00ff00;">⬆️ Admin: Upload Software</div>
+            `;
+        }
+        
+        function downloadSoftware(software) {
+            alert(`📥 Downloading ${software}...\n\nThis would normally start a download of the selected software package.`);
+        }
+        
+        function showAdminUpload() {
+            alert(`🔐 Admin Upload Panel\n\nThis feature allows administrators to upload new software packages to the system.\n\nRequires admin authentication.`);
+        }
+        
+        // Newsletter Management System
+        let newsletterSubscribers = JSON.parse(localStorage.getItem('newsletterSubscribers') || '[]');
+        
+        function addNewsletterSubscriber(email) {
+            if (!newsletterSubscribers.includes(email)) {
+                newsletterSubscribers.push({
+                    email: email,
+                    date: new Date().toISOString(),
+                    active: true
+                });
+                localStorage.setItem('newsletterSubscribers', JSON.stringify(newsletterSubscribers));
+                console.log('Newsletter subscriber added:', email);
+            }
+        }
+        
+        function getNewsletterSubscribers() {
+            return newsletterSubscribers;
+        }
+        
+        // Update existing newsletter form handler
+        document.addEventListener('DOMContentLoaded', function() {
+            const newsletterForm = document.querySelector('.newsletter-form');
+            if (newsletterForm) {
+                newsletterForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const emailInput = this.querySelector('input[type="email"]');
+                    if (emailInput && emailInput.value) {
+                        addNewsletterSubscriber(emailInput.value);
+                        alert('📧 Newsletter subscription successful!\n\nYou have been added to our mailing list.');
+                        emailInput.value = '';
+                    }
+                });
+            }
+        });
     </script>
 </body>
 </html>
