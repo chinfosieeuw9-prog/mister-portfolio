@@ -920,6 +920,118 @@
             height: 200px !important;
         }
         
+        /* Language Toggle */
+        .language-toggle {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin: 20px 0;
+        }
+        
+        .lang-btn {
+            padding: 8px 16px;
+            background: #333;
+            border: 1px solid #555;
+            border-radius: 20px;
+            color: #ccc;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .lang-btn:hover {
+            background: #444;
+            color: #fff;
+            border-color: #8b5cf6;
+        }
+        
+        .lang-btn.active {
+            background: #8b5cf6;
+            color: #fff;
+            border-color: #8b5cf6;
+        }
+        
+        /* Profile Section */
+        .profile-section {
+            margin-bottom: 32px;
+        }
+        
+        .profile-content {
+            margin-top: 16px;
+        }
+        
+        .profile-content p {
+            margin-bottom: 16px;
+            line-height: 1.6;
+            color: #ddd;
+        }
+        
+        .expertise-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 24px 0;
+        }
+        
+        .expertise-item {
+            background: #1e1e1e;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .expertise-item:hover {
+            border-color: #8b5cf6;
+            transform: translateY(-2px);
+        }
+        
+        .expertise-item h4 {
+            color: #8b5cf6;
+            margin: 0 0 8px 0;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .expertise-item p {
+            margin: 0;
+            font-size: 14px;
+            color: #ccc;
+            line-height: 1.5;
+        }
+        
+        .profile-highlight {
+            background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 24px;
+        }
+        
+        .profile-highlight p {
+            margin: 0;
+            color: #fff;
+            font-weight: 500;
+            text-align: center;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .expertise-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            
+            .language-toggle {
+                margin: 16px 0;
+            }
+            
+            .lang-btn {
+                padding: 6px 12px;
+                font-size: 13px;
+            }
+        }
+        
         /* Hidden elements */
         .hidden {
             display: none !important;
@@ -1128,6 +1240,99 @@
             <div class="featured-content">
                 <div class="featured-title">Who I Am</div>
                 <div class="featured-desc">Cloud Engineer | Azure Specialist | Security Analyst</div>
+            </div>
+        </div>
+        
+        <!-- Language Toggle -->
+        <div class="language-toggle">
+            <button class="lang-btn active" onclick="switchLanguage('nl')" id="lang-nl">🇳🇱 NL</button>
+            <button class="lang-btn" onclick="switchLanguage('en')" id="lang-en">🇬🇧 EN</button>
+        </div>
+        
+        <!-- Profile Section -->
+        <div class="card profile-section">
+            <div class="card-header">
+                <div class="card-icon">👨‍💻</div>
+                <h2 id="profile-title">Over Mij</h2>
+            </div>
+            <div class="profile-content" id="profile-content-nl">
+                <p><strong>Ervaren ICT professional</strong> met ruim 25 jaar in systeembeheer, cloudadoptie en automatisering, gespecialiseerd in Microsoft 365 en Azure voor betrouwbare, veilige en beheersbare werkomgevingen. Met Python, C en C++ bouw ik praktische tools en integraties die processen versnellen, fouten verminderen en beheer voorspelbaar maken — van on premises naar hybride en cloud native.</p>
+                
+                <div class="expertise-grid">
+                    <div class="expertise-item">
+                        <h4>☁️ Cloud & Microsoft 365</h4>
+                        <p>Exchange Online, SharePoint, Teams, Entra ID/identity, Intune/Endpoint Management en Conditional Access voor schaalbare, moderne werkplekken.</p>
+                    </div>
+                    
+                    <div class="expertise-item">
+                        <h4>🔧 Azure Toepassingen</h4>
+                        <p>IaaS/PaaS, netwerksegmentatie, VM/Storage/Key Vault, automation/runbooks en event driven workflows voor stabiele en efficiënte omgevingen.</p>
+                    </div>
+                    
+                    <div class="expertise-item">
+                        <h4>🤖 AI in de Praktijk</h4>
+                        <p>Inzet van AI tools en copilots voor monitoring, rapportage, provisioning en kwaliteitscontroles; experimenteren met modellen en API koppelingen om repetitieve taken te automatiseren.</p>
+                    </div>
+                    
+                    <div class="expertise-item">
+                        <h4>🛡️ Cybersecurity Focus</h4>
+                        <p>Identity gedreven beveiliging (MFA, SSO, least privilege), hardening, patching, logging en auditing als standaardonderdeel van elke oplossing.</p>
+                    </div>
+                    
+                    <div class="expertise-item">
+                        <h4>💻 Ontwikkeling</h4>
+                        <p>Python voor automatisering, integraties en CLI tools; C/C++ voor performante systeemutilities dicht op het OS en robuuste componenten.</p>
+                    </div>
+                    
+                    <div class="expertise-item">
+                        <h4>🏢 Services</h4>
+                        <p>Inzetbaar als ZZP'er voor projecten, beheer en advies; beschikbaar voor langdurige ondersteuning en korte interventies. Ondersteuning voor MKB en particulieren: van cloudmigraties, werkplekbeheer en beveiliging tot troubleshooting, upgrades en heldere documentatie.</p>
+                    </div>
+                </div>
+                
+                <div class="profile-highlight">
+                    <p><strong>Wat klanten waarderen:</strong> duidelijke communicatie, voorspelbare oplevering en oplossingen die het dagelijkse werk merkbaar makkelijker en veiliger maken.</p>
+                </div>
+            </div>
+            
+            <div class="profile-content hidden" id="profile-content-en">
+                <p><strong>Experienced ICT professional</strong> with over 25 years in system administration, cloud adoption and automation, specialized in Microsoft 365 and Azure for reliable, secure and manageable work environments. With Python, C and C++ I build practical tools and integrations that accelerate processes, reduce errors and make management predictable — from on premises to hybrid and cloud native.</p>
+                
+                <div class="expertise-grid">
+                    <div class="expertise-item">
+                        <h4>☁️ Cloud & Microsoft 365</h4>
+                        <p>Exchange Online, SharePoint, Teams, Entra ID/identity, Intune/Endpoint Management and Conditional Access for scalable, modern workplaces.</p>
+                    </div>
+                    
+                    <div class="expertise-item">
+                        <h4>🔧 Azure Applications</h4>
+                        <p>IaaS/PaaS, network segmentation, VM/Storage/Key Vault, automation/runbooks and event driven workflows for stable and efficient environments.</p>
+                    </div>
+                    
+                    <div class="expertise-item">
+                        <h4>🤖 AI in Practice</h4>
+                        <p>Deployment of AI tools and copilots for monitoring, reporting, provisioning and quality controls; experimenting with models and API integrations to automate repetitive tasks.</p>
+                    </div>
+                    
+                    <div class="expertise-item">
+                        <h4>🛡️ Cybersecurity Focus</h4>
+                        <p>Identity-driven security (MFA, SSO, least privilege), hardening, patching, logging and auditing as standard part of every solution.</p>
+                    </div>
+                    
+                    <div class="expertise-item">
+                        <h4>💻 Development</h4>
+                        <p>Python for automation, integrations and CLI tools; C/C++ for performant system utilities close to the OS and robust components.</p>
+                    </div>
+                    
+                    <div class="expertise-item">
+                        <h4>🏢 Services</h4>
+                        <p>Available as freelancer for projects, management and consulting; available for long-term support and short interventions. Support for SME and individuals: from cloud migrations, workplace management and security to troubleshooting, upgrades and clear documentation.</p>
+                    </div>
+                </div>
+                
+                <div class="profile-highlight">
+                    <p><strong>What clients value:</strong> clear communication, predictable delivery and solutions that make daily work noticeably easier and safer.</p>
+                </div>
             </div>
         </div>
         
@@ -2157,6 +2362,36 @@ ${matrixContent}
             alert('👋 Logged out successfully');
         }
         
+        // Language switching functionality
+        let currentLanguage = 'nl';
+        
+        function switchLanguage(lang) {
+            currentLanguage = lang;
+            
+            // Update button states
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById('lang-' + lang).classList.add('active');
+            
+            // Show/hide content
+            if (lang === 'nl') {
+                document.getElementById('profile-content-nl').classList.remove('hidden');
+                document.getElementById('profile-content-en').classList.add('hidden');
+                document.getElementById('profile-title').textContent = 'Over Mij';
+            } else {
+                document.getElementById('profile-content-nl').classList.add('hidden');
+                document.getElementById('profile-content-en').classList.remove('hidden');
+                document.getElementById('profile-title').textContent = 'About Me';
+            }
+            
+            // Save preference
+            localStorage.setItem('preferredLanguage', lang);
+            
+            // Log language change
+            addActivityLog(`🌐 Language switched to ${lang.toUpperCase()}`);
+        }
+        
         // Update existing newsletter form handler - REMOVED DUPLICATE
         // Newsletter form is now handled by the main event listener above
         
@@ -2230,6 +2465,10 @@ ${matrixContent}
             
             // Log initialization
             addActivityLog('🚀 Website initialized');
+            
+            // Load language preference
+            const savedLanguage = localStorage.getItem('preferredLanguage') || 'nl';
+            switchLanguage(savedLanguage);
             
             // Update public software display
             updatePublicSoftwareList();
