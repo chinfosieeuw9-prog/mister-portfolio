@@ -1265,7 +1265,7 @@
             <a href="https://github.com/chinfosieeuw9-prog" target="_blank" rel="noopener noreferrer" class="social-link">
                 <span>📱</span>Github
             </a>
-            <a href="#" class="social-link admin-login-btn" id="admin-login-btn">
+            <a href="#" class="social-link admin-login-btn" id="admin-login-btn" onclick="handleAdminClick(event)">
                 <span>🔐</span>Admin
             </a>
         </div>
@@ -1638,6 +1638,14 @@
     </div>
     
     <script>
+        // Direct admin button handler
+        function handleAdminClick(event) {
+            event.preventDefault();
+            console.log('🔐 Direct admin button clicked');
+            toggleAdminAccess();
+            return false;
+        }
+        
         // Admin access - triple click on footer to show admin login
         let clickCount = 0;
         let clickTimer = null;
