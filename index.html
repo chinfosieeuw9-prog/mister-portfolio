@@ -1324,11 +1324,122 @@
                     <h2>Software & Helpdesk</h2>
                 </div>
                 <p>Download tools and get support</p>
-                <div class="software-explorer" id="software-explorer">
-                    <div class="software-item">📁 System Tools</div>
-                    <div class="software-item">🔧 Network Utilities</div>
-                    <div class="software-item">🛡️ Security Software</div>
+                
+                <!-- File Explorer Grid -->
+                <div style="
+                    display: grid; 
+                    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); 
+                    gap: 12px; 
+                    margin: 16px 0;
+                    background: #0a0a0a;
+                    padding: 16px;
+                    border-radius: 8px;
+                    border: 1px solid #333;
+                ">
+                    <!-- File Items -->
+                    <div class="file-card" onclick="downloadFile('system-tools')" style="
+                        background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+                        padding: 16px 12px;
+                        border-radius: 8px;
+                        text-align: center;
+                        cursor: pointer;
+                        transition: all 0.2s;
+                        border: 1px solid transparent;
+                        color: white;
+                    " onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='#00d4ff';" 
+                       onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='transparent';">
+                        <div style="font-size: 32px; margin-bottom: 8px;">📁</div>
+                        <div style="font-size: 12px; font-weight: bold; margin-bottom: 4px;">System Tools</div>
+                        <div style="font-size: 10px; opacity: 0.8;">45.2 MB</div>
+                        <div style="font-size: 10px; opacity: 0.6;">3 items</div>
+                    </div>
+                    
+                    <div class="file-card" onclick="downloadFile('network-utils')" style="
+                        background: linear-gradient(135deg, #059669, #10b981);
+                        padding: 16px 12px;
+                        border-radius: 8px;
+                        text-align: center;
+                        cursor: pointer;
+                        transition: all 0.2s;
+                        border: 1px solid transparent;
+                        color: white;
+                    " onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='#00d4ff';" 
+                       onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='transparent';">
+                        <div style="font-size: 32px; margin-bottom: 8px;">🔧</div>
+                        <div style="font-size: 12px; font-weight: bold; margin-bottom: 4px;">Network Utils</div>
+                        <div style="font-size: 10px; opacity: 0.8;">23.7 MB</div>
+                        <div style="font-size: 10px; opacity: 0.6;">5 tools</div>
+                    </div>
+                    
+                    <div class="file-card" onclick="downloadFile('security-pack')" style="
+                        background: linear-gradient(135deg, #dc2626, #ef4444);
+                        padding: 16px 12px;
+                        border-radius: 8px;
+                        text-align: center;
+                        cursor: pointer;
+                        transition: all 0.2s;
+                        border: 1px solid transparent;
+                        color: white;
+                    " onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='#00d4ff';" 
+                       onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='transparent';">
+                        <div style="font-size: 32px; margin-bottom: 8px;">�️</div>
+                        <div style="font-size: 12px; font-weight: bold; margin-bottom: 4px;">Security Pack</div>
+                        <div style="font-size: 10px; opacity: 0.8;">67.1 MB</div>
+                        <div style="font-size: 10px; opacity: 0.6;">7 apps</div>
+                    </div>
+                    
+                    <div class="file-card" onclick="downloadFile('scripts')" style="
+                        background: linear-gradient(135deg, #7c2d12, #ea580c);
+                        padding: 16px 12px;
+                        border-radius: 8px;
+                        text-align: center;
+                        cursor: pointer;
+                        transition: all 0.2s;
+                        border: 1px solid transparent;
+                        color: white;
+                    " onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='#00d4ff';" 
+                       onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='transparent';">
+                        <div style="font-size: 32px; margin-bottom: 8px;">�</div>
+                        <div style="font-size: 12px; font-weight: bold; margin-bottom: 4px;">Scripts</div>
+                        <div style="font-size: 10px; opacity: 0.8;">2.3 KB</div>
+                        <div style="font-size: 10px; opacity: 0.6;">12 files</div>
+                    </div>
+                    
+                    <div class="file-card" onclick="downloadFile('archives')" style="
+                        background: linear-gradient(135deg, #581c87, #8b5cf6);
+                        padding: 16px 12px;
+                        border-radius: 8px;
+                        text-align: center;
+                        cursor: pointer;
+                        transition: all 0.2s;
+                        border: 1px solid transparent;
+                        color: white;
+                    " onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='#00d4ff';" 
+                       onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='transparent';">
+                        <div style="font-size: 32px; margin-bottom: 8px;">�</div>
+                        <div style="font-size: 12px; font-weight: bold; margin-bottom: 4px;">Archives</div>
+                        <div style="font-size: 10px; opacity: 0.8;">156 MB</div>
+                        <div style="font-size: 10px; opacity: 0.6;">4 packs</div>
+                    </div>
+                    
+                    <div class="file-card" onclick="downloadFile('games')" style="
+                        background: linear-gradient(135deg, #be185d, #ec4899);
+                        padding: 16px 12px;
+                        border-radius: 8px;
+                        text-align: center;
+                        cursor: pointer;
+                        transition: all 0.2s;
+                        border: 1px solid transparent;
+                        color: white;
+                    " onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='#00d4ff';" 
+                       onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='transparent';">
+                        <div style="font-size: 32px; margin-bottom: 8px;">🎮</div>
+                        <div style="font-size: 12px; font-weight: bold; margin-bottom: 4px;">Games</div>
+                        <div style="font-size: 10px; opacity: 0.8;">234 MB</div>
+                        <div style="font-size: 10px; opacity: 0.6;">8 games</div>
+                    </div>
                 </div>
+                
                 <button class="tech-btn" onclick="openSoftwareManager()" style="margin-top: 10px;">📂 Manage Software</button>
             </div>
             
@@ -1928,6 +2039,23 @@
         
         function refreshExplorer() {
             alert('🔄 Refreshing file list...');
+        }
+        
+        // Download file function for public software explorer
+        function downloadFile(category) {
+            const fileInfo = {
+                'system-tools': { name: 'System Tools Pack', size: '45.2 MB', count: '3 tools' },
+                'network-utils': { name: 'Network Utilities', size: '23.7 MB', count: '5 tools' },
+                'security-pack': { name: 'Security Software Pack', size: '67.1 MB', count: '7 apps' },
+                'scripts': { name: 'Scripts Collection', size: '2.3 KB', count: '12 files' },
+                'archives': { name: 'Archive Collection', size: '156 MB', count: '4 packs' },
+                'games': { name: 'Games Collection', size: '234 MB', count: '8 games' }
+            };
+            
+            const file = fileInfo[category];
+            if (file) {
+                alert(`📥 Downloading: ${file.name}\\n\\nSize: ${file.size}\\nContains: ${file.count}\\n\\nIn production this would:\\n• Start download\\n• Track analytics\\n• Show progress`);
+            }
         }
         
         function logout() {
