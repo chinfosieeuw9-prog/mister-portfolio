@@ -1620,15 +1620,8 @@
         </div>
     </div>
     
-    <script>
-        // Global variables - initialize early to prevent temporal dead zone errors
-        let currentFolder = 'all';
-        let viewMode = 'grid';
-        let uploadedSoftware = JSON.parse(localStorage.getItem('uploadedSoftware') || '[]');
-        let activityLogs = JSON.parse(localStorage.getItem('activityLogs') || '[]');
-        
-        // Simple admin login function
-        function showAdminLogin() {
+    <script src="js/script.js"></script>
+<input type="text" id="software-name-admin" placeholder="Software Name" class="form-input form-margin">
             const password = prompt('🔐 Enter Admin Password:');
             if (password === 'mister2025') {
                 console.log('✅ Login successful');
