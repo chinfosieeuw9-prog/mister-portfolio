@@ -3,6 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <!-- Cache buster: 1729924235 -->
     
     <!-- Security Headers -->
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
@@ -835,11 +839,12 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.8);
-            display: flex;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
             align-items: center;
             justify-content: center;
-            z-index: 1000;
+            z-index: 99999;
+            pointer-events: auto;
         }
         
         .upload-dialog-content {
@@ -1243,6 +1248,25 @@
     </style>
 </head>
 <body>
+    <!-- Upload Dialog -->
+    <div id="uploadDialog" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); z-index:9999; align-items:center; justify-content:center;">
+        <form id="uploadForm" style="background:#fff; padding:32px; border-radius:12px; box-shadow:0 8px 32px rgba(0,0,0,0.2); min-width:320px; max-width:90vw; display:flex; flex-direction:column; gap:16px;">
+            <h2 style="color:#2d1b69;">Software Upload</h2>
+            <input type="file" name="file" required style="border:1px dashed #2d1b69; padding:12px;" />
+            <input type="text" name="name" placeholder="Naam software" required style="padding:8px; border-radius:6px; border:1px solid #ccc;" />
+            <select name="category" required style="padding:8px; border-radius:6px; border:1px solid #ccc;">
+                <option value="">Categorie kiezen</option>
+                <option value="tool">Tool</option>
+                <option value="game">Game</option>
+                <option value="utility">Utility</option>
+            </select>
+            <textarea name="description" placeholder="Beschrijving (optioneel)" style="padding:8px; border-radius:6px; border:1px solid #ccc;"></textarea>
+            <div style="display:flex; gap:12px; justify-content:flex-end;">
+                <button type="button" id="cancelUpload" style="background:#ef4444; color:#fff; border:none; padding:8px 16px; border-radius:6px; cursor:pointer;">Annuleren</button>
+                <button type="submit" style="background:#10b981; color:#fff; border:none; padding:8px 16px; border-radius:6px; cursor:pointer;">⬆️ Upload</button>
+            </div>
+        </form>
+    </div>
     <div class="container">
         <!-- Header -->
         <div class="header">
@@ -1294,39 +1318,39 @@
                     <div class="news-item">🔹 Added interactive tech showcase</div>
                     <div class="news-item">🔹 Enhanced Azure integration tools</div>
                 </div>
+                <button onclick="openNewsManager()" id="news-update-btn" class="admin-quick-btn" style="margin-top: 8px; font-size: 11px; padding: 4px 8px; display: none;">✏️ Update</button>
             </div>
             
             <div class="card">
                 <div class="card-header">
-                    <div class="card-icon">📧</div>
-                    <h2>Newsletter</h2>
-                </div>
-                <p>Sign up to my newsletter</p>
-            </div>
-            
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-icon">🔗</div>
+                    <div class="card-icon"></div>
                     <h2>Links</h2>
                 </div>
                 <p>Useful resources and external links</p>
                 <div class="links-container" style="
-                    max-height: 200px; 
+                    max-height: 150px; 
                     overflow-y: auto; 
                     padding-right: 8px;
                     scrollbar-width: thin;
                     scrollbar-color: #00d4ff #1a1a1a;
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 4px;
                 ">
-                    <a href="https://azure.microsoft.com" target="_blank" rel="noopener noreferrer" class="link-item">🌐 Azure Portal</a>
-                    <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="link-item">💻 GitHub</a>
-                    <a href="https://docs.microsoft.com" target="_blank" rel="noopener noreferrer" class="link-item">📚 Microsoft Docs</a>
-                    <a href="https://cybersecuritynews.com" target="_blank" rel="noopener noreferrer" class="link-item">🔐 CyberSecurity News</a>
-                    <a href="https://tweakers.net" target="_blank" rel="noopener noreferrer" class="link-item">📰 Tweakers</a>
-                    <a href="https://bright.nl" target="_blank" rel="noopener noreferrer" class="link-item">💡 Bright</a>
-                    <a href="https://www.skills.google/" target="_blank" rel="noopener noreferrer" class="link-item">🎓 Google Skills</a>
-                    <a href="https://learn.microsoft.com/en-us/" target="_blank" rel="noopener noreferrer" class="link-item">📖 Microsoft Learn</a>
-                    <a href="https://tryhackme.com/" target="_blank" rel="noopener noreferrer" class="link-item">💻 TryHackMe</a>
-                    <a href="https://pll.harvard.edu/catalog/free" target="_blank" rel="noopener noreferrer" class="link-item">🏛️ Harvard Free Courses</a>
+                    <!-- Professional -->
+                    <a href="https://azure.microsoft.com" target="_blank" rel="noopener noreferrer" class="link-item" style="font-size: 11px; padding: 6px 8px;">🌐 Azure</a>
+                    <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="link-item" style="font-size: 11px; padding: 6px 8px;">💻 GitHub</a>
+                    <a href="https://docs.microsoft.com" target="_blank" rel="noopener noreferrer" class="link-item" style="font-size: 11px; padding: 6px 8px;">📚 MS Docs</a>
+                    <a href="https://cybersecuritynews.com" target="_blank" rel="noopener noreferrer" class="link-item" style="font-size: 11px; padding: 6px 8px;">🔐 CyberSec</a>
+                    <!-- News -->
+                    <a href="https://tweakers.net" target="_blank" rel="noopener noreferrer" class="link-item" style="font-size: 11px; padding: 6px 8px;">📰 Tweakers</a>
+                    <a href="https://bright.nl" target="_blank" rel="noopener noreferrer" class="link-item" style="font-size: 11px; padding: 6px 8px;">💡 Bright</a>
+                    <!-- Study -->
+                    <a href="https://www.skills.google/" target="_blank" rel="noopener noreferrer" class="link-item" style="font-size: 11px; padding: 6px 8px;">🎓 Google</a>
+                    <a href="https://learn.microsoft.com/en-us/" target="_blank" rel="noopener noreferrer" class="link-item" style="font-size: 11px; padding: 6px 8px;">📖 MS Learn</a>
+                    <a href="https://tryhackme.com/" target="_blank" rel="noopener noreferrer" class="link-item" style="font-size: 11px; padding: 6px 8px;">💻 TryHack</a>
+                    <a href="https://pll.harvard.edu/catalog/free" target="_blank" rel="noopener noreferrer" class="link-item" style="font-size: 11px; padding: 6px 8px;">🏛️ Harvard</a>
+                    <a href="https://github.com/cloudcommunity/Free-Certifications" target="_blank" rel="noopener noreferrer" class="link-item" style="font-size: 11px; padding: 6px 8px;">🏆 Free Certs</a>
                 </div>
             </div>
             
@@ -1505,8 +1529,11 @@
         
         <!-- Newsletter -->
         <div class="card">
-            <h2>📰 Latest News</h2>
-            <p class="newsletter-text">Sharing thoughts, ideas, updates van mijn stack en projecten, één keer per maand.</p>
+            <div class="card-header">
+                <div class="card-icon">📧</div>
+                <h2>Newsletter</h2>
+            </div>
+            <p>Sharing thoughts, ideas, updates van mijn stack en projecten, één keer per maand.</p>
             <form name="newsletter" method="POST" data-netlify="true" class="newsletter-form">
                 <input type="hidden" name="form-name" value="newsletter">
                 <div class="newsletter-flex">
@@ -1515,6 +1542,8 @@
                 </div>
             </form>
         </div>
+        
+
         
         <!-- Admin Access (Hidden) -->
         <div class="admin-access hidden" id="admin-access">
@@ -1608,10 +1637,10 @@
                     </div>
                     
                     <!-- Upload Dialog -->
-                    <div class="upload-dialog hidden" id="upload-dialog">
+                    <div class="upload-dialog" id="upload-dialog">
                         <div class="upload-dialog-content">
                             <h4>📤 Upload Software</h4>
-                            <input type="file" id="software-file" accept=".exe,.msi,.zip,.rar,.dmg,.deb" class="hidden-file-input">
+                            <input type="file" id="software-file" accept=".exe,.msi,.zip,.rar,.dmg,.deb" class="hidden-file-input" onchange="updateFileDisplay(this)">
                             <div class="upload-dropzone" onclick="document.getElementById('software-file').click()">
                                 <div class="dropzone-icon">📂</div>
                                 <div class="dropzone-text">Click to select file or drag & drop</div>
@@ -1629,7 +1658,7 @@
                             </select>
                             <textarea id="software-description" placeholder="Description (optional)" class="form-input form-margin description-height"></textarea>
                             <div class="upload-buttons">
-                                <button class="tech-btn" onclick="uploadSoftware()">⬆️ Upload</button>
+                                <button id="upload-software-btn" class="tech-btn">⬆️ Upload</button>
                                 <button class="tech-btn cancel-btn" onclick="closeUploadDialog()">❌ Cancel</button>
                             </div>
                         </div>
@@ -1760,6 +1789,12 @@
     </div>
     
     <script>
+        // Global variables - initialize early to prevent temporal dead zone errors
+        let currentFolder = 'all';
+        let viewMode = 'grid';
+        let uploadedSoftware = JSON.parse(localStorage.getItem('uploadedSoftware') || '[]');
+        let activityLogs = JSON.parse(localStorage.getItem('activityLogs') || '[]');
+        
         // Simple admin login function
         function showAdminLogin() {
             const password = prompt('🔐 Enter Admin Password:');
@@ -1832,32 +1867,727 @@
             
             document.querySelector('.container').appendChild(adminPanel);
             adminPanel.scrollIntoView({ behavior: 'smooth' });
+            
+            // Show admin-only buttons
+            showAdminButtons();
         }
         
         // Admin functions
         function uploadCV() {
+            // Create advanced file upload modal
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center;
+                z-index: 1000; backdrop-filter: blur(5px);
+            `;
+            
+            modal.innerHTML = `
+                <div style="
+                    background: #1a1a1a; border: 1px solid #333; border-radius: 12px;
+                    width: 90%; max-width: 600px; max-height: 80vh; overflow-y: auto;
+                ">
+                    <div style="
+                        background: linear-gradient(135deg, #00d4ff, #0088cc);
+                        padding: 20px; color: white; border-radius: 12px 12px 0 0;
+                    ">
+                        <h2 style="margin: 0;">📄 Advanced File Upload</h2>
+                        <p style="margin: 8px 0 0 0; opacity: 0.9;">Upload documents, images, software (Max: 2GB)</p>
+                    </div>
+                    
+                    <div style="padding: 20px;">
+                        <!-- File Drop Zone -->
+                        <div id="dropzone" style="
+                            border: 2px dashed #666; border-radius: 8px; padding: 40px 20px;
+                            text-align: center; background: #2a2a2a; margin-bottom: 20px;
+                            transition: all 0.3s; cursor: pointer;
+                        ">
+                            <div style="font-size: 48px; margin-bottom: 16px;">📁</div>
+                            <div style="color: #ccc; font-size: 16px; margin-bottom: 8px;">Drag & Drop files here</div>
+                            <div style="color: #999; font-size: 14px;">or click to browse</div>
+                            <div style="color: #666; font-size: 12px; margin-top: 8px;">Max size: 2GB • Supported: PDF, DOC, DOCX, ZIP, RAR, EXE, JPG, PNG</div>
+                        </div>
+                        
+                        <input type="file" id="fileInput" multiple style="display: none;" 
+                               accept=".pdf,.doc,.docx,.zip,.rar,.exe,.jpg,.jpeg,.png,.gif,.txt,.js,.html,.css">
+                        
+                        <!-- Upload Progress -->
+                        <div id="uploadProgress" style="display: none; margin-bottom: 20px;">
+                            <div style="background: #333; border-radius: 4px; overflow: hidden;">
+                                <div id="progressBar" style="
+                                    background: linear-gradient(90deg, #00d4ff, #0088cc);
+                                    height: 20px; width: 0%; transition: width 0.3s;
+                                    display: flex; align-items: center; justify-content: center;
+                                    color: white; font-size: 12px; font-weight: bold;
+                                ">0%</div>
+                            </div>
+                            <div id="uploadStatus" style="color: #ccc; font-size: 14px; margin-top: 8px;">Preparing upload...</div>
+                        </div>
+                        
+                        <!-- File List -->
+                        <div id="fileList" style="margin-bottom: 20px; max-height: 200px; overflow-y: auto;"></div>
+                        
+                        <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                            <button onclick="this.closest('.modal-overlay').remove()" style="
+                                background: #666; color: white; border: none; padding: 10px 20px;
+                                border-radius: 6px; cursor: pointer;
+                            ">Cancel</button>
+                            <button id="uploadBtn" onclick="startFileUpload()" style="
+                                background: linear-gradient(135deg, #00d4ff, #0088cc); color: white;
+                                border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;
+                                font-weight: bold; display: none;
+                            ">📤 Upload Files</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Setup file upload functionality
+            setupFileUpload();
+            
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) modal.remove();
+            });
+        }
+
+        function setupFileUpload() {
+            const dropzone = document.getElementById('dropzone');
+            const fileInput = document.getElementById('fileInput');
+            const fileList = document.getElementById('fileList');
+            const uploadBtn = document.getElementById('uploadBtn');
+            let selectedFiles = [];
+            
+            // Click to browse
+            dropzone.addEventListener('click', () => fileInput.click());
+            
+            // Drag and drop
+            dropzone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropzone.style.borderColor = '#00d4ff';
+                dropzone.style.background = '#1a3a4a';
+            });
+            
+            dropzone.addEventListener('dragleave', () => {
+                dropzone.style.borderColor = '#666';
+                dropzone.style.background = '#2a2a2a';
+            });
+            
+            dropzone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropzone.style.borderColor = '#666';
+                dropzone.style.background = '#2a2a2a';
+                handleFiles(Array.from(e.dataTransfer.files));
+            });
+            
+            fileInput.addEventListener('change', (e) => {
+                handleFiles(Array.from(e.target.files));
+            });
+            
+            function handleFiles(files) {
+                selectedFiles = files.filter(file => {
+                    if (file.size > 2 * 1024 * 1024 * 1024) { // 2GB limit
+                        alert(`❌ File "${file.name}" is too large (${(file.size/1024/1024/1024).toFixed(1)}GB). Max size: 2GB`);
+                        return false;
+                    }
+                    return true;
+                });
+                
+                displayFiles();
+                uploadBtn.style.display = selectedFiles.length > 0 ? 'block' : 'none';
+            }
+            
+            function displayFiles() {
+                fileList.innerHTML = '';
+                selectedFiles.forEach((file, index) => {
+                    const item = document.createElement('div');
+                    item.style.cssText = `
+                        display: flex; justify-content: space-between; align-items: center;
+                        padding: 8px; background: #333; border-radius: 4px; margin-bottom: 4px;
+                    `;
+                    item.innerHTML = `
+                        <div>
+                            <div style="color: #00d4ff; font-weight: bold;">${file.name}</div>
+                            <div style="color: #999; font-size: 12px;">${(file.size/1024/1024).toFixed(2)} MB • ${file.type || 'Unknown type'}</div>
+                        </div>
+                        <button onclick="removeFile(${index})" style="
+                            background: #dc2626; color: white; border: none; padding: 4px 8px;
+                            border-radius: 4px; cursor: pointer; font-size: 12px;
+                        ">×</button>
+                    `;
+                    fileList.appendChild(item);
+                });
+            }
+            
+            window.removeFile = function(index) {
+                selectedFiles.splice(index, 1);
+                displayFiles();
+                uploadBtn.style.display = selectedFiles.length > 0 ? 'block' : 'none';
+            };
+            
+            window.startFileUpload = function() {
+                const progressDiv = document.getElementById('uploadProgress');
+                const progressBar = document.getElementById('progressBar');
+                const uploadStatus = document.getElementById('uploadStatus');
+                
+                progressDiv.style.display = 'block';
+                uploadBtn.style.display = 'none';
+                
+                let uploadedCount = 0;
+                const totalFiles = selectedFiles.length;
+                
+                selectedFiles.forEach((file, index) => {
+                    // Simulate upload progress
+                    uploadStatus.textContent = `Uploading ${file.name}...`;
+                    
+                    // Store file info locally (simulation)
+                    const fileInfo = {
+                        name: file.name,
+                        size: file.size,
+                        type: file.type,
+                        uploadDate: new Date().toISOString(),
+                        id: Date.now() + index
+                    };
+                    
+                    let uploadedFiles = JSON.parse(localStorage.getItem('uploadedFiles') || '[]');
+                    uploadedFiles.push(fileInfo);
+                    localStorage.setItem('uploadedFiles', JSON.stringify(uploadedFiles));
+                    
+                    uploadedCount++;
+                    const progress = (uploadedCount / totalFiles) * 100;
+                    progressBar.style.width = progress + '%';
+                    progressBar.textContent = Math.round(progress) + '%';
+                    
+                    if (uploadedCount === totalFiles) {
+                        uploadStatus.textContent = `✅ Successfully uploaded ${totalFiles} file(s)`;
+                        setTimeout(() => {
+                            alert(`📤 Upload Complete!\n\n${totalFiles} file(s) uploaded successfully.\n\nFiles are stored locally for demo purposes.`);
+                            document.querySelector('.modal-overlay').remove();
+                        }, 1000);
+                    }
+                });
+            };
+        }
+        
+        function manageContent() {
+            // Create content management modal
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center;
+                z-index: 1000; backdrop-filter: blur(5px);
+            `;
+            
+            modal.innerHTML = `
+                <div style="
+                    background: #1a1a1a; border: 1px solid #333; border-radius: 12px;
+                    width: 95%; max-width: 900px; height: 85%; max-height: 700px;
+                    display: flex; flex-direction: column; overflow: hidden;
+                ">
+                    <div style="
+                        background: linear-gradient(135deg, #00d4ff, #0088cc);
+                        padding: 20px; color: white; border-radius: 12px 12px 0 0;
+                    ">
+                        <h2 style="margin: 0;">✏️ Content Management System</h2>
+                        <p style="margin: 8px 0 0 0; opacity: 0.9;">Edit website content, skills, projects, and sections</p>
+                    </div>
+                    
+                    <div style="display: flex; flex: 1; overflow: hidden;">
+                        <!-- Left Sidebar -->
+                        <div style="width: 200px; background: #2a2a2a; border-right: 1px solid #333; padding: 16px;">
+                            <h4 style="color: #00d4ff; margin: 0 0 16px 0;">Content Sections</h4>
+                            <div style="display: flex; flex-direction: column; gap: 8px;">
+                                <button onclick="loadContentSection('header')" class="content-tab" style="
+                                    background: #333; color: white; border: none; padding: 8px 12px;
+                                    border-radius: 4px; cursor: pointer; text-align: left;
+                                ">🏠 Header & Title</button>
+                                <button onclick="loadContentSection('about')" class="content-tab" style="
+                                    background: #333; color: white; border: none; padding: 8px 12px;
+                                    border-radius: 4px; cursor: pointer; text-align: left;
+                                ">👤 About Section</button>
+                                <button onclick="loadContentSection('skills')" class="content-tab" style="
+                                    background: #333; color: white; border: none; padding: 8px 12px;
+                                    border-radius: 4px; cursor: pointer; text-align: left;
+                                ">⚡ Tech Stack</button>
+                                <button onclick="loadContentSection('contact')" class="content-tab" style="
+                                    background: #333; color: white; border: none; padding: 8px 12px;
+                                    border-radius: 4px; cursor: pointer; text-align: left;
+                                ">💬 Contact Info</button>
+                                <button onclick="loadContentSection('footer')" class="content-tab" style="
+                                    background: #333; color: white; border: none; padding: 8px 12px;
+                                    border-radius: 4px; cursor: pointer; text-align: left;
+                                ">🔽 Footer</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Main Content Area -->
+                        <div style="flex: 1; padding: 20px; overflow-y: auto;">
+                            <div id="contentEditor">
+                                <h3 style="color: #00d4ff; margin-bottom: 16px;">Select a section to edit</h3>
+                                <p style="color: #999;">Choose a content section from the sidebar to start editing.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="padding: 16px; border-top: 1px solid #333; display: flex; justify-content: space-between;">
+                        <button onclick="this.closest('.modal-overlay').remove()" style="
+                            background: #666; color: white; border: none; padding: 10px 20px;
+                            border-radius: 6px; cursor: pointer;
+                        ">Cancel</button>
+                        <button onclick="saveAllContent()" style="
+                            background: linear-gradient(135deg, #00d4ff, #0088cc); color: white;
+                            border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;
+                            font-weight: bold;
+                        ">💾 Save All Changes</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) modal.remove();
+            });
+        }
+
+        function loadContentSection(section) {
+            const editor = document.getElementById('contentEditor');
+            
+            // Highlight active tab
+            document.querySelectorAll('.content-tab').forEach(tab => {
+                tab.style.background = '#333';
+            });
+            event.target.style.background = '#00d4ff';
+            
+            const content = getContentForSection(section);
+            
+            editor.innerHTML = `
+                <h3 style="color: #00d4ff; margin-bottom: 16px;">${content.title}</h3>
+                
+                ${content.fields.map(field => `
+                    <div style="margin-bottom: 20px;">
+                        <label style="color: #ccc; display: block; margin-bottom: 6px; font-weight: bold;">${field.label}:</label>
+                        ${field.type === 'textarea' ? 
+                            `<textarea id="${field.id}" style="
+                                width: 100%; padding: 12px; background: #333; border: 1px solid #555;
+                                border-radius: 6px; color: white; font-family: inherit; resize: vertical;
+                                min-height: ${field.height || '80px'};
+                            " placeholder="${field.placeholder}">${field.value}</textarea>` :
+                            `<input type="${field.type}" id="${field.id}" style="
+                                width: 100%; padding: 12px; background: #333; border: 1px solid #555;
+                                border-radius: 6px; color: white; font-family: inherit;
+                            " placeholder="${field.placeholder}" value="${field.value}">`
+                        }
+                        ${field.description ? `<div style="color: #999; font-size: 12px; margin-top: 4px;">${field.description}</div>` : ''}
+                    </div>
+                `).join('')}
+                
+                <button onclick="saveSection('${section}')" style="
+                    background: linear-gradient(135deg, #10b981, #059669); color: white;
+                    border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer;
+                    font-weight: bold; margin-top: 8px;
+                ">✅ Save ${content.title}</button>
+            `;
+        }
+
+        function getContentForSection(section) {
+            const sections = {
+                header: {
+                    title: 'Header & Title',
+                    fields: [
+                        { id: 'siteTitle', label: 'Site Title', type: 'text', value: 'Mister', placeholder: 'Website title' },
+                        { id: 'tagline', label: 'Tagline', type: 'text', value: 'Cloud | Azure | 365 | Python\\C\\C+ | Automation | Cybersecurity analyse', placeholder: 'Professional tagline' },
+                        { id: 'metaDescription', label: 'Meta Description', type: 'textarea', height: '60px', value: 'Cloud Engineer & Developer portfolio', placeholder: 'SEO description' }
+                    ]
+                },
+                about: {
+                    title: 'About Section',
+                    fields: [
+                        { id: 'aboutTitle', label: 'Section Title', type: 'text', value: 'About', placeholder: 'Section title' },
+                        { id: 'aboutIntro', label: 'Introduction', type: 'textarea', height: '100px', value: 'Cloud Engineer & Developer focused on Azure, automation, and cybersecurity.', placeholder: 'About introduction text' },
+                        { id: 'aboutDetails', label: 'Detailed Description', type: 'textarea', height: '150px', value: 'Experienced in cloud architecture, security implementations, and modern development practices.', placeholder: 'Detailed about text' }
+                    ]
+                },
+                skills: {
+                    title: 'Tech Stack',
+                    fields: [
+                        { id: 'skillsTitle', label: 'Section Title', type: 'text', value: '⚡ Tech Stack', placeholder: 'Skills section title' },
+                        { id: 'skillsList', label: 'Skills (comma separated)', type: 'textarea', height: '100px', value: 'HTML, CSS, JS, React, Node, Python, Git, Docker', placeholder: 'Skill1, Skill2, Skill3...', description: 'Add each skill separated by commas' }
+                    ]
+                },
+                contact: {
+                    title: 'Contact Information',
+                    fields: [
+                        { id: 'contactTitle', label: 'Section Title', type: 'text', value: '💬 Get in touch', placeholder: 'Contact section title' },
+                        { id: 'contactSubtitle', label: 'Subtitle', type: 'text', value: 'Please feel free to reach out and say hello.', placeholder: 'Contact subtitle' },
+                        { id: 'contactEmail', label: 'Email Address', type: 'email', value: 'chattgbt@gmail.com', placeholder: 'your@email.com' }
+                    ]
+                },
+                footer: {
+                    title: 'Footer',
+                    fields: [
+                        { id: 'footerText', label: 'Footer Text', type: 'text', value: 'Made with ❤️ by mister@2025', placeholder: 'Footer copyright text' },
+                        { id: 'footerEmail', label: 'Footer Email', type: 'email', value: 'chattgbt@gmail.com', placeholder: 'Contact email' }
+                    ]
+                }
+            };
+            
+            return sections[section] || { title: 'Unknown Section', fields: [] };
+        }
+
+        function saveSection(section) {
+            // This would save to localStorage or send to backend
+            alert(`✅ ${section.charAt(0).toUpperCase() + section.slice(1)} section saved!\n\nIn production this would:\n• Update the live website\n• Save to database\n• Show real-time preview`);
+        }
+
+        function saveAllContent() {
+            alert('💾 All content saved successfully!\n\nIn production this would:\n• Update all website sections\n• Generate backup\n• Deploy changes\n• Send notification');
+        }
+        
+        function viewAnalytics() {
+            // Create analytics dashboard modal
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center;
+                z-index: 1000; backdrop-filter: blur(5px);
+            `;
+            
+            modal.innerHTML = `
+                <div style="
+                    background: #1a1a1a; border: 1px solid #333; border-radius: 12px;
+                    width: 95%; max-width: 1000px; height: 85%; max-height: 700px;
+                    display: flex; flex-direction: column; overflow: hidden;
+                ">
+                    <div style="
+                        background: linear-gradient(135deg, #00d4ff, #0088cc);
+                        padding: 20px; color: white; border-radius: 12px 12px 0 0;
+                    ">
+                        <h2 style="margin: 0;">📊 Analytics Dashboard</h2>
+                        <p style="margin: 8px 0 0 0; opacity: 0.9;">Real-time website statistics and visitor insights</p>
+                    </div>
+                    
+                    <div style="padding: 20px; overflow-y: auto; flex: 1;">
+                        <!-- Stats Grid -->
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
+                            <div style="background: #2a2a2a; padding: 16px; border-radius: 8px; border-left: 4px solid #00d4ff;">
+                                <div style="color: #999; font-size: 12px; text-transform: uppercase;">Total Views</div>
+                                <div style="color: #00d4ff; font-size: 28px; font-weight: bold; margin: 4px 0;" id="totalViews">1,247</div>
+                                <div style="color: #4ade80; font-size: 12px;">↗ +12% this week</div>
+                            </div>
+                            
+                            <div style="background: #2a2a2a; padding: 16px; border-radius: 8px; border-left: 4px solid #10b981;">
+                                <div style="color: #999; font-size: 12px; text-transform: uppercase;">Unique Visitors</div>
+                                <div style="color: #10b981; font-size: 28px; font-weight: bold; margin: 4px 0;" id="uniqueVisitors">892</div>
+                                <div style="color: #4ade80; font-size: 12px;">↗ +8% this week</div>
+                            </div>
+                            
+                            <div style="background: #2a2a2a; padding: 16px; border-radius: 8px; border-left: 4px solid #f59e0b;">
+                                <div style="color: #999; font-size: 12px; text-transform: uppercase;">Avg. Session</div>
+                                <div style="color: #f59e0b; font-size: 28px; font-weight: bold; margin: 4px 0;" id="avgSession">2m 34s</div>
+                                <div style="color: #4ade80; font-size: 12px;">↗ +15% this week</div>
+                            </div>
+                            
+                            <div style="background: #2a2a2a; padding: 16px; border-radius: 8px; border-left: 4px solid #8b5cf6;">
+                                <div style="color: #999; font-size: 12px; text-transform: uppercase;">Newsletter</div>
+                                <div style="color: #8b5cf6; font-size: 28px; font-weight: bold; margin: 4px 0;" id="newsletterSubs">${JSON.parse(localStorage.getItem('newsletterSubscribers') || '[]').length}</div>
+                                <div style="color: #4ade80; font-size: 12px;">Real subscribers</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Two Column Layout -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <!-- Left Column -->
+                            <div>
+                                <h3 style="color: #00d4ff; margin-bottom: 16px;">📈 Recent Activity</h3>
+                                <div id="recentActivity" style="
+                                    background: #2a2a2a; border-radius: 8px; padding: 16px;
+                                    max-height: 200px; overflow-y: auto;
+                                ">
+                                    <!-- Activity will be loaded here -->
+                                </div>
+                                
+                                <h3 style="color: #00d4ff; margin: 24px 0 16px 0;">🌍 Top Referrers</h3>
+                                <div style="background: #2a2a2a; border-radius: 8px; padding: 16px;">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                        <span style="color: #ccc;">Google Search</span>
+                                        <span style="color: #00d4ff;">42%</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                        <span style="color: #ccc;">Direct Traffic</span>
+                                        <span style="color: #10b981;">28%</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                        <span style="color: #ccc;">LinkedIn</span>
+                                        <span style="color: #f59e0b;">15%</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <span style="color: #ccc;">GitHub</span>
+                                        <span style="color: #8b5cf6;">10%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Right Column -->
+                            <div>
+                                <h3 style="color: #00d4ff; margin-bottom: 16px;">🖱️ Popular Pages</h3>
+                                <div style="background: #2a2a2a; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                                        <div>
+                                            <div style="color: #ccc; font-weight: bold;">Homepage</div>
+                                            <div style="color: #999; font-size: 12px;">/index.html</div>
+                                        </div>
+                                        <div style="color: #00d4ff; font-weight: bold;">847 views</div>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                                        <div>
+                                            <div style="color: #ccc; font-weight: bold;">About Profile</div>
+                                            <div style="color: #999; font-size: 12px;">Modal popup</div>
+                                        </div>
+                                        <div style="color: #10b981; font-weight: bold;">234 views</div>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <div>
+                                            <div style="color: #ccc; font-weight: bold;">Software Explorer</div>
+                                            <div style="color: #999; font-size: 12px;">Downloads section</div>
+                                        </div>
+                                        <div style="color: #f59e0b; font-weight: bold;">156 views</div>
+                                    </div>
+                                </div>
+                                
+                                <h3 style="color: #00d4ff; margin-bottom: 16px;">📱 Device Types</h3>
+                                <div style="background: #2a2a2a; border-radius: 8px; padding: 16px;">
+                                    <div style="margin-bottom: 8px;">
+                                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                            <span style="color: #ccc;">Desktop</span>
+                                            <span style="color: #00d4ff;">65%</span>
+                                        </div>
+                                        <div style="background: #333; border-radius: 2px; height: 4px;">
+                                            <div style="background: #00d4ff; height: 100%; width: 65%; border-radius: 2px;"></div>
+                                        </div>
+                                    </div>
+                                    <div style="margin-bottom: 8px;">
+                                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                            <span style="color: #ccc;">Mobile</span>
+                                            <span style="color: #10b981;">30%</span>
+                                        </div>
+                                        <div style="background: #333; border-radius: 2px; height: 4px;">
+                                            <div style="background: #10b981; height: 100%; width: 30%; border-radius: 2px;"></div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                            <span style="color: #ccc;">Tablet</span>
+                                            <span style="color: #f59e0b;">5%</span>
+                                        </div>
+                                        <div style="background: #333; border-radius: 2px; height: 4px;">
+                                            <div style="background: #f59e0b; height: 100%; width: 5%; border-radius: 2px;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button onclick="this.closest('.modal-overlay').remove()" style="
+                            background: #333; color: white; border: none; padding: 12px 24px;
+                            border-radius: 6px; cursor: pointer; margin: 20px auto 0; display: block;
+                            font-weight: bold;
+                        ">Close Dashboard</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            loadAnalyticsData();
+            
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) modal.remove();
+            });
+        }
+
+        function loadAnalyticsData() {
+            const activityContainer = document.getElementById('recentActivity');
+            const activityLogs = JSON.parse(localStorage.getItem('activityLogs') || '[]');
+            
+            activityContainer.innerHTML = '';
+            
+            if (activityLogs.length === 0) {
+                activityContainer.innerHTML = '<p style="color: #666; text-align: center;">No recent activity</p>';
+                return;
+            }
+            
+            activityLogs.slice(0, 8).forEach(log => {
+                const item = document.createElement('div');
+                item.style.cssText = `
+                    display: flex; justify-content: space-between; align-items: center;
+                    padding: 8px 0; border-bottom: 1px solid #333;
+                `;
+                item.innerHTML = `
+                    <div style="color: #ccc; font-size: 14px;">${log.message}</div>
+                    <div style="color: #999; font-size: 11px;">${new Date(log.timestamp).toLocaleTimeString()}</div>
+                `;
+                activityContainer.appendChild(item);
+            });
+        }
+        
+        function manageImages() {
+            // Create image management modal
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center;
+                z-index: 1000; backdrop-filter: blur(5px);
+            `;
+            
+            modal.innerHTML = `
+                <div style="
+                    background: #1a1a1a; border: 1px solid #333; border-radius: 12px;
+                    width: 95%; max-width: 900px; height: 85%; max-height: 700px;
+                    display: flex; flex-direction: column; overflow: hidden;
+                ">
+                    <div style="
+                        background: linear-gradient(135deg, #f59e0b, #d97706);
+                        padding: 20px; color: white; border-radius: 12px 12px 0 0;
+                    ">
+                        <h2 style="margin: 0;">🖼️ Image Manager</h2>
+                        <p style="margin: 8px 0 0 0; opacity: 0.9;">Manage profile images, backgrounds, and gallery photos</p>
+                    </div>
+                    
+                    <div style="padding: 20px; overflow-y: auto; flex: 1;">
+                        <!-- Current Images Grid -->
+                        <h3 style="color: #f59e0b; margin-bottom: 16px;">📸 Current Website Images</h3>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
+                            
+                            <!-- Profile Image -->
+                            <div style="background: #2a2a2a; border-radius: 8px; padding: 16px; border: 1px solid #333;">
+                                <div style="color: #f59e0b; font-weight: bold; margin-bottom: 8px;">👤 Profile Photo</div>
+                                <div style="width: 100%; height: 120px; background: #333; border-radius: 6px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px;">
+                                    <span style="color: #666; font-size: 14px;">background1.jpg</span>
+                                </div>
+                                <div style="color: #999; font-size: 12px; margin-bottom: 8px;">Used in: About section</div>
+                                <button onclick="changeImage('profile')" style="background: #f59e0b; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; width: 100%;">🔄 Change</button>
+                            </div>
+                            
+                            <!-- Background Image -->
+                            <div style="background: #2a2a2a; border-radius: 8px; padding: 16px; border: 1px solid #333;">
+                                <div style="color: #f59e0b; font-weight: bold; margin-bottom: 8px;">🌅 Background</div>
+                                <div style="width: 100%; height: 120px; background: #333; border-radius: 6px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px;">
+                                    <span style="color: #666; font-size: 14px;">background.jpg</span>
+                                </div>
+                                <div style="color: #999; font-size: 12px; margin-bottom: 8px;">Used in: Main background</div>
+                                <button onclick="changeImage('background')" style="background: #f59e0b; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; width: 100%;">🔄 Change</button>
+                            </div>
+                            
+                            <!-- Logo/Avatar -->
+                            <div style="background: #2a2a2a; border-radius: 8px; padding: 16px; border: 1px solid #333;">
+                                <div style="color: #f59e0b; font-weight: bold; margin-bottom: 8px;">🎭 Avatar</div>
+                                <div style="width: 100%; height: 120px; background: #333; border-radius: 6px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px;">
+                                    <span style="color: #666; font-size: 14px;">facep2.jpg</span>
+                                </div>
+                                <div style="color: #999; font-size: 12px; margin-bottom: 8px;">Used in: Header avatar</div>
+                                <button onclick="changeImage('avatar')" style="background: #f59e0b; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; width: 100%;">🔄 Change</button>
+                            </div>
+                            
+                            <!-- Add New -->
+                            <div style="background: #2a2a2a; border-radius: 8px; padding: 16px; border: 2px dashed #666; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer;" onclick="uploadNewImage()">
+                                <div style="font-size: 48px; margin-bottom: 8px;">📷</div>
+                                <div style="color: #f59e0b; font-weight: bold; margin-bottom: 4px;">Upload New</div>
+                                <div style="color: #999; font-size: 12px; text-align: center;">Add new image to gallery</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Image Upload Stats -->
+                        <h3 style="color: #f59e0b; margin-bottom: 16px;">📊 Image Statistics</h3>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 20px;">
+                            <div style="background: #2a2a2a; padding: 12px; border-radius: 6px; text-align: center;">
+                                <div style="color: #f59e0b; font-size: 20px; font-weight: bold;">3</div>
+                                <div style="color: #999; font-size: 12px;">Total Images</div>
+                            </div>
+                            <div style="background: #2a2a2a; padding: 12px; border-radius: 6px; text-align: center;">
+                                <div style="color: #10b981; font-size: 20px; font-weight: bold;">2.4MB</div>
+                                <div style="color: #999; font-size: 12px;">Total Size</div>
+                            </div>
+                            <div style="background: #2a2a2a; padding: 12px; border-radius: 6px; text-align: center;">
+                                <div style="color: #8b5cf6; font-size: 20px; font-weight: bold;">1920px</div>
+                                <div style="color: #999; font-size: 12px;">Max Width</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Image Tools -->
+                        <h3 style="color: #f59e0b; margin-bottom: 16px;">🛠️ Image Tools</h3>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+                            <button onclick="optimizeImages()" style="background: #10b981; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold;">⚡ Optimize All Images</button>
+                            <button onclick="resizeImages()" style="background: #3b82f6; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold;">📐 Resize Images</button>
+                            <button onclick="createBackup()" style="background: #8b5cf6; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold;">💾 Create Backup</button>
+                            <button onclick="clearImageCache()" style="background: #dc2626; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold;">🗑️ Clear Cache</button>
+                        </div>
+                    </div>
+                    
+                    <div style="padding: 16px; border-top: 1px solid #333; text-align: center;">
+                        <button onclick="this.closest('.modal-overlay').remove()" style="
+                            background: #666; color: white; border: none; padding: 10px 20px;
+                            border-radius: 6px; cursor: pointer;
+                        ">Close Image Manager</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) modal.remove();
+            });
+        }
+
+        // Image management functions
+        function changeImage(type) {
             const input = document.createElement('input');
             input.type = 'file';
-            input.accept = '.pdf,.doc,.docx';
+            input.accept = 'image/*';
             input.onchange = function(e) {
                 const file = e.target.files[0];
                 if (file) {
-                    alert(`📄 CV Upload: ${file.name}\n\nIn production this would:\n• Upload to server\n• Update download link\n• Send notification`);
+                    alert(`🖼️ ${type.charAt(0).toUpperCase() + type.slice(1)} Image Update\n\nSelected: ${file.name}\nSize: ${(file.size/1024/1024).toFixed(2)} MB\n\nIn production this would:\n• Upload to server\n• Update website immediately\n• Create optimized versions`);
                 }
             };
             input.click();
         }
-        
-        function manageContent() {
-            alert('✏️ Content Editor\n\nIn production this would allow:\n• Edit text content\n• Update skills\n• Modify projects\n• Change contact info');
+
+        function uploadNewImage() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.multiple = true;
+            input.onchange = function(e) {
+                const files = Array.from(e.target.files);
+                if (files.length > 0) {
+                    alert(`📷 New Images Upload\n\nSelected: ${files.length} image(s)\nTotal size: ${(files.reduce((sum, f) => sum + f.size, 0)/1024/1024).toFixed(2)} MB\n\nIn production this would:\n• Upload to gallery\n• Generate thumbnails\n• Add to image library`);
+                }
+            };
+            input.click();
         }
-        
-        function viewAnalytics() {
-            alert('📊 Analytics Dashboard\n\nWould show:\n• Visitor statistics\n• Page views\n• Contact form submissions\n• Popular content');
+
+        function optimizeImages() {
+            alert('⚡ Image Optimization\n\nThis would:\n• Compress all images\n• Convert to WebP format\n• Generate multiple sizes\n• Reduce load times by ~60%');
         }
-        
-        function manageImages() {
-            alert('🖼️ Image Manager\n\nFeatures:\n• Upload new images\n• Optimize existing images\n• Manage gallery\n• Update portfolio images');
+
+        function resizeImages() {
+            alert('📐 Image Resizing\n\nThis would:\n• Create responsive sizes\n• Generate thumbnails\n• Optimize for different devices\n• Maintain aspect ratios');
+        }
+
+        function createBackup() {
+            alert('💾 Image Backup\n\nThis would:\n• Create full backup of images\n• Save to cloud storage\n• Include metadata\n• Enable easy restore');
+        }
+
+        function clearImageCache() {
+            if (confirm('🗑️ Clear image cache?\n\nThis will:\n• Clear browser cache\n• Force reload all images\n• May slow down next page load')) {
+                alert('✅ Image cache cleared!');
+            }
         }
         
         function openSoftwareExplorer() {
@@ -1929,21 +2659,21 @@
                         <div style="background: #1a1a1a; padding: 16px;">
                             <h3 style="color: #00d4ff; margin: 0 0 12px 0; font-size: 14px;">📂 CATEGORIES</h3>
                             <div class="folder-list" style="display: flex; flex-direction: column; gap: 8px;">
-                                <div onclick="loadCategory('games')" style="
+                                <div onclick="selectFolder('games')" style="
                                     padding: 8px 12px; background: #2a2a2a; border-radius: 6px;
                                     cursor: pointer; color: #ccc; display: flex; align-items: center; gap: 8px;
                                     transition: all 0.2s;
                                 " onmouseover="this.style.background='#3a3a3a'" onmouseout="this.style.background='#2a2a2a'">
                                     🎮 Games (4)
                                 </div>
-                                <div onclick="loadCategory('tools')" style="
+                                <div onclick="selectFolder('utilities')" style="
                                     padding: 8px 12px; background: #2a2a2a; border-radius: 6px;
                                     cursor: pointer; color: #ccc; display: flex; align-items: center; gap: 8px;
                                     transition: all 0.2s;
                                 " onmouseover="this.style.background='#3a3a3a'" onmouseout="this.style.background='#2a2a2a'">
                                     🔧 Tools (5)
                                 </div>
-                                <div onclick="loadCategory('scripts')" style="
+                                <div onclick="selectFolder('development')" style="
                                     padding: 8px 12px; background: #2a2a2a; border-radius: 6px;
                                     cursor: pointer; color: #ccc; display: flex; align-items: center; gap: 8px;
                                     transition: all 0.2s;
@@ -1954,7 +2684,7 @@
                             
                             <h3 style="color: #00d4ff; margin: 20px 0 12px 0; font-size: 14px;">⚡ ACTIONS</h3>
                             <div style="display: flex; flex-direction: column; gap: 8px;">
-                                <button onclick="uploadSoftware()" style="
+                                <button id="green-upload-btn" onclick="showUploadDialog();" style="
                                     background: linear-gradient(135deg, #16a34a, #22c55e);
                                     border: none; color: white; padding: 8px 12px;
                                     border-radius: 6px; cursor: pointer; font-size: 12px;
@@ -1964,6 +2694,7 @@
                                     border: none; color: white; padding: 8px 12px;
                                     border-radius: 6px; cursor: pointer; font-size: 12px;
                                 ">🔄 Refresh</button>
+
                             </div>
                         </div>
                         
@@ -2038,15 +2769,340 @@
                 if (e.target === modal) modal.remove();
             });
         }
-        
-        // Helper functions for software explorer
-        function loadCategory(category) {
-            alert('Loading ' + category + ' files...');
+
+        function openNewsManager() {
+            // Create advanced news manager modal
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center;
+                z-index: 1000; backdrop-filter: blur(5px);
+            `;
+            
+            modal.innerHTML = `
+                <div class="news-manager" style="
+                    background: #1a1a1a; border: 1px solid #333; border-radius: 12px;
+                    width: 95%; max-width: 800px; height: 85%; max-height: 700px;
+                    display: flex; flex-direction: column; overflow: hidden;
+                ">
+                    <!-- Header -->
+                    <div style="
+                        background: linear-gradient(135deg, #00d4ff, #0088cc);
+                        padding: 16px 20px; color: white; display: flex;
+                        justify-content: space-between; align-items: center;
+                    ">
+                        <h2 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                            📰 Advanced News Manager
+                        </h2>
+                        <button onclick="this.closest('.modal-overlay').remove()" style="
+                            background: rgba(255,255,255,0.2); border: none; color: white;
+                            width: 32px; height: 32px; border-radius: 6px; cursor: pointer;
+                            display: flex; align-items: center; justify-content: center;
+                        ">✕</button>
+                    </div>
+                    
+                    <!-- Content -->
+                    <div style="padding: 20px; overflow-y: auto; display: flex; gap: 20px;">
+                        <!-- Left: Add News Form -->
+                        <div style="flex: 1; min-width: 300px;">
+                            <h3 style="color: #00d4ff; margin-bottom: 16px;">📝 Create News Article</h3>
+                            
+                            <div style="margin-bottom: 16px;">
+                                <label style="color: #ccc; display: block; margin-bottom: 6px;">Title:</label>
+                                <input type="text" id="news-title" placeholder="Enter news title..." style="
+                                    width: 100%; padding: 10px; background: #2a2a2a; border: 1px solid #333;
+                                    border-radius: 6px; color: white; font-family: inherit;
+                                ">
+                            </div>
+                            
+                            <div style="margin-bottom: 16px;">
+                                <label style="color: #ccc; display: block; margin-bottom: 6px;">Content:</label>
+                                <textarea id="news-content" placeholder="Enter news content..." style="
+                                    width: 100%; padding: 10px; background: #2a2a2a; border: 1px solid #333;
+                                    border-radius: 6px; color: white; font-family: inherit; resize: vertical;
+                                    min-height: 100px;
+                                "></textarea>
+                            </div>
+                            
+                            <div style="margin-bottom: 16px;">
+                                <label style="color: #ccc; display: block; margin-bottom: 6px;">Link (optional):</label>
+                                <input type="url" id="news-link" placeholder="https://example.com" style="
+                                    width: 100%; padding: 10px; background: #2a2a2a; border: 1px solid #333;
+                                    border-radius: 6px; color: white; font-family: inherit;
+                                ">
+                            </div>
+                            
+                            <div style="margin-bottom: 16px;">
+                                <label style="color: #ccc; display: block; margin-bottom: 6px;">Link Title (optional):</label>
+                                <input type="text" id="news-link-title" placeholder="Read more..." style="
+                                    width: 100%; padding: 10px; background: #2a2a2a; border: 1px solid #333;
+                                    border-radius: 6px; color: white; font-family: inherit;
+                                ">
+                            </div>
+                            
+                            <button onclick="addAdvancedNewsItem()" style="
+                                background: linear-gradient(135deg, #00d4ff, #0088cc); color: white;
+                                border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer;
+                                font-weight: bold; width: 100%;
+                            ">📰 Publish News</button>
+                        </div>
+                        
+                        <!-- Right: Current News -->
+                        <div style="flex: 1; min-width: 300px;">
+                            <h3 style="color: #00d4ff; margin-bottom: 16px;">📋 Current News Articles</h3>
+                            <div id="news-items-manager" style="
+                                border: 1px solid #333; border-radius: 6px; padding: 16px;
+                                background: #2a2a2a; max-height: 400px; overflow-y: auto;
+                            ">
+                                <!-- News items will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            loadNewsItemsManager();
+            
+            // Add escape key listener
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) modal.remove();
+            });
+        }
+
+        let newsArticles = JSON.parse(localStorage.getItem('newsArticles') || '[]');
+
+        function addAdvancedNewsItem() {
+            const title = document.getElementById('news-title').value.trim();
+            const content = document.getElementById('news-content').value.trim();
+            const link = document.getElementById('news-link').value.trim();
+            const linkTitle = document.getElementById('news-link-title').value.trim() || 'Read more';
+            
+            if (!title || !content) {
+                alert('Please enter both title and content');
+                return;
+            }
+            
+            // Create news article object
+            const article = {
+                id: Date.now(),
+                title: title,
+                content: content,
+                link: link,
+                linkTitle: linkTitle,
+                date: new Date().toLocaleDateString('nl-NL', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                }),
+                timestamp: new Date().toISOString()
+            };
+            
+            // Add to storage
+            newsArticles.unshift(article); // Add to beginning
+            localStorage.setItem('newsArticles', JSON.stringify(newsArticles));
+            
+            // Update displays
+            loadNewsDisplay();
+            loadNewsItemsManager();
+            
+            // Clear form
+            document.getElementById('news-title').value = '';
+            document.getElementById('news-content').value = '';
+            document.getElementById('news-link').value = '';
+            document.getElementById('news-link-title').value = '';
+            
+            alert('📰 News article published successfully!');
+        }
+
+        function loadNewsDisplay() {
+            console.log('📰 Loading news display, articles count:', newsArticles.length);
+            const container = document.getElementById('news-log');
+            if (!container) {
+                console.error('❌ News container not found!');
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            if (newsArticles.length === 0) {
+                container.innerHTML = '<div style="color: #666; font-style: italic; padding: 8px;">Geen nieuws berichten gevonden</div>';
+                return;
+            }
+            
+            newsArticles.slice(0, 5).forEach(article => { // Show latest 5
+                const item = document.createElement('div');
+                item.className = 'news-item';
+                item.style.cssText = `
+                    cursor: pointer; padding: 8px; border-radius: 6px; margin-bottom: 6px;
+                    border: 1px solid transparent; transition: all 0.2s;
+                `;
+                item.innerHTML = `
+                    <div style="font-weight: bold; color: #00d4ff; margin-bottom: 2px;">${article.title}</div>
+                    <div style="font-size: 11px; color: #999;">${article.date}</div>
+                `;
+                
+                item.onmouseover = () => {
+                    item.style.borderColor = '#00d4ff';
+                    item.style.background = 'rgba(0, 212, 255, 0.1)';
+                };
+                item.onmouseout = () => {
+                    item.style.borderColor = 'transparent';
+                    item.style.background = 'transparent';
+                };
+                
+                item.onclick = () => openNewsArticle(article);
+                container.appendChild(item);
+            });
+            
+            console.log('✅ News display loaded successfully');
+        }
+
+        function openNewsArticle(article) {
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center;
+                z-index: 1000; backdrop-filter: blur(5px);
+            `;
+            
+            modal.innerHTML = `
+                <div style="
+                    background: #1a1a1a; border: 1px solid #333; border-radius: 12px;
+                    width: 90%; max-width: 600px; max-height: 80vh; overflow-y: auto;
+                    padding: 0;
+                ">
+                    <div style="
+                        background: linear-gradient(135deg, #00d4ff, #0088cc);
+                        padding: 20px; color: white; border-radius: 12px 12px 0 0;
+                    ">
+                        <h2 style="margin: 0 0 8px 0;">${article.title}</h2>
+                        <p style="margin: 0; opacity: 0.9; font-size: 14px;">📅 ${article.date}</p>
+                    </div>
+                    
+                    <div style="padding: 20px;">
+                        <div style="
+                            color: #ccc; line-height: 1.6; margin-bottom: 16px;
+                            font-size: 15px;
+                        ">${article.content}</div>
+                        
+                        ${article.link ? `
+                            <a href="${article.link}" target="_blank" style="
+                                display: inline-block; background: linear-gradient(135deg, #00d4ff, #0088cc);
+                                color: white; padding: 10px 16px; border-radius: 6px; text-decoration: none;
+                                font-weight: bold; margin-top: 8px;
+                            ">${article.linkTitle} →</a>
+                        ` : ''}
+                        
+                        <button onclick="this.closest('.modal-overlay').remove()" style="
+                            display: block; background: #333; color: white; border: none;
+                            padding: 10px 20px; border-radius: 6px; cursor: pointer;
+                            margin: 16px auto 0; font-weight: bold;
+                        ">Close</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) modal.remove();
+            });
+        }
+
+        function loadNewsItemsManager() {
+            const container = document.getElementById('news-items-manager');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            if (newsArticles.length === 0) {
+                container.innerHTML = '<p style="color: #666; text-align: center;">No news articles yet</p>';
+                return;
+            }
+            
+            newsArticles.forEach((article, index) => {
+                const item = document.createElement('div');
+                item.style.cssText = `
+                    border: 1px solid #444; border-radius: 6px; padding: 12px; margin-bottom: 12px;
+                    background: #1a1a1a;
+                `;
+                item.innerHTML = `
+                    <div style="display: flex; justify-content: between; align-items: flex-start; margin-bottom: 8px;">
+                        <div style="flex: 1;">
+                            <div style="font-weight: bold; color: #00d4ff; margin-bottom: 4px;">${article.title}</div>
+                            <div style="font-size: 11px; color: #999;">${article.date}</div>
+                        </div>
+                        <button onclick="removeNewsArticle(${article.id})" style="
+                            background: #dc2626; color: white; border: none; 
+                            padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 10px;
+                        ">🗑️</button>
+                    </div>
+                    <div style="font-size: 12px; color: #ccc; margin-bottom: 8px;">${article.content.substring(0, 100)}...</div>
+                    ${article.link ? `<div style="font-size: 11px; color: #00d4ff;">� ${article.linkTitle}</div>` : ''}
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function removeNewsArticle(id) {
+            if (confirm('Are you sure you want to delete this news article?')) {
+                newsArticles = newsArticles.filter(article => article.id !== id);
+                localStorage.setItem('newsArticles', JSON.stringify(newsArticles));
+                loadNewsDisplay();
+                loadNewsItemsManager();
+            }
+        }
+
+        // Legacy function for backward compatibility
+        function addNewsItem() {
+            const input = document.getElementById('new-news-item');
+            if (!input) return;
+            
+            const text = input.value.trim();
+            if (!text) {
+                alert('Please enter a news item');
+                return;
+            }
+            
+            // Convert to new format
+            const article = {
+                id: Date.now(),
+                title: text,
+                content: text,
+                link: '',
+                linkTitle: '',
+                date: new Date().toLocaleDateString('nl-NL'),
+                timestamp: new Date().toISOString()
+            };
+            
+            newsArticles.unshift(article);
+            localStorage.setItem('newsArticles', JSON.stringify(newsArticles));
+            loadNewsDisplay();
+            
+            input.value = '';
+        }
+
+        function removeNewsItem(button) {
+            const item = button.parentElement;
+            const text = item.textContent.replace('×', '').trim();
+            
+            // Remove from modal
+            item.remove();
+            
+            // Remove from main page
+            const mainItems = document.querySelectorAll('#news-log .news-item');
+            mainItems.forEach(mainItem => {
+                if (mainItem.textContent.trim() === text) {
+                    mainItem.remove();
+                }
+            });
         }
         
-        function uploadSoftware() {
-            alert('🔄 Upload functionality would connect to Vercel API for file uploads');
-        }
+        // Helper functions for software explorer - loadCategory removed
+        // All categories now use selectFolder() function from admin panel
         
         function refreshExplorer() {
             alert('🔄 Refreshing file list...');
@@ -2074,7 +3130,26 @@
             if (adminPanel && adminPanel.innerHTML.includes('Admin Panel')) {
                 adminPanel.remove();
             }
+            
+            // Hide admin-only buttons
+            hideAdminButtons();
+            
             alert('👋 Logged out successfully!');
+        }
+
+        // Admin button visibility functions
+        function showAdminButtons() {
+            const newsUpdateBtn = document.getElementById('news-update-btn');
+            if (newsUpdateBtn) {
+                newsUpdateBtn.style.display = 'inline-block';
+            }
+        }
+
+        function hideAdminButtons() {
+            const newsUpdateBtn = document.getElementById('news-update-btn');
+            if (newsUpdateBtn) {
+                newsUpdateBtn.style.display = 'none';
+            }
         }
         
         // Form submissions
@@ -2403,9 +3478,7 @@ ${matrixContent}
             return newsletterSubscribers;
         }
         
-        // Admin Panel Functions
-        let uploadedSoftware = JSON.parse(localStorage.getItem('uploadedSoftware') || '[]');
-        let activityLogs = JSON.parse(localStorage.getItem('activityLogs') || '[]');
+        // Admin Panel Functions - variables now declared at top of script
         
         function showAdminTab(tabName) {
             // Hide all tabs and content
@@ -2423,52 +3496,155 @@ ${matrixContent}
         }
         
         function uploadSoftware() {
+            console.log('🚀 Upload function called - Starting validation...');
+            
             const fileInput = document.getElementById('software-file');
             const nameInput = document.getElementById('software-name');
             const categoryInput = document.getElementById('software-category');
             const descriptionInput = document.getElementById('software-description');
             
-            if (!fileInput.files[0] || !nameInput.value || !categoryInput.value) {
-                alert('❌ Please fill all required fields and select a file');
+            console.log('📋 Form elements status:');
+            console.log('  - File input found:', !!fileInput);
+            console.log('  - Name input found:', !!nameInput);
+            console.log('  - Category input found:', !!categoryInput);
+            console.log('  - Description input found:', !!descriptionInput);
+            
+            // Check form elements exist
+            if (!fileInput || !nameInput || !categoryInput) {
+                console.error('❌ Critical form elements missing!');
+                alert('❌ Error: Upload form not properly initialized');
                 return;
             }
             
-            const file = fileInput.files[0];
-            const software = {
-                id: Date.now(),
-                name: nameInput.value,
-                category: categoryInput.value,
-                description: descriptionInput.value || '',
-                filename: file.name,
-                size: file.size,
-                uploadDate: new Date().toISOString(),
-                downloads: 0,
-                icon: getFileIcon(file.name)
-            };
+            const file = fileInput.files && fileInput.files[0];
+            const name = nameInput.value ? nameInput.value.trim() : '';
+            const category = categoryInput.value || '';
+            const description = descriptionInput ? descriptionInput.value.trim() : '';
             
-            uploadedSoftware.push(software);
-            localStorage.setItem('uploadedSoftware', JSON.stringify(uploadedSoftware));
+            console.log('📊 Current form values:');
+            console.log('  - File selected:', file ? `✅ ${file.name} (${(file.size/1024/1024).toFixed(2)}MB)` : '❌ No file');
+            console.log('  - Name entered:', name ? `✅ "${name}"` : '❌ Empty');
+            console.log('  - Category selected:', category ? `✅ "${category}"` : '❌ None');
+            console.log('  - Description:', description ? `✅ "${description.substring(0, 50)}..."` : 'ℹ️ Empty (optional)');
             
-            // Add to activity log
-            addActivityLog(`📁 Software uploaded: ${software.name} in ${software.category}`);
+            // Step by step validation with helpful messages
+            if (!file) {
+                console.warn('⚠️ Validation failed: No file selected');
+                alert('📁 Please select a file first!\n\nClick the upload area or drag & drop a file.');
+                return;
+            }
             
-            // Clear form
-            nameInput.value = '';
-            categoryInput.value = '';
-            descriptionInput.value = '';
-            fileInput.value = '';
+            if (!name) {
+                console.warn('⚠️ Validation failed: Name is empty');
+                alert('✏️ Please enter a name for your software!\n\nThis will be displayed in the software list.');
+                nameInput.focus();
+                return;
+            }
             
-            alert(`✅ Software "${software.name}" uploaded successfully!`);
-            closeUploadDialog();
-            loadExplorerContent();
-            updatePublicSoftwareList();
+            if (!category) {
+                console.warn('⚠️ Validation failed: No category selected');
+                alert('📂 Please select a category!\n\nThis helps organize your software.');
+                categoryInput.focus();
+                return;
+            }
+            
+            // File size validation (2GB limit)
+            if (file.size > 2 * 1024 * 1024 * 1024) {
+                console.warn('⚠️ Validation failed: File too large');
+                alert(`📏 File is too large!\n\nFile size: ${(file.size/1024/1024/1024).toFixed(1)}GB\nMaximum allowed: 2GB`);
+                return;
+            }
+            
+            console.log('✅ All validations passed! Processing upload...');
+            
+            try {
+                const software = {
+                    id: Date.now(),
+                    name: name,
+                    category: category,
+                    description: description,
+                    filename: file.name,
+                    size: file.size,
+                    uploadDate: new Date().toISOString(),
+                    downloads: 0,
+                    icon: getFileIcon(file.name)
+                };
+                
+                console.log('💾 Creating software entry:', software);
+                
+                // Get current list and add new software
+                uploadedSoftware.push(software);
+                localStorage.setItem('uploadedSoftware', JSON.stringify(uploadedSoftware));
+                console.log('💾 Saved to localStorage, total items:', uploadedSoftware.length);
+                
+                // Add to activity log
+                addActivityLog(`📁 Software uploaded: ${software.name} in ${software.category}`);
+                
+                // Clear form
+                nameInput.value = '';
+                categoryInput.value = '';
+                if (descriptionInput) descriptionInput.value = '';
+                fileInput.value = '';
+                
+                // Update dropzone text
+                const dropzoneText = document.querySelector('.dropzone-text');
+                if (dropzoneText) {
+                    dropzoneText.textContent = 'Click to select file or drag & drop';
+                }
+                
+                console.log('🧹 Form cleared successfully');
+                
+                // Success message and updates
+                alert(`🎉 Success!\n\n"${software.name}" has been uploaded successfully!`);
+                closeUploadDialog();
+                loadExplorerContent();
+                updatePublicSoftwareList();
+                
+                console.log('✅ Upload completed successfully!');
+                
+            } catch (error) {
+                console.error('❌ Upload failed with error:', error);
+                alert(`❌ Upload failed!\n\nError: ${error.message}\n\nPlease try again.`);
+            }
         }
         
-        // Explorer functions
-        let currentFolder = 'all';
-        let viewMode = 'grid';
+        // Update file display when file is selected
+        function updateFileDisplay(input) {
+            const dropzoneText = document.querySelector('.dropzone-text');
+            const dropzoneIcon = document.querySelector('.dropzone-icon');
+            
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const fileSize = (file.size / 1024 / 1024).toFixed(2);
+                
+                if (dropzoneText) {
+                    dropzoneText.innerHTML = `✅ Selected: ${file.name}<br><small>${fileSize} MB</small>`;
+                }
+                if (dropzoneIcon) {
+                    dropzoneIcon.textContent = '✅';
+                }
+                
+                console.log('📁 File selected:', file.name, `(${fileSize} MB)`);
+            } else {
+                if (dropzoneText) {
+                    dropzoneText.textContent = 'Click to select file or drag & drop';
+                }
+                if (dropzoneIcon) {
+                    dropzoneIcon.textContent = '📂';
+                }
+            }
+        }
+        
+        // Explorer functions - moved to top to prevent temporal dead zone
+        // Variables moved to initialize earlier
         
         function selectFolder(folder) {
+            console.log('📁 Selecting folder:', folder);
+            // Ensure currentFolder is initialized
+            if (typeof currentFolder === 'undefined') {
+                console.log('🔧 Initializing currentFolder...');
+                currentFolder = 'all';
+            }
             currentFolder = folder;
             
             // Update UI
@@ -2489,21 +3665,106 @@ ${matrixContent}
                 'games': 'Games',
                 'office': 'Office'
             };
-            document.getElementById('current-folder').textContent = folderNames[folder];
             
+            const currentFolderElement = document.getElementById('current-folder');
+            if (currentFolderElement) {
+                currentFolderElement.textContent = folderNames[folder];
+            }
+            
+            // No loading message, just load content directly
             loadExplorerContent();
         }
         
         function showUploadDialog() {
-            document.getElementById('upload-dialog').classList.remove('hidden');
+            console.log('📤 Opening upload dialog...');
+            // CLOSE ANY EXISTING DIALOGS FIRST
+            const existingDialogs = document.querySelectorAll('#upload-dialog');
+            existingDialogs.forEach(d => d.remove());
+
+            // CREATE DIALOG AS MODAL OVERLAY (like Upload CV)
+            let dialog = document.createElement('div');
+            dialog.id = 'upload-dialog';
+            dialog.className = 'modal-overlay';
+            dialog.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+                background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center;
+                z-index: 1000; backdrop-filter: blur(5px); visibility: visible; opacity: 1;
+            `;
+            dialog.innerHTML = `
+                <div style="
+                    background: #1a1a1a; border: 1px solid #333; border-radius: 12px;
+                    width: 90%; max-width: 400px; max-height: 80vh; overflow-y: auto; color: white;
+                ">
+                    <div style="
+                        background: linear-gradient(135deg, #16a34a, #22c55e);
+                        padding: 20px; color: white; border-radius: 12px 12px 0 0;
+                    ">
+                        <h2 style="margin: 0;">📤 Upload Software</h2>
+                        <p style="margin: 8px 0 0 0; opacity: 0.9; font-size: 14px;">Upload je software bestand</p>
+                    </div>
+                    <div style="padding: 20px;">
+                        <input type="file" id="software-file" accept=".exe,.msi,.zip,.rar,.dmg,.deb" style="display: none;" onchange="updateFileDisplay(this)">
+                        <div class="upload-dropzone" onclick="document.getElementById('software-file').click()" style="border: 2px dashed #666; border-radius: 8px; padding: 24px; text-align: center; cursor: pointer; margin-bottom: 16px; background: #2a2a2a; transition: all 0.2s;">
+                            <div style="font-size: 24px; margin-bottom: 8px;">📂</div>
+                            <div style="margin-bottom: 4px;">Klik om te selecteren of sleep een bestand</div>
+                            <div style="font-size: 12px; color: #888;">.exe, .msi, .zip, .rar, .dmg, .deb</div>
+                        </div>
+                        <input type="text" id="software-name" placeholder="Software Naam" style="width: 100%; padding: 12px; margin-bottom: 12px; background: #2a2a2a; border: 1px solid #444; border-radius: 6px; color: white; box-sizing: border-box;">
+                        <select id="software-category" style="width: 100%; padding: 12px; margin-bottom: 12px; background: #2a2a2a; border: 1px solid #444; border-radius: 6px; color: white; box-sizing: border-box;">
+                            <option value="">Selecteer categorie</option>
+                            <option value="utilities">🔧 Utilities</option>
+                            <option value="development">💻 Development</option>
+                            <option value="security">🛡️ Security</option>
+                            <option value="multimedia">🎵 Multimedia</option>
+                            <option value="games">🎮 Games</option>
+                            <option value="office">📊 Office</option>
+                        </select>
+                        <textarea id="software-description" placeholder="Beschrijving (optioneel)" style="width: 100%; padding: 12px; margin-bottom: 16px; background: #2a2a2a; border: 1px solid #444; border-radius: 6px; color: white; box-sizing: border-box; height: 80px; resize: vertical;"></textarea>
+                        <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                            <button id="upload-software-btn" style="background: linear-gradient(135deg, #16a34a, #22c55e); border: none; color: white; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: bold;">⬆️ Upload</button>
+                            <button onclick="closeUploadDialog()" style="background: linear-gradient(135deg, #dc2626, #ef4444); border: none; color: white; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: bold;">❌ Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(dialog);
+            // Sluit modal bij klik op overlay
+            dialog.addEventListener('click', (e) => {
+                if (e.target === dialog) dialog.remove();
+            });
+            // Setup handler na tonen dialog
+            setTimeout(() => {
+                const uploadBtn = document.getElementById('upload-software-btn');
+                if (uploadBtn && !uploadBtn.hasAttribute('data-handler-attached')) {
+                    uploadBtn.removeAttribute('onclick');
+                    uploadBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (this.disabled) return;
+                        this.disabled = true;
+                        setTimeout(() => this.disabled = false, 2000);
+                        uploadSoftware();
+                    });
+                    uploadBtn.setAttribute('data-handler-attached', 'true');
+                }
+            }, 100);
         }
         
         function closeUploadDialog() {
-            document.getElementById('upload-dialog').classList.add('hidden');
-            document.getElementById('software-file').value = '';
-            document.getElementById('software-name').value = '';
-            document.getElementById('software-category').value = '';
-            document.getElementById('software-description').value = '';
+            const dialog = document.getElementById('upload-dialog');
+            if (dialog) {
+                dialog.style.display = 'none';
+                console.log('❌ Upload dialog closed');
+            } else {
+                console.error('❌ No dialog found to close');
+            }
+            
+            // Safe cleanup
+            const fields = ['software-file', 'software-name', 'software-category', 'software-description'];
+            fields.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) element.value = '';
+            });
         }
         
         function refreshExplorer() {
@@ -2535,7 +3796,21 @@ ${matrixContent}
         
         function loadExplorerContent() {
             const container = document.getElementById('explorer-content');
+            if (!container) {
+                console.error('❌ Explorer content container not found');
+                return;
+            }
             container.innerHTML = '';
+            
+            // Ensure variables are initialized
+            if (typeof currentFolder === 'undefined') {
+                currentFolder = 'all';
+            }
+            if (typeof uploadedSoftware === 'undefined') {
+                uploadedSoftware = [];
+            }
+            
+            console.log('📂 Loading content for folder:', currentFolder, 'with', uploadedSoftware.length, 'items');
             
             // Filter software by category
             let filteredSoftware = uploadedSoftware;
@@ -2757,6 +4032,10 @@ ${matrixContent}
         function logoutAdmin() {
             document.getElementById('admin-panel').classList.add('hidden');
             document.getElementById('admin-password').value = '';
+            
+            // Hide admin-only buttons
+            hideAdminButtons();
+            
             alert('👋 Logged out successfully');
         }
         
@@ -2841,6 +4120,38 @@ ${matrixContent}
             if (!localStorage.getItem('activityLogs')) {
                 localStorage.setItem('activityLogs', JSON.stringify([]));
             }
+            if (!localStorage.getItem('newsArticles')) {
+                // Initialize with sample news articles
+                const sampleNews = [
+                    {
+                        id: Date.now() - 1000,
+                        title: "🎉 Website Launched!",
+                        content: "Welcome to our new portfolio website! Here you can find all our latest projects and news.",
+                        date: new Date().toLocaleDateString('nl-NL'),
+                        author: "Admin"
+                    },
+                    {
+                        id: Date.now() - 2000,
+                        title: "🚀 Admin Panel Active",
+                        content: "Our comprehensive admin panel is now fully operational with news management, analytics, and more!",
+                        date: new Date().toLocaleDateString('nl-NL'),
+                        author: "Admin"
+                    },
+                    {
+                        id: Date.now() - 3000,
+                        title: "📊 Analytics Dashboard",
+                        content: "Track your website performance with our new analytics dashboard featuring visitor stats and activity logs.",
+                        date: new Date().toLocaleDateString('nl-NL'),
+                        author: "Admin"
+                    }
+                ];
+                localStorage.setItem('newsArticles', JSON.stringify(sampleNews));
+            }
+            
+            // Load news articles and display
+            newsArticles = JSON.parse(localStorage.getItem('newsArticles') || '[]');
+            console.log('📰 Loaded news articles:', newsArticles.length, 'items');
+            loadNewsDisplay();
             
             // Setup admin login button click handler
             const adminLoginBtn = document.getElementById('admin-login-btn');
@@ -2896,6 +4207,9 @@ ${matrixContent}
                             showAdminTab('software'); // Start met software tab voor verkenner
                             loadSoftwareList();
                             document.getElementById('admin-panel').scrollIntoView({ behavior: 'smooth' });
+                            
+                            // Show admin-only buttons
+                            showAdminButtons();
                         } else {
                             alert(`❌ Incorrect password. ${MAX_ATTEMPTS - loginAttempts} attempts remaining.`);
                             document.getElementById('admin-password').value = '';
@@ -2906,6 +4220,55 @@ ${matrixContent}
             } else {
                 console.error('❌ Admin login form not found');
             }
+            
+            // Setup upload button handler (prevent double clicks)
+            const setupUploadHandler = () => {
+                const uploadBtn = document.getElementById('upload-software-btn');
+                if (uploadBtn && !uploadBtn.hasAttribute('data-handler-attached')) {
+                    // Remove any existing onclick attributes
+                    uploadBtn.removeAttribute('onclick');
+                    
+                    uploadBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        console.log('🔘 Upload button clicked');
+                        
+                        // Prevent double clicks
+                        if (this.disabled) {
+                            console.log('⏸️ Button disabled, ignoring click');
+                            return;
+                        }
+                        
+                        this.disabled = true;
+                        
+                        // Re-enable after 2 seconds
+                        setTimeout(() => {
+                            this.disabled = false;
+                        }, 2000);
+                        
+                        uploadSoftware();
+                    });
+                    
+                    // Mark as having handler attached
+                    uploadBtn.setAttribute('data-handler-attached', 'true');
+                    console.log('✅ Upload button handler attached');
+                } else if (uploadBtn) {
+                    console.log('ℹ️ Upload button already has handler');
+                }
+            };
+            
+            // Setup upload handler when Software Explorer is opened
+            let explorerHandlerSetup = false;
+            document.addEventListener('click', function(e) {
+                if (e.target.textContent && e.target.textContent.includes('Software Explorer') && !explorerHandlerSetup) {
+                    console.log('📂 Software Explorer opened, setting up handlers...');
+                    setTimeout(() => {
+                        setupUploadHandler();
+                        explorerHandlerSetup = true;
+                    }, 300);
+                }
+            });
             
             // Log initialization
             addActivityLog('🚀 Website initialized');

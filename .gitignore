@@ -1,0 +1,18 @@
+# Node.js backend
+upload-backend/node_modules/
+upload-backend/.env
+upload-backend/tmp/
+
+# VSCode
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Log files
+*.log
+
+# Python
+__pycache__/
+*.pyc

@@ -13,6 +13,147 @@ if (hamburger && navMenu) {
         hamburger.classList.remove('active');
         navMenu.classList.remove('active');
     }));
+// --- Software Upload Dialog Logic ---
+document.addEventListener('DOMContentLoaded', () => {
+    // Alleen als upload-dialog bestaat (modal wordt dynamisch toegevoegd)
+    document.body.addEventListener('click', function(e) {
+        if (e.target && e.target.id === 'upload-software-btn') {
+            e.preventDefault();
+            handleSoftwareUpload();
+        }
+    });
+
+    // Drag & drop events op dropzone
+    document.body.addEventListener('dragover', function(e) {
+        const dz = document.querySelector('#upload-dialog .upload-dropzone');
+        if (dz && e.target && dz.contains(e.target)) {
+            e.preventDefault();
+            dz.classList.add('dragover');
+        }
+    });
+    document.body.addEventListener('dragleave', function(e) {
+        const dz = document.querySelector('#upload-dialog .upload-dropzone');
+        if (dz && e.target && dz.contains(e.target)) {
+            dz.classList.remove('dragover');
+        }
+    });
+    document.body.addEventListener('drop', function(e) {
+        const dz = document.querySelector('#upload-dialog .upload-dropzone');
+        if (dz && e.target && dz.contains(e.target)) {
+            e.preventDefault();
+            dz.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files && files.length > 0) {
+                document.getElementById('software-file').files = files;
+                updateFileDisplay(document.getElementById('software-file'));
+            }
+        }
+    });
+});
+
+function updateFileDisplay(input) {
+    const dz = input.closest('#upload-dialog').querySelector('.upload-dropzone');
+    if (input.files && input.files.length > 0) {
+        dz.innerHTML = `<div style="font-size:24px;margin-bottom:8px;">📂</div><div>${input.files[0].name}</div>`;
+    } else {
+        dz.innerHTML = `<div style="font-size:24px;margin-bottom:8px;">📂</div><div>Klik om te selecteren of sleep een bestand</div><div style='font-size:12px;color:#888;'>.exe, .msi, .zip, .rar, .dmg, .deb</div>`;
+    }
+}
+
+async function handleSoftwareUpload() {
+    const dialog = document.getElementById('upload-dialog');
+    const fileInput = dialog.querySelector('#software-file');
+    const nameInput = dialog.querySelector('#software-name');
+    const catInput = dialog.querySelector('#software-category');
+    const descInput = dialog.querySelector('#software-description');
+    const progressBar = getOrCreateProgressBar(dialog);
+
+    // Validatie
+    if (!fileInput.files || fileInput.files.length === 0) {
+        showNotification('Selecteer een bestand om te uploaden.', 'error');
+        return;
+    }
+    if (!nameInput.value.trim()) {
+        showNotification('Vul een software naam in.', 'error');
+        return;
+    }
+    if (!catInput.value) {
+        showNotification('Selecteer een categorie.', 'error');
+        return;
+    }
+
+    // Upload
+    const formData = new FormData();
+    formData.append('file', fileInput.files[0]);
+    formData.append('name', nameInput.value.trim());
+    formData.append('category', catInput.value);
+    formData.append('description', descInput.value.trim());
+
+    progressBar.style.display = 'block';
+    progressBar.value = 0;
+    progressBar.max = 100;
+    setProgressLabel(progressBar, 'Uploaden...');
+
+    try {
+        const response = await uploadWithProgress('http://localhost:3001/upload', formData, progressBar);
+        if (response.success) {
+            setProgressLabel(progressBar, '✅ Upload gelukt!');
+            showNotification('Upload gelukt! Bestand staat nu op GitHub.', 'success');
+            setTimeout(() => { dialog.remove(); }, 1500);
+        } else {
+            throw new Error(response.error || 'Onbekende fout');
+        }
+    } catch (err) {
+        setProgressLabel(progressBar, '❌ Upload mislukt');
+        showNotification('Upload mislukt: ' + err.message, 'error');
+    }
+}
+
+function getOrCreateProgressBar(dialog) {
+    let pb = dialog.querySelector('.upload-progress');
+    if (!pb) {
+        pb = document.createElement('progress');
+        pb.className = 'upload-progress';
+        pb.style.cssText = 'width:100%;margin-bottom:12px;height:18px;display:block;';
+        pb.value = 0;
+        pb.max = 100;
+        dialog.querySelector('form, .upload-dropzone').insertAdjacentElement('afterend', pb);
+    }
+    return pb;
+}
+
+function setProgressLabel(pb, text) {
+    let label = pb.nextElementSibling;
+    if (!label || !label.classList.contains('progress-label')) {
+        label = document.createElement('div');
+        label.className = 'progress-label';
+        label.style = 'color:#ccc;font-size:13px;margin-bottom:8px;';
+        pb.insertAdjacentElement('afterend', label);
+    }
+    label.textContent = text;
+}
+
+function uploadWithProgress(url, formData, progressBar) {
+    return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', url);
+        xhr.onload = function() {
+            try {
+                const res = JSON.parse(xhr.responseText);
+                if (xhr.status === 200) resolve(res);
+                else reject(res);
+            } catch (e) { reject({ error: 'Ongeldige server respons' }); }
+        };
+        xhr.onerror = function() { reject({ error: 'Netwerkfout' }); };
+        xhr.upload.onprogress = function(e) {
+            if (e.lengthComputable) {
+                progressBar.value = Math.round((e.loaded / e.total) * 100);
+                setProgressLabel(progressBar, `Uploaden... ${progressBar.value}%`);
+            }
+        };
+        xhr.send(formData);
+    });
+}
 }
 
 // Smooth scrolling for navigation links
@@ -205,6 +346,15 @@ function animateCounter(element) {
 
 // Initialize animations on page load
 document.addEventListener('DOMContentLoaded', () => {
+    // Upload knop in linker menu koppelen
+    const sidebarUploadBtn = document.querySelector('.actions .explorer-btn');
+    const uploadDialogSidebar = document.getElementById('upload-dialog');
+    if (sidebarUploadBtn && uploadDialogSidebar) {
+        sidebarUploadBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            uploadDialogSidebar.style.display = 'block';
+        });
+    }
     // Set initial state for animated elements
     const animatedElements = document.querySelectorAll('.skill-card, .project-card, .stat');
     animatedElements.forEach(el => {
@@ -213,7 +363,7 @@ document.addEventListener('DOMContentLoaded', () => {
         el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
         observer.observe(el);
     });
-    
+
     // Typing effect for hero title
     const heroTitle = document.querySelector('.hero-title');
     if (heroTitle) {
@@ -222,6 +372,24 @@ document.addEventListener('DOMContentLoaded', () => {
             heroTitle.style.opacity = '1';
             typeWriter(heroTitle, heroTitle.textContent, 80);
         }, 500);
+    }
+
+    // Upload knop in Software Explorer koppelen
+    const uploadBtn = document.getElementById('upload-software-btn');
+    const uploadDialog = document.getElementById('upload-dialog');
+    if (uploadBtn && uploadDialog) {
+        uploadBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            uploadDialog.style.display = 'block';
+        });
+    }
+    // Cancel knop koppelen
+    const cancelBtn = document.querySelector('.cancel-btn');
+    if (cancelBtn && uploadDialog) {
+        cancelBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            uploadDialog.style.display = 'none';
+        });
     }
 });
 
