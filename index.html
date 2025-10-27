@@ -1265,7 +1265,7 @@
             <a href="https://github.com/chinfosieeuw9-prog" target="_blank" rel="noopener noreferrer" class="social-link">
                 <span>📱</span>Github
             </a>
-            <a href="#" class="social-link admin-login-btn" id="admin-login-btn" onclick="event.preventDefault(); console.log('🔐 Admin clicked'); createAdminPanel(); return false;">
+            <a href="#" class="social-link admin-login-btn" id="admin-login-btn" onclick="event.preventDefault(); console.log('🔐 Admin clicked'); showAdminLogin(); return false;">
                 <span>🔐</span>Admin
             </a>
         </div>
@@ -1638,6 +1638,17 @@
     </div>
     
     <script>
+        // Simple admin login function
+        function showAdminLogin() {
+            const password = prompt('🔐 Enter Admin Password:');
+            if (password === 'mister2025') {
+                console.log('✅ Login successful');
+                createAdminPanel();
+            } else if (password !== null) {
+                alert('❌ Invalid password');
+            }
+        }
+        
         // Direct admin button handler
         function handleAdminClick(event) {
             event.preventDefault();
