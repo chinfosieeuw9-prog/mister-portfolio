@@ -61,89 +61,7 @@
                     45deg,
                     transparent,
                     transparent 3px,
-                    rgba(255, 255, 255, 0.04) 3px,
-                    rgba(255, 255, 255, 0.04) 6px
-                ),
-                repeating-linear-gradient(
-                    -45deg,
-                    transparent,
-                    transparent 4px,
-                    rgba(120, 119, 198, 0.03) 4px,
-                    rgba(120, 119, 198, 0.03) 8px
-                ),
-                #0a0a0a;
-            color: #ffffff;
-            line-height: 1.6;
-            font-size: 15px;
-            position: relative;
-        }
-        
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(circle at 25% 25%, rgba(120, 119, 198, 0.10) 0%, transparent 60%),
-                radial-gradient(circle at 75% 75%, rgba(120, 119, 198, 0.08) 0%, transparent 60%),
-                radial-gradient(circle at 50% 10%, rgba(255, 255, 255, 0.05) 0%, transparent 40%);
-            pointer-events: none;
-            z-index: -1;
-        }
-        
-        body::after {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.15);
-            backdrop-filter: blur(0.5px);
-            pointer-events: none;
-            z-index: 1;
-        }
-        
-        .container {
-            position: relative;
-            z-index: 2;
-        }
-        
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 40px 20px;
-        }
-        
-        /* Header */
-        .header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-        
-        .avatar {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            background-image: url('facep2.jpg');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            margin: 0 auto 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            box-shadow: 
-                0 12px 40px rgba(91, 33, 182, 0.4),
-                0 6px 20px rgba(76, 29, 149, 0.3),
-                0 3px 10px rgba(0, 0, 0, 0.4),
-                inset 0 3px 6px rgba(255, 255, 255, 0.3),
-                inset 0 -3px 6px rgba(0, 0, 0, 0.3);
-            border: 2px solid rgba(147, 134, 234, 0.15);
-            overflow: hidden;
+
             cursor: pointer;
             transition: all 0.3s ease;
         }
@@ -1248,6 +1166,7 @@
     </style>
 </head>
 <body>
+<div style="background: #ff0; color: #000; font-weight: bold; padding: 8px; text-align: center;">TEST: Deze regel is toegevoegd op 27-10-2025 om te controleren of de site updatet!</div>
     <!-- Upload Dialog -->
     <div id="uploadDialog" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); z-index:9999; align-items:center; justify-content:center;">
         <form id="uploadForm" style="background:#fff; padding:32px; border-radius:12px; box-shadow:0 8px 32px rgba(0,0,0,0.2); min-width:320px; max-width:90vw; display:flex; flex-direction:column; gap:16px;">
@@ -1288,6 +1207,9 @@
             </a>
             <a href="https://github.com/chinfosieeuw9-prog" target="_blank" rel="noopener noreferrer" class="social-link">
                 <span>📱</span>Github
+            </a>
+            <a href="https://www.freecodecamp.org/news/the-best-websites-to-learn-coding-online/" target="_blank" rel="noopener noreferrer" class="social-link">
+                <span>🎓</span>Beste sites om te leren coderen
             </a>
             <a href="#" class="social-link admin-login-btn" id="admin-login-btn" onclick="event.preventDefault(); console.log('🔐 Admin clicked'); showAdminLogin(); return false;">
                 <span>🔐</span>Admin
@@ -1346,6 +1268,7 @@
                     <a href="https://tweakers.net" target="_blank" rel="noopener noreferrer" class="link-item" style="font-size: 11px; padding: 6px 8px;">📰 Tweakers</a>
                     <a href="https://bright.nl" target="_blank" rel="noopener noreferrer" class="link-item" style="font-size: 11px; padding: 6px 8px;">💡 Bright</a>
                     <!-- Study -->
+                    <a href="https://www.freecodecamp.org/news/the-best-websites-to-learn-coding-online/" target="_blank" rel="noopener noreferrer" class="link-item" style="font-size: 11px; padding: 6px 8px;">🎓 Beste sites om te leren coderen</a>
                     <a href="https://www.skills.google/" target="_blank" rel="noopener noreferrer" class="link-item" style="font-size: 11px; padding: 6px 8px;">🎓 Google</a>
                     <a href="https://learn.microsoft.com/en-us/" target="_blank" rel="noopener noreferrer" class="link-item" style="font-size: 11px; padding: 6px 8px;">📖 MS Learn</a>
                     <a href="https://tryhackme.com/" target="_blank" rel="noopener noreferrer" class="link-item" style="font-size: 11px; padding: 6px 8px;">💻 TryHack</a>
@@ -3598,7 +3521,6 @@ ${matrixContent}
                 alert(`🎉 Success!\n\n"${software.name}" has been uploaded successfully!`);
                 closeUploadDialog();
                 loadExplorerContent();
-                updatePublicSoftwareList();
                 
                 console.log('✅ Upload completed successfully!');
                 
@@ -3709,6 +3631,7 @@ ${matrixContent}
                             <div style="margin-bottom: 4px;">Klik om te selecteren of sleep een bestand</div>
                             <div style="font-size: 12px; color: #888;">.exe, .msi, .zip, .rar, .dmg, .deb</div>
                         </div>
+                        <script>console.log('DEBUG: upload-dropzone aanwezig in modal:', !!document.querySelector('.upload-dropzone'));</script>
                         <input type="text" id="software-name" placeholder="Software Naam" style="width: 100%; padding: 12px; margin-bottom: 12px; background: #2a2a2a; border: 1px solid #444; border-radius: 6px; color: white; box-sizing: border-box;">
                         <select id="software-category" style="width: 100%; padding: 12px; margin-bottom: 12px; background: #2a2a2a; border: 1px solid #444; border-radius: 6px; color: white; box-sizing: border-box;">
                             <option value="">Selecteer categorie</option>
@@ -3721,7 +3644,7 @@ ${matrixContent}
                         </select>
                         <textarea id="software-description" placeholder="Beschrijving (optioneel)" style="width: 100%; padding: 12px; margin-bottom: 16px; background: #2a2a2a; border: 1px solid #444; border-radius: 6px; color: white; box-sizing: border-box; height: 80px; resize: vertical;"></textarea>
                         <div style="display: flex; gap: 12px; justify-content: flex-end;">
-                            <button id="upload-software-btn" style="background: linear-gradient(135deg, #16a34a, #22c55e); border: none; color: white; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: bold;">⬆️ Upload</button>
+                            <button id="upload-software-btn" onclick="handleSoftwareUpload()" style="background: linear-gradient(135deg, #16a34a, #22c55e); border: none; color: white; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: bold;">⬆️ Upload</button>
                             <button onclick="closeUploadDialog()" style="background: linear-gradient(135deg, #dc2626, #ef4444); border: none; color: white; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: bold;">❌ Cancel</button>
                         </div>
                     </div>
@@ -3734,19 +3657,7 @@ ${matrixContent}
             });
             // Setup handler na tonen dialog
             setTimeout(() => {
-                const uploadBtn = document.getElementById('upload-software-btn');
-                if (uploadBtn && !uploadBtn.hasAttribute('data-handler-attached')) {
-                    uploadBtn.removeAttribute('onclick');
-                    uploadBtn.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        if (this.disabled) return;
-                        this.disabled = true;
-                        setTimeout(() => this.disabled = false, 2000);
-                        uploadSoftware();
-                    });
-                    uploadBtn.setAttribute('data-handler-attached', 'true');
-                }
+                // uploadBtn event handler wordt niet meer toegevoegd, want onclick="handleSoftwareUpload()" is nu leidend
             }, 100);
         }
         
@@ -3926,14 +3837,18 @@ ${matrixContent}
         
         function updatePublicSoftwareList() {
             const publicExplorer = document.getElementById('software-explorer');
+            if (!publicExplorer) {
+                console.warn('updatePublicSoftwareList: #software-explorer niet gevonden');
+                return;
+            }
             publicExplorer.innerHTML = '';
-            
+
             const categories = {};
             uploadedSoftware.forEach(software => {
                 if (!categories[software.category]) categories[software.category] = [];
                 categories[software.category].push(software);
             });
-            
+
             Object.keys(categories).forEach(category => {
                 const categoryDiv = document.createElement('div');
                 categoryDiv.className = 'software-item';

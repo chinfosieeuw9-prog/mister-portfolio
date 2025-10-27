@@ -52,11 +52,17 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function updateFileDisplay(input) {
-    const dz = input.closest('#upload-dialog').querySelector('.upload-dropzone');
+    const dialog = input.closest('#upload-dialog');
+    if (!dialog) return;
+    const dz = dialog.querySelector('.upload-dropzone');
+    if (!dz) {
+        showNotification('Upload dropzone niet gevonden!', 'error');
+        return;
+    }
     if (input.files && input.files.length > 0) {
-        dz.innerHTML = `<div style="font-size:24px;margin-bottom:8px;">📂</div><div>${input.files[0].name}</div>`;
+        dz.innerHTML = `<div style=\"font-size:24px;margin-bottom:8px;\">📂</div><div>${input.files[0].name}</div>`;
     } else {
-        dz.innerHTML = `<div style="font-size:24px;margin-bottom:8px;">📂</div><div>Klik om te selecteren of sleep een bestand</div><div style='font-size:12px;color:#888;'>.exe, .msi, .zip, .rar, .dmg, .deb</div>`;
+        dz.innerHTML = `<div style=\"font-size:24px;margin-bottom:8px;\">📂</div><div>Klik om te selecteren of sleep een bestand</div><div style='font-size:12px;color:#888;'>.exe, .msi, .zip, .rar, .dmg, .deb</div>`;
     }
 }
 
@@ -94,8 +100,18 @@ async function handleSoftwareUpload() {
     progressBar.max = 100;
     setProgressLabel(progressBar, 'Uploaden...');
 
+    console.log('DEBUG: Start uploadWithProgress', {
+        url: 'https://mister-portfolio.onrender.com/upload',
+        formData,
+        file: fileInput.files[0],
+        name: nameInput.value.trim(),
+        category: catInput.value,
+        description: descInput.value.trim()
+    });
+
     try {
-        const response = await uploadWithProgress('http://localhost:3001/upload', formData, progressBar);
+        const response = await uploadWithProgress('https://mister-portfolio.onrender.com/upload', formData, progressBar);
+        console.log('DEBUG: uploadWithProgress response', response);
         if (response.success) {
             setProgressLabel(progressBar, '✅ Upload gelukt!');
             showNotification('Upload gelukt! Bestand staat nu op GitHub.', 'success');
@@ -106,6 +122,7 @@ async function handleSoftwareUpload() {
     } catch (err) {
         setProgressLabel(progressBar, '❌ Upload mislukt');
         showNotification('Upload mislukt: ' + err.message, 'error');
+        console.error('DEBUG: uploadWithProgress error', err);
     }
 }
 
@@ -135,16 +152,24 @@ function setProgressLabel(pb, text) {
 
 function uploadWithProgress(url, formData, progressBar) {
     return new Promise((resolve, reject) => {
+        console.log('DEBUG: uploadWithProgress called', url, formData);
         const xhr = new XMLHttpRequest();
         xhr.open('POST', url);
         xhr.onload = function() {
+            console.log('DEBUG: xhr.onload', xhr.status, xhr.responseText);
             try {
                 const res = JSON.parse(xhr.responseText);
                 if (xhr.status === 200) resolve(res);
                 else reject(res);
-            } catch (e) { reject({ error: 'Ongeldige server respons' }); }
+            } catch (e) {
+                console.error('DEBUG: JSON parse error', e, xhr.responseText);
+                reject({ error: 'Ongeldige server respons' });
+            }
         };
-        xhr.onerror = function() { reject({ error: 'Netwerkfout' }); };
+        xhr.onerror = function() {
+            console.error('DEBUG: xhr.onerror', xhr.status, xhr.statusText);
+            reject({ error: 'Netwerkfout' });
+        };
         xhr.upload.onprogress = function(e) {
             if (e.lengthComputable) {
                 progressBar.value = Math.round((e.loaded / e.total) * 100);
@@ -375,14 +400,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Upload knop in Software Explorer koppelen
-    const uploadBtn = document.getElementById('upload-software-btn');
-    const uploadDialog = document.getElementById('upload-dialog');
-    if (uploadBtn && uploadDialog) {
-        uploadBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            uploadDialog.style.display = 'block';
-        });
-    }
+    // De onclick wordt nu direct in index.html gezet: onclick="handleSoftwareUpload()"
+    // Dus hier geen extra event handler meer toevoegen.
     // Cancel knop koppelen
     const cancelBtn = document.querySelector('.cancel-btn');
     if (cancelBtn && uploadDialog) {

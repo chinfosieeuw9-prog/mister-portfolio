@@ -9,13 +9,15 @@ dotenv.config();
 const app = express();
 const upload = multer({ dest: 'tmp/' });
 
+
 const {
   GITHUB_TOKEN,
   GITHUB_REPO,
   GITHUB_BRANCH = 'main',
-  GITHUB_UPLOAD_PATH = 'uploads/',
-  PORT = 3001
+  GITHUB_UPLOAD_PATH = 'uploads/'
 } = process.env;
+
+const PORT = process.env.PORT || 3001;
 
 if (!GITHUB_TOKEN || !GITHUB_REPO) {
   console.error('❌ GITHUB_TOKEN en GITHUB_REPO zijn verplicht in .env');
