@@ -16,5 +16,11 @@
     "date": "2025-10-15",
     "content": "Enhanced Azure integration tools",
     "link": "#"
+  },
+  {
+    "title": "Nieuw backup systeem toegevoegd",
+    "date": "2025-10-28",
+    "content": "Automatische PowerShell-backups en restore workflow geïmplementeerd.",
+    "link": "#"
   }
 ]

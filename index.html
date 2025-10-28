@@ -1308,17 +1308,33 @@
         <!-- Main Cards -->
         <div class="cards-grid">
             <div class="card">
-                <div class="card-header">
-                    <div class="card-icon">�</div>
-                    <h2>Latest News</h2>
-                </div>
-                <p>Recent updates and activity log</p>
-                <div class="news-log" id="news-log">
-                    <div class="news-item">🔹 Website launched with new security features</div>
-                    <div class="news-item">🔹 Added interactive tech showcase</div>
-                    <div class="news-item">🔹 Enhanced Azure integration tools</div>
-                </div>
-                <button onclick="openNewsManager()" id="news-update-btn" class="admin-quick-btn" style="margin-top: 8px; font-size: 11px; padding: 4px 8px; display: none;">✏️ Update</button>
+                                <div class="card-header">
+                                        <div class="card-icon">&#128240;</div>
+                                        <h2>Latest News</h2>
+                                </div>
+                                <p>Recent updates and activity log</p>
+                                <div class="news-log" id="news-log">
+                                        <!-- Nieuwsberichten worden hier dynamisch geladen -->
+                                </div>
+                                <button onclick="openNewsManager()" id="news-update-btn" class="admin-quick-btn" style="margin-top: 8px; font-size: 11px; padding: 4px 8px; display: none;">✏️ Update</button>
+                                <script>
+                                // Dynamisch nieuws laden uit news.json
+                                fetch('news.json')
+                                    .then(response => response.json())
+                                    .then(news => {
+                                        const log = document.getElementById('news-log');
+                                        log.innerHTML = '';
+                                        news.forEach(item => {
+                                            const div = document.createElement('div');
+                                            div.className = 'news-item';
+                                            div.textContent = '🔹 ' + item.title;
+                                            log.appendChild(div);
+                                        });
+                                    })
+                                    .catch(() => {
+                                        document.getElementById('news-log').innerHTML = '<div class="news-item">Nieuws laden mislukt.</div>';
+                                    });
+                                </script>
             </div>
             
             <div class="card">
@@ -2013,8 +2029,8 @@
                             <div style="color: #999; font-size: 12px;">${(file.size/1024/1024).toFixed(2)} MB • ${file.type || 'Unknown type'}</div>
                         </div>
                         <button onclick="removeFile(${index})" style="
-                            background: #dc2626; color: white; border: none; padding: 4px 8px;
-                            border-radius: 4px; cursor: pointer; font-size: 12px;
+                            background: #dc2626; color: white; border: none;
+                            padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 10px;
                         ">×</button>
                     `;
                     fileList.appendChild(item);
@@ -2126,7 +2142,7 @@
                         <!-- Main Content Area -->
                         <div style="flex: 1; padding: 20px; overflow-y: auto;">
                             <div id="contentEditor">
-                                <h3 style="color: #00d4ff; margin-bottom: 16px;">Select a section to edit</h3>
+                                <h3 style="color: #00d4ff; margin: 0 0 16px 0;">Select a section to edit</h3>
                                 <p style="color: #999;">Choose a content section from the sidebar to start editing.</p>
                             </div>
                         </div>
@@ -2608,7 +2624,7 @@
                 ">
                     <!-- Header -->
                     <div style="
-                        background: linear-gradient(135deg, #2563eb, #7c3aed);
+                        background: linear-gradient(135deg, #00d4ff, #0088cc);
                         padding: 16px 20px; color: white; display: flex;
                         justify-content: space-between; align-items: center;
                     ">
@@ -2632,6 +2648,8 @@
                             padding: 16px; border-radius: 8px; color: white;
                         ">
                             <div style="font-size: 24px; font-weight: bold;">12</div>
+                            <div style="opacity: 0.9;">📁 Total Files</div>
+                        </div>
                             <div style="opacity: 0.9;">📁 Total Files</div>
                         </div>
                         <div class="stat-widget" style="
