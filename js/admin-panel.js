@@ -46,3 +46,31 @@ function createAdminPanel() {
     showAdminButtons();
 }
 // ... Plaats hier de rest van je admin functies ...
+
+// Supabase config
+const SUPABASE_URL = 'https://dvwmphrmrbczgasuouiz.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR2d21waHJtcmJjemdhc3VvdWl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE2NDM4MDUsImV4cCI6MjA3NzIxOTgwNX0.TWP5tnVgA4HO7h-pebXiRG_pIq21XGxYgqUE-gipvBE';
+
+async function fetchNews() {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/news?select=*`, {
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${SUPABASE_KEY}`
+    }
+  });
+  return await res.json();
+}
+
+async function addNews(article) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/news`, {
+    method: 'POST',
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json',
+      Prefer: 'return=representation'
+    },
+    body: JSON.stringify([article])
+  });
+  return await res.json();
+}

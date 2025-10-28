@@ -1318,22 +1318,26 @@
                                 </div>
                                 <button onclick="openNewsManager()" id="news-update-btn" class="admin-quick-btn" style="margin-top: 8px; font-size: 11px; padding: 4px 8px; display: none;">✏️ Update</button>
                                 <script>
-                                // Dynamisch nieuws laden uit news.json
-                                fetch('news.json')
-                                    .then(response => response.json())
-                                    .then(news => {
-                                        const log = document.getElementById('news-log');
-                                        log.innerHTML = '';
+                                // Dynamisch nieuws laden uit Supabase
+                                fetchNews().then(news => {
+                                    const log = document.getElementById('news-log');
+                                    log.innerHTML = '';
+                                    if (Array.isArray(news) && news.length > 0) {
                                         news.forEach(item => {
                                             const div = document.createElement('div');
                                             div.className = 'news-item';
-                                            div.textContent = '🔹 ' + item.title;
+                                            // Toon titel als link (indien aanwezig), anders plain text
+                                            let title = item.title || '[Geen titel]';
+                                            let date = item.date ? new Date(item.date).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+                                            div.innerHTML = `<div style="font-weight:600;color:#00d4ff;">${title}</div>` + (date ? `<div style="font-size:12px;color:#aaa;">${date}</div>` : '');
                                             log.appendChild(div);
                                         });
-                                    })
-                                    .catch(() => {
-                                        document.getElementById('news-log').innerHTML = '<div class="news-item">Nieuws laden mislukt.</div>';
-                                    });
+                                    } else {
+                                        log.innerHTML = '<div class="news-item">Geen nieuws gevonden.</div>';
+                                    }
+                                }).catch(() => {
+                                    document.getElementById('news-log').innerHTML = '<div class="news-item">Nieuws laden mislukt.</div>';
+                                });
                                 </script>
             </div>
             
