@@ -2896,85 +2896,74 @@
             const content = document.getElementById('news-content').value.trim();
             const link = document.getElementById('news-link').value.trim();
             const linkTitle = document.getElementById('news-link-title').value.trim() || 'Read more';
-            
             if (!title || !content) {
                 alert('Please enter both title and content');
                 return;
             }
-            
-            // Create news article object
             const article = {
-                id: Date.now(),
                 title: title,
                 content: content,
                 link: link,
                 linkTitle: linkTitle,
-                date: new Date().toLocaleDateString('nl-NL', { 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
-                }),
-                timestamp: new Date().toISOString()
+                date: new Date().toISOString().slice(0,10)
             };
-            
-            // Add to storage
-            newsArticles.unshift(article); // Add to beginning
-            localStorage.setItem('newsArticles', JSON.stringify(newsArticles));
-            
-            // Update displays
-            loadNewsDisplay();
-            loadNewsItemsManager();
-            
-            // Clear form
-            document.getElementById('news-title').value = '';
-            document.getElementById('news-content').value = '';
-            document.getElementById('news-link').value = '';
-            document.getElementById('news-link-title').value = '';
-            
-            alert('📰 News article published successfully!');
+            fetch('/api/news', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(article)
+            })
+            .then(res => {
+                if (!res.ok) throw new Error('API error');
+                alert('📰 News article published successfully!');
+                loadNewsDisplay();
+                loadNewsItemsManager();
+                document.getElementById('news-title').value = '';
+                document.getElementById('news-content').value = '';
+                document.getElementById('news-link').value = '';
+                document.getElementById('news-link-title').value = '';
+            })
+            .catch(e => {
+                alert('❌ Fout bij opslaan nieuws: ' + e.message);
+            });
         }
 
         function loadNewsDisplay() {
-            console.log('📰 Loading news display, articles count:', newsArticles.length);
             const container = document.getElementById('news-log');
-            if (!container) {
-                console.error('❌ News container not found!');
-                return;
-            }
-            
+            if (!container) return;
             container.innerHTML = '';
-            
-            if (newsArticles.length === 0) {
-                container.innerHTML = '<div style="color: #666; font-style: italic; padding: 8px;">Geen nieuws berichten gevonden</div>';
-                return;
-            }
-            
-            newsArticles.slice(0, 5).forEach(article => { // Show latest 5
-                const item = document.createElement('div');
-                item.className = 'news-item';
-                item.style.cssText = `
-                    cursor: pointer; padding: 8px; border-radius: 6px; margin-bottom: 6px;
-                    border: 1px solid transparent; transition: all 0.2s;
-                `;
-                item.innerHTML = `
-                    <div style="font-weight: bold; color: #00d4ff; margin-bottom: 2px;">${article.title}</div>
-                    <div style="font-size: 11px; color: #999;">${article.date}</div>
-                `;
-                
-                item.onmouseover = () => {
-                    item.style.borderColor = '#00d4ff';
-                    item.style.background = 'rgba(0, 212, 255, 0.1)';
-                };
-                item.onmouseout = () => {
-                    item.style.borderColor = 'transparent';
-                    item.style.background = 'transparent';
-                };
-                
-                item.onclick = () => openNewsArticle(article);
-                container.appendChild(item);
-            });
-            
-            console.log('✅ News display loaded successfully');
+            fetch('/api/news')
+                .then(res => res.json())
+                .then(news => {
+                    if (!Array.isArray(news) || news.length === 0) {
+                        container.innerHTML = '<div style="color: #666; font-style: italic; padding: 8px;">Geen nieuws berichten gevonden</div>';
+                        return;
+                    }
+                    news.slice(0, 5).forEach(article => {
+                        const item = document.createElement('div');
+                        item.className = 'news-item';
+                        item.style.cssText = `
+                            cursor: pointer; padding: 8px; border-radius: 6px; margin-bottom: 6px;
+                            border: 1px solid transparent; transition: all 0.2s;
+                        `;
+                        item.innerHTML = `
+                            <div style="font-weight: bold; color: #00d4ff; margin-bottom: 2px;">${article.title}</div>
+                            <div style="font-size: 11px; color: #999;">${article.date}</div>
+                        `;
+                        item.onmouseover = () => {
+                            item.style.borderColor = '#00d4ff';
+                            item.style.background = 'rgba(0, 212, 255, 0.1)';
+                        };
+                        item.onmouseout = () => {
+                            item.style.borderColor = 'transparent';
+                            item.style.background = 'transparent';
+                        };
+                        item.onclick = () => openNewsArticle(article);
+                        container.appendChild(item);
+                    });
+                })
+                .catch(() => {
+                    container.innerHTML = '<div style="color: #666; font-style: italic; padding: 8px;">Nieuws laden mislukt</div>';
+                });
         }
 
         function openNewsArticle(article) {
