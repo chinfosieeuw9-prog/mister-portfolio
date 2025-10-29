@@ -42,7 +42,6 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     
     <!-- Favicon -->
-    <link rel="stylesheet" href="css/style.css">
     <!-- Supabase JS CDN -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTYiIGN5PSIxNiIgcj0iMTYiIGZpbGw9InVybCgjZ3JhZGllbnQwX2xpbmVhcl8xXzEpIi8+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9ImdyYWRpZW50MF9saW5lYXJfMV8xIiB4MT0iMCIgeTE9IjAiIHgyPSIzMiIgeTI9IjMyIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMyZDFiNjkiLz4KPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjNWIyMWI2Ii8+CjwvbGluZWFyR3JhZGllbnQ+CjwvZGVmcz4KPC9zdmc+">
     
@@ -52,13 +51,65 @@
             padding: 0;
             box-sizing: border-box;
         }
+        
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background:
-                #181828,
+            background: 
                 radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.15) 0%, transparent 50%),
                 radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.08) 0%, transparent 50%),
-                radial-gradient(circle at 40% 40%, rgba(120, 119, 198, 0.12) 0%, transparent 50%);
+                radial-gradient(circle at 40% 40%, rgba(120, 119, 198, 0.12) 0%, transparent 50%),
+                repeating-linear-gradient(
+                    45deg,
+                    transparent,
+                    transparent 3px,
+                    rgba(255, 255, 255, 0.04) 3px,
+                    rgba(255, 255, 255, 0.04) 6px
+                ),
+                repeating-linear-gradient(
+                    -45deg,
+                    transparent,
+                    transparent 4px,
+                    rgba(120, 119, 198, 0.03) 4px,
+                    rgba(120, 119, 198, 0.03) 8px
+                ),
+                #0a0a0a;
+            color: #ffffff;
+            line-height: 1.6;
+            font-size: 15px;
+            position: relative;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 25% 25%, rgba(120, 119, 198, 0.10) 0%, transparent 60%),
+                radial-gradient(circle at 75% 75%, rgba(120, 119, 198, 0.08) 0%, transparent 60%),
+                radial-gradient(circle at 50% 10%, rgba(255, 255, 255, 0.05) 0%, transparent 40%);
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.15);
+            backdrop-filter: blur(0.5px);
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .container {
+            position: relative;
+            z-index: 2;
         }
         
         .container {
@@ -1198,38 +1249,6 @@
     </style>
 </head>
 <body>
-        <!-- AI Chatbox -->
-        <div id="ai-chatbox" style="position:fixed;bottom:24px;right:24px;width:320px;max-width:95vw;background:#181828;border-radius:12px;box-shadow:0 4px 24px #000;padding:0;z-index:9999;">
-            <div style="background:#23234a;padding:12px 16px;border-radius:12px 12px 0 0;color:#fff;font-weight:600;">AI Chat</div>
-            <div id="chat-messages" style="height:220px;overflow-y:auto;padding:12px;color:#bfc3d9;font-size:0.97em;"></div>
-            <form id="chat-form" style="display:flex;border-top:1px solid #23234a;">
-                <input id="chat-input" autocomplete="off" placeholder="Stel je vraag..." style="flex:1;background:#23234a;color:#fff;border:none;padding:10px 12px;border-radius:0 0 0 12px;font-size:1em;">
-                <button style="background:#4ade80;color:#23234a;border:none;padding:0 18px;font-weight:600;border-radius:0 0 12px 0;cursor:pointer;">Send</button>
-            </form>
-        </div>
-        <script>
-        const chatForm = document.getElementById('chat-form');
-        const chatInput = document.getElementById('chat-input');
-        const chatMessages = document.getElementById('chat-messages');
-        chatForm.onsubmit = async e => {
-            e.preventDefault();
-            const vraag = chatInput.value.trim();
-            if (!vraag) return;
-            chatMessages.innerHTML += `<div style="margin-bottom:8px;"><b>Jij:</b> ${vraag}</div>`;
-            chatInput.value = '';
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-            chatMessages.innerHTML += `<div id="ai-typing" style="color:#888;">AI is aan het typen...</div>`;
-            const res = await fetch('/api/openai', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt: vraag })
-            });
-            const data = await res.json();
-            document.getElementById('ai-typing').remove();
-            chatMessages.innerHTML += `<div style="margin-bottom:8px;"><b>AI:</b> ${data.choices?.[0]?.message?.content || 'Geen antwoord.'}</div>`;
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        };
-        </script>
     <!-- Upload Dialog -->
     <div id="uploadDialog" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); z-index:9999; align-items:center; justify-content:center;">
         <form id="uploadForm" style="background:#fff; padding:32px; border-radius:12px; box-shadow:0 8px 32px rgba(0,0,0,0.2); min-width:320px; max-width:90vw; display:flex; flex-direction:column; gap:16px;">
@@ -1298,7 +1317,6 @@
                     <textarea id="news-content" placeholder="Bericht" required style="padding:7px; border-radius:5px; border:1px solid #333; background:#23234a; color:#fff;"></textarea>
                     <input type="text" id="news-link" placeholder="Link (optioneel)" style="padding:7px; border-radius:5px; border:1px solid #333; background:#23234a; color:#fff;">
                     <button type="submit" style="background:#2d1b69; color:#fff; border:none; border-radius:5px; padding:8px 0; font-weight:600; cursor:pointer;">Toevoegen</button>
-                    <!-- Test Supabase knop verwijderd -->
                     <div id="news-form-msg" style="font-size:0.95em; margin-top:2px;"></div>
                 </form>
                 <div class="card-header">
@@ -1307,8 +1325,89 @@
                 </div>
                 <p>Blijf op de hoogte van het laatste nieuws!</p>
                 <div id="news-list" style="min-height: 80px; max-height: 220px; overflow-y: auto; background: #181828; border-radius: 6px; padding: 10px 8px; color: #e3e6f0;"></div>
-            <button id="load-more-news" style="margin:10px auto 0 auto;display:block;background:#23234a;color:#fff;border:none;border-radius:5px;padding:8px 18px;font-weight:600;cursor:pointer;">Meer laden</button>
-            <div style="font-size: 12px; color: #888; margin-top: 6px;">(Hier komt straks het Supabase nieuws-overzicht)</div>
+                <script>
+                // Nieuws toevoegen via Supabase
+                document.getElementById('news-admin-form').addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    const title = document.getElementById('news-title').value.trim();
+                    const content = document.getElementById('news-content').value.trim();
+                    const link = document.getElementById('news-link').value.trim();
+                    const msg = document.getElementById('news-form-msg');
+                    msg.textContent = '';
+                    if (!title || !content) {
+                        msg.textContent = 'Vul titel en bericht in.';
+                        msg.style.color = '#e57373';
+                        return;
+                    }
+                    msg.textContent = 'Toevoegen...';
+                    msg.style.color = '#888';
+                    try {
+                        const insertObj = { title, content, timestamp: new Date().toISOString() };
+                        if (link) insertObj.link = link;
+                        const { data, error } = await supabase.from(NEWS_TABLE).insert(insertObj);
+                        console.log('Supabase insert result:', { data, error });
+                        if (error) {
+                            msg.textContent = 'Fout bij toevoegen: ' + error.message;
+                            msg.style.color = '#e57373';
+                            return;
+                        }
+                        msg.textContent = 'Toegevoegd!';
+                        msg.style.color = '#4ade80';
+                        document.getElementById('news-title').value = '';
+                        document.getElementById('news-content').value = '';
+                        document.getElementById('news-link').value = '';
+                        await loadNews();
+                    } catch (err) {
+                        msg.textContent = 'Technische fout: ' + err.message;
+                        msg.style.color = '#e57373';
+                        console.error('Insert error:', err);
+                    }
+                });
+                // Supabase config (vervang door jouw gegevens)
+                const SUPABASE_URL = 'https://tesqycomyyifqcwdpetp.supabase.co';
+                const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlc3F5Y29teXlpZnFjd2RwZXRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzNjE0MTAsImV4cCI6MjA3MTkzNzQxMH0.aPtjfcDLL0F70OFDIuJdG13kUZQz2e7FYHNrCW77EnU';
+                const NEWS_TABLE = 'news';
+
+                const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+                async function loadNews() {
+                    const newsList = document.getElementById('news-list');
+                    newsList.innerHTML = '<div style="color:#888;">Nieuws laden...</div>';
+                    try {
+                        const { data, error } = await supabase
+                            .from(NEWS_TABLE)
+                            .select('*')
+                            .order('timestamp', { ascending: false })
+                            .limit(5);
+                        console.log('Supabase fetch result:', { data, error });
+                        if (error) {
+                            newsList.innerHTML = '<div style="color:#e57373;">Fout bij laden nieuws: ' + error.message + '</div>';
+                            return;
+                        }
+                        if (!data || data.length === 0) {
+                            newsList.innerHTML = '<div style="color:#888;">Geen nieuws gevonden</div>';
+                            return;
+                        }
+                        newsList.innerHTML = data.map(item => {
+                            let linkHtml = '';
+                            if (item.link) {
+                                linkHtml = `<div style='margin-top:6px;'><a href='${item.link}' target='_blank' style='color:#4ade80; font-size:1em; text-decoration:underline;'>${item.link}</a></div>`;
+                            }
+                            // Elk nieuwsbericht krijgt een data-attribuut met id en onclick
+                            return `<div class='news-item' data-news='${encodeURIComponent(JSON.stringify(item))}' style="padding:6px 0; border-bottom:1px solid #23234a; font-size:1em; cursor:pointer;">
+                                <strong>${item.title || '(geen titel)'}</strong><br>
+                                <span style='font-size:1em; color:#b3b3b3;'>${item.content || ''}</span>
+                                ${linkHtml}
+                            </div>`;
+                        }).join('');
+                    } catch (err) {
+                        newsList.innerHTML = '<div style="color:#e57373;">Technische fout: ' + err.message + '</div>';
+                        console.error('Fetch error:', err);
+                    }
+                }
+                loadNews();
+                </script>
+                <div style="font-size: 12px; color: #888; margin-top: 6px;">(Hier komt straks het Supabase nieuws-overzicht)</div>
             </div>
             
             <div class="card">
@@ -4228,169 +4327,26 @@ ${matrixContent}
     <!-- Supabase JS CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js"></script>
     <script>
+        // Voeg nieuws-list toe als die nog niet bestaat
         // Supabase config
-    const SUPABASE_URL = 'https://tesqycomyyifqcwdpetp.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlc3F5Y29teXlpZnFjd2RwZXRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzNjE0MTAsImV4cCI6MjA3MTkzNzQxMH0.aPtjfcDLL0F70OFDIuJdG13kUZQz2e7FYHNrCW77EnU';
-    const NEWS_TABLE = 'news';
-    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const SUPABASE_URL = 'https://tesqycomyyifqcwdpetp.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlc3F5Y29teXlpZnFjd2RwZXRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzNjE0MTAsImV4cCI6MjA3MTkzNzQxMH0.aPtjfcDLL0F70OFDIuJdG13kUZQz2e7FYHNrCW77EnU';
+        const NEWS_TABLE = 'news';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         async function loadNews() {
             const newsList = document.getElementById('news-list');
             newsList.innerHTML = '<div style="color:#888;">Nieuws laden...</div>';
             try {
-                const { data, error } = await supabaseClient
+                const { data, error } = await supabase
                     .from(NEWS_TABLE)
                     .select('*')
-                    .order('id', { ascending: false })
-                    .limit(window.newsLimit || 4);
-                console.log('[Supabase] Response van loadNews:', { data, error });
-                if (data && Array.isArray(data)) {
-                    console.log('[Supabase] Opgehaalde nieuwsberichten:');
-                    data.forEach(item => {
-                        console.log(`- id: ${item.id}, title: ${item.title}`);
-                    });
-                }
+                    .order('timestamp', { ascending: false })
+                    .limit(5);
+                console.log('Supabase fetch result:', { data, error });
                 if (error) {
                     newsList.innerHTML = '<div style="color:#e57373;">Fout bij laden nieuws: ' + error.message + '</div>';
-                    console.error('[Supabase] Fout bij ophalen nieuws:', error);
                     return;
                 }
-                if (!data || data.length === 0) {
-                    newsList.innerHTML = '<div style="color:#888;">Geen nieuws gevonden</div>';
-                    console.warn('[Supabase] Geen nieuws gevonden. Data:', data);
-                    return;
-                }
-                console.log(`[Supabase] Aantal nieuwsberichten opgehaald: ${data.length}`);
-                newsList.innerHTML = data.map(item => {
-                    // Escape attributen
-                    const esc = str => String(str||'').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-                    return `<div class='news-item' 
-                        data-title="${esc(item.title)}"
-                        data-content="${esc(item.content)}"
-                        data-link="${esc(item.link)}"
-                        style="padding:5px 0; border-bottom:1px solid #23234a; font-size:0.93em; cursor:pointer; color:#bfc3d9; font-family:'Segoe UI', Arial, sans-serif; letter-spacing:0.01em;">
-                        <span style='font-weight:400; display:inline-block; max-width:95%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; vertical-align:bottom;'>${esc(item.title) || '(geen titel)'}</span>
-                    </div>`;
-                }).join('');
-                // Klik event voor popup
-                document.querySelectorAll('.news-item').forEach(el => {
-                    el.onclick = function() {
-                        const item = {
-                            title: this.dataset.title,
-                            content: this.dataset.content,
-                            link: this.dataset.link
-                        };
-                        console.log('[Nieuws] Klik op item:', item);
-                        showNewsPopup(item);
-                    };
-                });
-            } catch (err) {
-                newsList.innerHTML = '<div style=\"color:#e57373;\">Technische fout: ' + err.message + '</div>';
-                console.error('[Supabase] Fetch error:', err);
-            }
-        }
-
-        // Popup functie voor nieuws
-        function showNewsPopup(item) {
-            // Verwijder bestaande popup
-            const oude = document.getElementById('news-popup');
-            if (oude) oude.remove();
-            // Popup HTML
-            const popup = document.createElement('div');
-            popup.id = 'news-popup';
-            popup.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:9999;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;';
-            popup.innerHTML = `
-                <div style="background:#181828;padding:32px 24px;border-radius:12px;max-width:420px;width:90vw;box-shadow:0 8px 32px #000;position:relative;">
-                    <button id="close-news-popup" style="position:absolute;top:12px;right:12px;background:#23234a;color:#fff;border:none;border-radius:4px;padding:4px 10px;cursor:pointer;font-size:1.2em;">&times;</button>
-                    <h2 style='color:#4ade80;margin-bottom:12px;'>${item.title || '(geen titel)'}</h2>
-                    <div style='color:#e3e6f0;font-size:1em;margin-bottom:12px;'>${item.content || ''}</div>
-                    ${item.link ? `<a href='${item.link}' target='_blank' style='color:#4ade80;text-decoration:underline;word-break:break-all;'>${item.link}</a>` : ''}
-                </div>
-            `;
-            document.body.appendChild(popup);
-            document.getElementById('close-news-popup').onclick = () => popup.remove();
-            popup.onclick = e => { if (e.target === popup) popup.remove(); };
-        }
-
-        // Nieuws toevoegen via Supabase
-        // Meer laden functionaliteit
-        window.newsLimit = 5;
-        document.getElementById('load-more-news').onclick = async function() {
-            window.newsLimit += 5;
-            await loadNews();
-        };
-        // Bij eerste load altijd limiet resetten
-        window.addEventListener('DOMContentLoaded', () => {
-            window.newsLimit = 5;
-            loadNews();
-        });
-        document.getElementById('news-admin-form').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const title = document.getElementById('news-title').value.trim();
-            const content = document.getElementById('news-content').value.trim();
-            const link = document.getElementById('news-link').value.trim();
-            const msg = document.getElementById('news-form-msg');
-            msg.textContent = '';
-            if (!title || !content) {
-                msg.textContent = 'Vul titel en bericht in.';
-                msg.style.color = '#e57373';
-                return;
-            }
-            msg.textContent = 'Toevoegen...';
-            msg.style.color = '#888';
-            try {
-                const insertObj = { title, content, timestamp: new Date().toISOString() };
-                if (link) insertObj.link = link;
-                console.log('[DEBUG] Insert object:', insertObj);
-                // Supabase verwacht een array voor insert
-                const { data, error } = await supabaseClient.from(NEWS_TABLE).insert([insertObj]);
-                console.log('Supabase insert result:', { data, error });
-                if (error) {
-                    msg.textContent = 'Fout bij toevoegen: ' + error.message;
-                    msg.style.color = '#e57373';
-                    return;
-                }
-                msg.textContent = 'Toegevoegd!';
-                msg.style.color = '#4ade80';
-                document.getElementById('news-title').value = '';
-                document.getElementById('news-content').value = '';
-                document.getElementById('news-link').value = '';
-                await loadNews();
-            } catch (err) {
-                msg.textContent = 'Technische fout: ' + err.message;
-                msg.style.color = '#e57373';
-                console.error('Insert error:', err);
-            }
-        });
-
-        // Testknop functionaliteit
-        document.getElementById('test-supabase-btn').onclick = async function() {
-            const msg = document.getElementById('news-form-msg');
-            msg.textContent = 'Testbericht wordt verzonden...';
-            msg.style.color = '#4ade80';
-            try {
-                const testObj = {
-                    title: 'Testbericht',
-                    content: 'Dit is een test vanuit de website op ' + new Date().toLocaleString(),
-                    timestamp: new Date().toISOString()
-                };
-                const { data, error } = await supabaseClient.from(NEWS_TABLE).insert(testObj);
-                console.log('Supabase insert response:', { data, error });
-                if (error) {
-                    msg.textContent = 'Fout bij Supabase: ' + error.message + '\nZie console voor details.';
-                    msg.style.color = '#e57373';
-                } else {
-                    msg.textContent = '✅ Testbericht succesvol toegevoegd!\nResponse: ' + JSON.stringify(data);
-                    msg.style.color = '#4ade80';
-                    await loadNews();
-                }
-            } catch (err) {
-                msg.textContent = 'Technische fout: ' + err.message;
-                msg.style.color = '#e57373';
-            }
-        };
-
-        // Initieel nieuws laden
-        document.addEventListener('DOMContentLoaded', loadNews);
-    </script>
+                <!-- Supabase JS CDN and main script block are already present above. Removed duplicate and stray JS code. -->
 

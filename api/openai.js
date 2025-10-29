@@ -1,6 +1,6 @@
-import fetch from 'node-fetch';
+const fetch = require('node-fetch');
 
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
   // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -32,4 +32,4 @@ export default async function handler(req, res) {
   });
   const data = await response.json();
   res.status(response.status).json(data);
-}
+};
