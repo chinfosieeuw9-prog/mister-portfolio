@@ -1257,9 +1257,9 @@
 
         <!-- AI Chat Widget als kaart direct onder About -->
         <div class="card" id="ai-chatbox" style="margin-bottom:24px;">
-            <div class="ai-chatbox-header">
-                <img class="ai-chatbox-logo" src="openai-logo-png.jpg" alt="OpenAI Logo">
-                <span class="ai-chatbox-title">AI Assistent</span>
+            <div class="card-header ai-chatbox-header">
+                <img class="card-icon ai-chatbox-logo" src="openai-logo.png" alt="OpenAI Logo">
+                <h2 class="ai-chatbox-title">AI Assistent</h2>
             </div>
             <div id="chat-messages" class="ai-chatbox-messages"></div>
             <form id="chat-form" class="ai-chatbox-form">
@@ -1310,7 +1310,7 @@
                     <h2>Nieuws</h2>
                 </div>
                 <p>Blijf op de hoogte van het laatste nieuws!</p>
-                <div id="news-list" style="min-height: 80px; max-height: 220px; overflow-y: auto; background: #181828; border-radius: 6px; padding: 10px 8px; color: #e3e6f0;"></div>
+                <div id="news-list" style="min-height: 80px; max-height: 220px; overflow-y: auto; background: #181828; border-radius: 6px; padding: 10px 8px; color: #e3e6f0; max-height:40vh; overflow-y:auto;"></div>
             <button id="load-more-news" style="margin:10px auto 0 auto;display:block;background:#23234a;color:#fff;border:none;border-radius:5px;padding:8px 18px;font-weight:600;cursor:pointer;">Meer laden</button>
             <div style="font-size: 12px; color: #888; margin-top: 6px;">(Hier komt straks het Supabase nieuws-overzicht)</div>
             </div>
