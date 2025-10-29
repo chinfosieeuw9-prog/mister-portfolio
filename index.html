@@ -1198,29 +1198,6 @@
     </style>
 </head>
 <body>
-        <script>
-        const chatForm = document.getElementById('chat-form');
-        const chatInput = document.getElementById('chat-input');
-        const chatMessages = document.getElementById('chat-messages');
-        chatForm.onsubmit = async e => {
-            e.preventDefault();
-            const vraag = chatInput.value.trim();
-            if (!vraag) return;
-            chatMessages.innerHTML += `<div style="margin-bottom:8px;"><b>Jij:</b> ${vraag}</div>`;
-            chatInput.value = '';
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-            chatMessages.innerHTML += `<div id="ai-typing" style="color:#888;">AI is aan het typen...</div>`;
-            const res = await fetch('/api/openai', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt: vraag })
-            });
-            const data = await res.json();
-            document.getElementById('ai-typing').remove();
-            chatMessages.innerHTML += `<div style="margin-bottom:8px;"><b>AI:</b> ${data.choices?.[0]?.message?.content || 'Geen antwoord.'}</div>`;
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        };
-        </script>
     <!-- Upload Dialog -->
     <div id="uploadDialog" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); z-index:9999; align-items:center; justify-content:center;">
         <form id="uploadForm" style="background:#fff; padding:32px; border-radius:12px; box-shadow:0 8px 32px rgba(0,0,0,0.2); min-width:320px; max-width:90vw; display:flex; flex-direction:column; gap:16px;">
@@ -1286,6 +1263,29 @@
                 <input id="chat-input" autocomplete="off" placeholder="Stel je vraag..." style="flex:1;background:#23234a;color:#fff;border:none;padding:10px 12px;border-radius:0 0 0 8px;font-size:1em;">
                 <button style="background:#4ade80;color:#23234a;border:none;padding:0 18px;font-weight:600;border-radius:0 0 8px 0;cursor:pointer;">Send</button>
             </form>
+        <script>
+        const chatForm = document.getElementById('chat-form');
+        const chatInput = document.getElementById('chat-input');
+        const chatMessages = document.getElementById('chat-messages');
+        chatForm.onsubmit = async e => {
+            e.preventDefault();
+            const vraag = chatInput.value.trim();
+            if (!vraag) return;
+            chatMessages.innerHTML += `<div style=\"margin-bottom:8px;\"><b>Jij:</b> ${vraag}</div>`;
+            chatInput.value = '';
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            chatMessages.innerHTML += `<div id=\"ai-typing\" style=\"color:#888;\">AI is aan het typen...</div>`;
+            const res = await fetch('/api/openai', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt: vraag })
+            });
+            const data = await res.json();
+            document.getElementById('ai-typing').remove();
+            chatMessages.innerHTML += `<div style=\"margin-bottom:8px;\"><b>AI:</b> ${data.choices?.[0]?.message?.content || 'Geen antwoord.'}</div>`;
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        };
+        </script>
         </div>
         
         <!-- Main Cards -->
