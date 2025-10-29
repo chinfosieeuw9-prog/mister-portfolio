@@ -4,10 +4,15 @@
     background: #181828;
     border-radius: 8px;
     box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-    border: 1px solid #23234a;
+    border: 2px solid #23234a;
     padding: 0;
     margin: 0 0 24px 0;
     box-sizing: border-box;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.card#ai-chatbox:hover, .card#ai-chatbox:focus-within {
+    border-color: #6d28d9;
+    box-shadow: 0 2px 16px 0 rgba(109,40,217,0.10);
 }
 .ai-chatbox-header {
     background: #23234a;
