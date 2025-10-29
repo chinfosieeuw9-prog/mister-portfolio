@@ -1,3 +1,84 @@
+/* AI Chatbox Widget Styles */
+#ai-chatbox.card {
+    margin-bottom: 24px;
+    background: #23234a;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px 0 rgba(0,0,0,0.08);
+    border: 1px solid #23234a;
+    padding: 0;
+}
+.ai-chatbox-header {
+    background: #23234a;
+    padding: 12px 16px;
+    border-radius: 8px 8px 0 0;
+    color: #fff;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid #181828;
+}
+.ai-chatbox-logo {
+    height: 22px;
+    width: 22px;
+    vertical-align: middle;
+    filter: brightness(0) invert(1);
+    flex-shrink: 0;
+}
+.ai-chatbox-title {
+    font-size: 1.08em;
+    letter-spacing: 0.5px;
+}
+.ai-chatbox-messages {
+    height: 160px;
+    overflow-y: auto;
+    padding: 12px;
+    color: #bfc3d9;
+    font-size: 0.97em;
+    background: #181828;
+    border-radius: 0 0 0 0;
+}
+.ai-chatbox-form {
+    display: flex;
+    border-top: 1px solid #23234a;
+    background: #181828;
+    border-radius: 0 0 8px 8px;
+}
+.ai-chatbox-input {
+    flex: 1;
+    background: #23234a;
+    color: #fff;
+    border: none;
+    padding: 10px 12px;
+    border-radius: 0 0 0 8px;
+    font-size: 1em;
+    outline: none;
+}
+.ai-chatbox-send {
+    background: #4ade80;
+    color: #23234a;
+    border: none;
+    padding: 0 18px;
+    font-weight: 600;
+    border-radius: 0 0 8px 0;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.ai-chatbox-send:hover {
+    background: #22c55e;
+}
+@media (max-width: 600px) {
+    #ai-chatbox.card {
+        margin-bottom: 18px;
+    }
+    .ai-chatbox-messages {
+        height: 120px;
+        font-size: 0.95em;
+    }
+    .ai-chatbox-header {
+        padding: 10px 10px;
+    }
+}
 /* AI Chat Widget als kaart */
 #ai-chatbox {
     max-width: 600px;
