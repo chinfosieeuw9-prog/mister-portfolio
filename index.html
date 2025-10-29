@@ -1251,8 +1251,31 @@
             </div>
             <div class="featured-content">
                 <div class="featured-title">Mijn verhaal &amp; missie</div>
-                <div class="featured-hint">Click to read more</div>
-                <div class="featured-intro" style="margin-top:8px;color:#e3e6f0;font-size:1.08em;">Welkom op mijn portfolio! Hier deel ik mijn passie voor technologie, mijn reis als developer en mijn missie om digitale problemen op te lossen.</div>
+                <a class="featured-hint" href="#" onclick="openAboutPopup(event)">Click to read more</a>
+<script>
+function openAboutPopup(e) {
+    e.preventDefault();
+    const popup = document.createElement('div');
+    popup.style.position = 'fixed';
+    popup.style.top = '0';
+    popup.style.left = '0';
+    popup.style.width = '100vw';
+    popup.style.height = '100vh';
+    popup.style.background = 'rgba(0,0,0,0.7)';
+    popup.style.zIndex = '9999';
+    popup.style.display = 'flex';
+    popup.style.alignItems = 'center';
+    popup.style.justifyContent = 'center';
+    popup.innerHTML = `
+        <div style="background:#23234a;padding:32px 28px;max-width:420px;width:90vw;border-radius:14px;box-shadow:0 8px 32px #000;color:#e3e6f0;position:relative;">
+            <h2 style="margin-top:0;font-size:1.3em;">Mijn verhaal & missie</h2>
+            <p style="font-size:1.08em;line-height:1.6;margin-bottom:18px;">Ik ben Mister, een gepassioneerde developer met een missie: digitale problemen oplossen en mensen helpen groeien met technologie. Mijn reis begon met nieuwsgierigheid naar hoe dingen werken en groeide uit tot een carrière waarin ik dagelijks bouw aan slimme, veilige en toekomstbestendige oplossingen.<br><br>Of het nu gaat om webdevelopment, automatisering of cybersecurity, ik geloof in de kracht van kennis delen en samen vooruitgaan. Dit portfolio is een weerspiegeling van mijn werk, mijn visie en mijn drive om het verschil te maken.</p>
+            <button onclick="this.closest('div[style*='position:fixed']').remove()" style="position:absolute;top:12px;right:16px;background:#4ade80;color:#23234a;border:none;padding:6px 16px;border-radius:6px;font-weight:600;cursor:pointer;">Sluiten</button>
+        </div>
+    `;
+    document.body.appendChild(popup);
+}
+</script>
             </div>
         </div>
 
