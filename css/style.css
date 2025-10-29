@@ -22,10 +22,13 @@
 }
 .ai-chatbox-logo {
     height: 22px;
-    width: 22px;
+    width: auto;
     vertical-align: middle;
-    filter: brightness(0) invert(1);
+    object-fit: contain;
     flex-shrink: 0;
+    margin-right: 4px;
+    background: none;
+    filter: none;
 }
 .ai-chatbox-title {
     font-size: 1.08em;
