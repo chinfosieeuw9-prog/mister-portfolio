@@ -1266,18 +1266,38 @@ function openAboutPopup(e) {
     popup.style.display = 'flex';
     popup.style.alignItems = 'center';
     popup.style.justifyContent = 'center';
-    popup.innerHTML = `
-        <div id="about-popup-content" style="background:#23234a;padding:32px 28px;max-width:480px;width:92vw;border-radius:14px;box-shadow:0 8px 32px #000;color:#e3e6f0;position:relative;">
-            <h2 style="margin-top:0;font-size:1.3em;">Mijn verhaal & missie</h2>
-            <p style="font-size:1.08em;line-height:1.6;margin-bottom:18px;">
-                Mijn naam is Mister, een creatieve en leergierige developer met een passie voor technologie en innovatie. Mijn reis begon op jonge leeftijd met het uit elkaar halen van computers en het bouwen van mijn eerste websites. Door de jaren heen heb ik mijzelf ontwikkeld tot een allround IT-professional, met ervaring in webdevelopment, automatisering, cloud en cybersecurity.<br><br>
-                Mijn missie is om digitale problemen op te lossen en mensen te helpen groeien met slimme, veilige en toekomstbestendige oplossingen. Ik geloof in de kracht van kennis delen, samenwerken en continu leren. Elke uitdaging zie ik als een kans om te groeien en waarde te creëren voor anderen.<br><br>
-                Op deze portfolio deel ik mijn projecten, visie en aanpak. Of het nu gaat om het bouwen van een website, het automatiseren van processen of het beveiligen van systemen: ik ga altijd voor kwaliteit, creativiteit en resultaat.<br><br>
-                Wil je samenwerken of sparren over een idee? Neem gerust contact op!
-            </p>
-            <button id="about-popup-close" style="position:absolute;top:12px;right:16px;background:#4ade80;color:#23234a;border:none;padding:6px 16px;border-radius:6px;font-weight:600;cursor:pointer;">Sluiten</button>
-        </div>
-    `;
+        popup.innerHTML = `
+            <div id="about-popup-content" style="background:#23234a;padding:32px 28px;max-width:540px;width:96vw;border-radius:14px;box-shadow:0 8px 32px #000;color:#e3e6f0;position:relative;overflow-y:auto;max-height:90vh;">
+                <h2 style="margin-top:0;font-size:1.3em;">Mijn verhaal & missie</h2>
+                <h3 style='margin-bottom:6px;'>Over mij</h3>
+                <p style='margin-top:0;'>Als IT-professional met een sterke focus op webdevelopment, automatisering, cloud en cybersecurity help ik organisaties sneller, veiliger en schaalbaarder te werken. De basis werd jaren geleden gelegd met het demonteren van pc’s en het bouwen van de eerste websites; inmiddels combineer ik die hands-on mentaliteit met moderne engineering-praktijken zoals CI/CD, infrastructure as code en secure-by-design principes.</p>
+                <h3 style='margin-bottom:6px;'>Missie</h3>
+                <p style='margin-top:0;'>Organisaties toekomstbestendig maken met slimme, betrouwbare en meetbare digitale oplossingen. Dat betekent: problemen niet alleen oplossen, maar structureel voorkomen via standaardisatie, automatisering en continue verbetering, steeds met de eindgebruiker én security als uitgangspunt.</p>
+                <h3 style='margin-bottom:6px;'>Kernexpertise</h3>
+                <ul style='margin-top:0;margin-bottom:12px;padding-left:18px;'>
+                    <li><b>Webdevelopment:</b> moderne front-end en API-gedreven back-end, performance tuning en toegankelijke UI’s met duidelijke case studies en meetbare impact.</li>
+                    <li><b>Automatisering:</b> scripting, CI/CD-pipelines, testautomatisering en herhaalbare deployments voor snelheid en kwaliteit.</li>
+                    <li><b>Cloud en hosting:</b> schaalbare web- en app-omgevingen, configuratiebeheer en kostenbewuste architectuurkeuzes.</li>
+                    <li><b>Cybersecurity:</b> hardening, least-privilege, secrets management en proactieve monitoring om risico’s te verlagen.</li>
+                </ul>
+                <h3 style='margin-bottom:6px;'>Werkwijze</h3>
+                <ul style='margin-top:0;margin-bottom:12px;padding-left:18px;'>
+                    <li><b>Analyse en value mapping:</b> eerst de bedrijfsdoelen, dan de technische keuzes; elke feature koppelt aan een KPI of duidelijke use case.</li>
+                    <li><b>Case-study aanpak:</b> probleem, proces, oplossing en resultaat transparant gedocumenteerd, inclusief lessons learned en metrics zoals laadtijd, foutreductie en conversie.</li>
+                    <li><b>Samenwerking en overdracht:</b> duidelijke documentatie, kennisdeling en handover zodat teams zelfstandig verder kunnen.</li>
+                </ul>
+                <h3 style='margin-bottom:6px;'>Wat ik oplever</h3>
+                <ul style='margin-top:0;margin-bottom:12px;padding-left:18px;'>
+                    <li>Veilige, snelle websites en webapps met aantoonbare verbeteringen in performance en UX</li>
+                    <li>Geautomatiseerde pipelines die releasetijd verkorten en kwaliteit verhogen.</li>
+                    <li>Robuuste cloud-omgevingen met monitoring, logging en kosteninzicht.</li>
+                    <li>Security-by-default implementaties die compliance ondersteunen en incidenten voorkomen.</li>
+                </ul>
+                <h3 style='margin-bottom:6px;'>Samenwerken</h3>
+                <p style='margin-top:0;'>Zoek je iemand die techniek, veiligheid en businessresultaat verbindt en dit aantoonbaar maakt met cases en metrics? Laten we kennismaken en je doelen vertalen naar een concreet, uitvoerbaar plan.</p>
+                <button id="about-popup-close" style="position:absolute;top:12px;right:16px;background:#4ade80;color:#23234a;border:none;padding:6px 16px;border-radius:6px;font-weight:600;cursor:pointer;">Sluiten</button>
+            </div>
+        `;
     popup.addEventListener('click', function(ev) {
         if (ev.target === popup) popup.remove();
     });
