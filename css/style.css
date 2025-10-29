@@ -44,7 +44,9 @@
     line-height: 1.2;
 }
 .ai-chatbox-messages {
-    height: 160px;
+    min-height: 80px;
+    max-height: 220px;
+    height: auto;
     overflow-y: auto;
     padding: 16px 18px 16px 18px;
     color: #bfc3d9;
