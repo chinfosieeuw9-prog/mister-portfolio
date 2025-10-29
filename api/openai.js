@@ -1,4 +1,4 @@
-const fetch = require('node-fetch');
+
 
 module.exports = async (req, res) => {
   // CORS headers
