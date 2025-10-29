@@ -1267,12 +1267,21 @@ function openAboutPopup(e) {
     popup.style.alignItems = 'center';
     popup.style.justifyContent = 'center';
     popup.innerHTML = `
-        <div style="background:#23234a;padding:32px 28px;max-width:420px;width:90vw;border-radius:14px;box-shadow:0 8px 32px #000;color:#e3e6f0;position:relative;">
+        <div id="about-popup-content" style="background:#23234a;padding:32px 28px;max-width:480px;width:92vw;border-radius:14px;box-shadow:0 8px 32px #000;color:#e3e6f0;position:relative;">
             <h2 style="margin-top:0;font-size:1.3em;">Mijn verhaal & missie</h2>
-            <p style="font-size:1.08em;line-height:1.6;margin-bottom:18px;">Ik ben Mister, een gepassioneerde developer met een missie: digitale problemen oplossen en mensen helpen groeien met technologie. Mijn reis begon met nieuwsgierigheid naar hoe dingen werken en groeide uit tot een carrière waarin ik dagelijks bouw aan slimme, veilige en toekomstbestendige oplossingen.<br><br>Of het nu gaat om webdevelopment, automatisering of cybersecurity, ik geloof in de kracht van kennis delen en samen vooruitgaan. Dit portfolio is een weerspiegeling van mijn werk, mijn visie en mijn drive om het verschil te maken.</p>
-            <button onclick="this.closest('div[style*='position:fixed']').remove()" style="position:absolute;top:12px;right:16px;background:#4ade80;color:#23234a;border:none;padding:6px 16px;border-radius:6px;font-weight:600;cursor:pointer;">Sluiten</button>
+            <p style="font-size:1.08em;line-height:1.6;margin-bottom:18px;">
+                Mijn naam is Mister, een creatieve en leergierige developer met een passie voor technologie en innovatie. Mijn reis begon op jonge leeftijd met het uit elkaar halen van computers en het bouwen van mijn eerste websites. Door de jaren heen heb ik mijzelf ontwikkeld tot een allround IT-professional, met ervaring in webdevelopment, automatisering, cloud en cybersecurity.<br><br>
+                Mijn missie is om digitale problemen op te lossen en mensen te helpen groeien met slimme, veilige en toekomstbestendige oplossingen. Ik geloof in de kracht van kennis delen, samenwerken en continu leren. Elke uitdaging zie ik als een kans om te groeien en waarde te creëren voor anderen.<br><br>
+                Op deze portfolio deel ik mijn projecten, visie en aanpak. Of het nu gaat om het bouwen van een website, het automatiseren van processen of het beveiligen van systemen: ik ga altijd voor kwaliteit, creativiteit en resultaat.<br><br>
+                Wil je samenwerken of sparren over een idee? Neem gerust contact op!
+            </p>
+            <button id="about-popup-close" style="position:absolute;top:12px;right:16px;background:#4ade80;color:#23234a;border:none;padding:6px 16px;border-radius:6px;font-weight:600;cursor:pointer;">Sluiten</button>
         </div>
     `;
+    popup.addEventListener('click', function(ev) {
+        if (ev.target === popup) popup.remove();
+    });
+    popup.querySelector('#about-popup-close').onclick = function() { popup.remove(); };
     document.body.appendChild(popup);
 }
 </script>
