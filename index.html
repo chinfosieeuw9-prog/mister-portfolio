@@ -42,9 +42,11 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     
     <!-- Favicon -->
+
     <link rel="stylesheet" href="css/style.css">
     <!-- Supabase JS CDN -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTYiIGN5PSIxNiIgcj0iMTYiIGZpbGw9InVybCgjZ3JhZGllbnQwX2xpbmVhcl8xXzEpIi8+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9ImdyYWRpZW50MF9saW5lYXJfMV8xIiB4MT0iMCIgeTE9IjAiIHgyPSIzMiIgeTI9IjMyIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMyZDFiNjkiLz4KPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjNWIyMWI2Ii8+CjwvbGluZWFyR3JhZGllbnQ+CjwvZGVmcz4KPC9zdmc+">
+    <script src="js/admin-panel.js"></script>
     
     <style>
         * {
@@ -1198,6 +1200,24 @@
     </style>
 </head>
 <body>
+    <script>
+    // Anti-kopieerscript: blokkeer rechtsklik, tekstselectie en bekende sneltoetsen
+    document.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+    });
+    document.addEventListener('selectstart', function(e) {
+        e.preventDefault();
+    });
+    document.addEventListener('keydown', function(e) {
+        // Ctrl+C, Ctrl+U, Ctrl+S, F12, Ctrl+Shift+I
+        if ((e.ctrlKey && (e.key === 'c' || e.key === 'u' || e.key === 's')) ||
+            (e.key === 'F12') ||
+            (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'i')) {
+            e.preventDefault();
+            return false;
+        }
+    });
+    </script>
     <!-- Upload Dialog -->
     <div id="uploadDialog" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); z-index:9999; align-items:center; justify-content:center;">
         <form id="uploadForm" style="background:#fff; padding:32px; border-radius:12px; box-shadow:0 8px 32px rgba(0,0,0,0.2); min-width:320px; max-width:90vw; display:flex; flex-direction:column; gap:16px;">
@@ -1239,6 +1259,36 @@
             <a href="https://github.com/chinfosieeuw9-prog" target="_blank" rel="noopener noreferrer" class="social-link">
                 <span>📱</span>Github
             </a>
+            <a href="admin.html" class="social-link" id="admin-panel-link" style="display:none;"><span>🛠️</span>Admin</a>
+        <script>
+        // Toon admin link als admin ingelogd is
+        function updateAdminPanelLink() {
+            var link = document.getElementById('admin-panel-link');
+            var isAdmin = localStorage.getItem('isAdmin') === 'true';
+            if (isAdmin) {
+                link.style.display = 'inline-flex';
+            } else {
+                link.style.display = 'none';
+            }
+        }
+        // Hook in op admin login/logout events
+        (function() {
+            var origLogin = window.showAdminLogin;
+            window.showAdminLogin = function() {
+                origLogin();
+                updateAdminPanelLink();
+            };
+            var origLogout = window.logoutAdmin;
+            window.logoutAdmin = function() {
+                origLogout();
+                updateAdminPanelLink();
+            };
+            // Init bij laden
+            document.addEventListener('DOMContentLoaded', updateAdminPanelLink);
+            // Ook bij terugkomen op pagina
+            window.addEventListener('storage', updateAdminPanelLink);
+        })();
+        </script>
             <a href="#" class="social-link admin-login-btn" id="admin-login-btn" onclick="event.preventDefault(); console.log('🔐 Admin clicked'); showAdminLogin(); return false;">
                 <span>🔐</span>Admin
             </a>
@@ -1308,56 +1358,31 @@ function openAboutPopup(e) {
             </div>
         </div>
 
-        <!-- AI Chat Widget als kaart direct onder About -->
-        <div class="card" id="ai-chatbox" style="margin-bottom:24px;">
-            <div class="card-header ai-chatbox-header">
-                <img class="card-icon ai-chatbox-logo" src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/openai.svg" alt="OpenAI Logo" style="background:#fff;border-radius:6px;padding:2px;width:28px;height:28px;border:1.5px solid #e3e6f0;">
-                <h2 class="ai-chatbox-title">OpenAI</h2>
-            </div>
-            <div id="chat-messages" class="ai-chatbox-messages"></div>
-            <form id="chat-form" class="ai-chatbox-form">
-                <input id="chat-input" autocomplete="off" placeholder="Stel je vraag..." class="ai-chatbox-input" />
-                <button class="ai-chatbox-send">Send</button>
-            </form>
-        <script>
-        const chatForm = document.getElementById('chat-form');
-        const chatInput = document.getElementById('chat-input');
-        const chatMessages = document.getElementById('chat-messages');
-        chatForm.onsubmit = async e => {
-            e.preventDefault();
-            const vraag = chatInput.value.trim();
-            if (!vraag) return;
-            chatMessages.innerHTML += `<div style=\"margin-bottom:8px;\"><b>Jij:</b> ${vraag}</div>`;
-            chatInput.value = '';
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-            chatMessages.innerHTML += `<div id=\"ai-typing\" style=\"color:#888;\">AI is aan het typen...</div>`;
-            const res = await fetch('/api/openai', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt: vraag })
-            });
-            const data = await res.json();
-            document.getElementById('ai-typing').remove();
-            chatMessages.innerHTML += `<div style=\"margin-bottom:8px;\"><b>AI:</b> ${data.choices?.[0]?.message?.content || 'Geen antwoord.'}</div>`;
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        };
-        </script>
-        </div>
+
         
         <!-- Main Cards -->
         <div class="cards-grid">
             <!-- NIEUWS WIDGET (Supabase powered) -->
             <div class="card" id="news-widget">
-                <!-- Beheerformulier voor nieuws toevoegen (enkelvoudig, met link) -->
-                <form id="news-admin-form" style="background:#181828; border-radius:8px; padding:12px 14px; margin-bottom:12px; border:1px solid #23234a; display:flex; flex-direction:column; gap:8px; max-width:420px;">
+                <!-- Beheerformulier voor nieuws toevoegen (alleen admin) -->
+                <form id="news-admin-form" class="admin-only" style="background:#181828; border-radius:8px; padding:12px 14px; margin-bottom:12px; border:1px solid #23234a; display:flex; flex-direction:column; gap:8px; max-width:420px; display:none;">
                     <div style="font-weight:600; font-size:1.05em; margin-bottom:2px; color:#e3e6f0;">Nieuws toevoegen</div>
                     <input type="text" id="news-title" placeholder="Titel" required style="padding:7px; border-radius:5px; border:1px solid #333; background:#23234a; color:#fff;">
                     <textarea id="news-content" placeholder="Bericht" required style="padding:7px; border-radius:5px; border:1px solid #333; background:#23234a; color:#fff;"></textarea>
                     <input type="text" id="news-link" placeholder="Link (optioneel)" style="padding:7px; border-radius:5px; border:1px solid #333; background:#23234a; color:#fff;">
                     <button type="submit" style="background:#2d1b69; color:#fff; border:none; border-radius:5px; padding:8px 0; font-weight:600; cursor:pointer;">Toevoegen</button>
-                    <!-- Test Supabase knop verwijderd -->
                     <div id="news-form-msg" style="font-size:0.95em; margin-top:2px;"></div>
                 </form>
+        <script>
+        // Toggle nieuws toevoegen-formulier alleen zichtbaar voor admin
+        function showNewsAdminForm(isAdmin) {
+            var form = document.getElementById('news-admin-form');
+            if (form) form.style.display = isAdmin ? 'flex' : 'none';
+        }
+        // Voorbeeld: koppel aan je bestaande login/logout logica
+        // showNewsAdminForm(true) bij login, showNewsAdminForm(false) bij logout
+        // Voeg deze aan je admin login/logout success callbacks toe
+        </script>
                 <div class="card-header">
                     <div class="card-icon">📰</div>
                     <h2>Nieuws</h2>
@@ -1420,102 +1445,37 @@ function openAboutPopup(e) {
                     border: 1px solid #333;
                 ">
                     <!-- File Items -->
-                    <div class="file-card" onclick="downloadFile('system-tools')" style="
-                        background: linear-gradient(135deg, #1e3a8a, #3b82f6);
-                        padding: 16px 12px;
-                        border-radius: 8px;
-                        text-align: center;
-                        cursor: pointer;
-                        transition: all 0.2s;
-                        border: 1px solid transparent;
-                        color: white;
-                    " onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='#00d4ff';" 
-                       onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='transparent';">
+                    <div class="file-card" onclick="downloadFile('system-tools')" style="background: linear-gradient(135deg, #1e3a8a, #3b82f6); padding: 16px 12px; border-radius: 8px; text-align: center; cursor: pointer; transition: all 0.2s; border: 1px solid transparent; color: white;" onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='#00d4ff';" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='transparent';">
                         <div style="font-size: 32px; margin-bottom: 8px;">📁</div>
                         <div style="font-size: 12px; font-weight: bold; margin-bottom: 4px;">System Tools</div>
                         <div style="font-size: 10px; opacity: 0.8;">45.2 MB</div>
                         <div style="font-size: 10px; opacity: 0.6;">3 items</div>
                     </div>
-                    
-                    <div class="file-card" onclick="downloadFile('network-utils')" style="
-                        background: linear-gradient(135deg, #059669, #10b981);
-                        padding: 16px 12px;
-                        border-radius: 8px;
-                        text-align: center;
-                        cursor: pointer;
-                        transition: all 0.2s;
-                        border: 1px solid transparent;
-                        color: white;
-                    " onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='#00d4ff';" 
-                       onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='transparent';">
+                    <div class="file-card" onclick="downloadFile('network-utils')" style="background: linear-gradient(135deg, #059669, #10b981); padding: 16px 12px; border-radius: 8px; text-align: center; cursor: pointer; transition: all 0.2s; border: 1px solid transparent; color: white;" onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='#00d4ff';" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='transparent';">
                         <div style="font-size: 32px; margin-bottom: 8px;">🔧</div>
                         <div style="font-size: 12px; font-weight: bold; margin-bottom: 4px;">Network Utils</div>
                         <div style="font-size: 10px; opacity: 0.8;">23.7 MB</div>
                         <div style="font-size: 10px; opacity: 0.6;">5 tools</div>
                     </div>
-                    
-                    <div class="file-card" onclick="downloadFile('security-pack')" style="
-                        background: linear-gradient(135deg, #dc2626, #ef4444);
-                        padding: 16px 12px;
-                        border-radius: 8px;
-                        text-align: center;
-                        cursor: pointer;
-                        transition: all 0.2s;
-                        border: 1px solid transparent;
-                        color: white;
-                    " onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='#00d4ff';" 
-                       onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='transparent';">
-                        <div style="font-size: 32px; margin-bottom: 8px;">�️</div>
+                    <div class="file-card" onclick="downloadFile('security-pack')" style="background: linear-gradient(135deg, #dc2626, #ef4444); padding: 16px 12px; border-radius: 8px; text-align: center; cursor: pointer; transition: all 0.2s; border: 1px solid transparent; color: white;" onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='#00d4ff';" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='transparent';">
+                        <div style="font-size: 32px; margin-bottom: 8px;">🛡️</div>
                         <div style="font-size: 12px; font-weight: bold; margin-bottom: 4px;">Security Pack</div>
                         <div style="font-size: 10px; opacity: 0.8;">67.1 MB</div>
                         <div style="font-size: 10px; opacity: 0.6;">7 apps</div>
                     </div>
-                    
-                    <div class="file-card" onclick="downloadFile('scripts')" style="
-                        background: linear-gradient(135deg, #7c2d12, #ea580c);
-                        padding: 16px 12px;
-                        border-radius: 8px;
-                        text-align: center;
-                        cursor: pointer;
-                        transition: all 0.2s;
-                        border: 1px solid transparent;
-                        color: white;
-                    " onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='#00d4ff';" 
-                       onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='transparent';">
-                        <div style="font-size: 32px; margin-bottom: 8px;">�</div>
-                        <div style="font-size: 12px; font-weight: bold; margin-bottom: 4px;">Scripts</div>
-                        <div style="font-size: 10px; opacity: 0.8;">2.3 KB</div>
-                        <div style="font-size: 10px; opacity: 0.6;">12 files</div>
+                    <div class="file-card" onclick="showCVPopup()" style="background: linear-gradient(135deg, #22c55e, #4ade80); padding: 16px 12px; border-radius: 8px; text-align: center; cursor: pointer; transition: all 0.2s; border: 1px solid transparent; color: white;" onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='#00d4ff';" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='transparent';">
+                        <div style="font-size: 32px; margin-bottom: 8px;">📄</div>
+                        <div style="font-size: 12px; font-weight: bold; margin-bottom: 4px;">CV</div>
+                        <div style="font-size: 10px; opacity: 0.8;">Download</div>
+                        <div style="font-size: 10px; opacity: 0.6;">Laatste versie</div>
                     </div>
-                    
-                    <div class="file-card" onclick="downloadFile('archives')" style="
-                        background: linear-gradient(135deg, #581c87, #8b5cf6);
-                        padding: 16px 12px;
-                        border-radius: 8px;
-                        text-align: center;
-                        cursor: pointer;
-                        transition: all 0.2s;
-                        border: 1px solid transparent;
-                        color: white;
-                    " onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='#00d4ff';" 
-                       onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='transparent';">
-                        <div style="font-size: 32px; margin-bottom: 8px;">�</div>
+                    <div class="file-card" onclick="downloadFile('archives')" style="background: linear-gradient(135deg, #581c87, #8b5cf6); padding: 16px 12px; border-radius: 8px; text-align: center; cursor: pointer; transition: all 0.2s; border: 1px solid transparent; color: white;" onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='#00d4ff';" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='transparent';">
+                        <div style="font-size: 32px; margin-bottom: 8px;">🗄️</div>
                         <div style="font-size: 12px; font-weight: bold; margin-bottom: 4px;">Archives</div>
                         <div style="font-size: 10px; opacity: 0.8;">156 MB</div>
                         <div style="font-size: 10px; opacity: 0.6;">4 packs</div>
                     </div>
-                    
-                    <div class="file-card" onclick="downloadFile('games')" style="
-                        background: linear-gradient(135deg, #be185d, #ec4899);
-                        padding: 16px 12px;
-                        border-radius: 8px;
-                        text-align: center;
-                        cursor: pointer;
-                        transition: all 0.2s;
-                        border: 1px solid transparent;
-                        color: white;
-                    " onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='#00d4ff';" 
-                       onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='transparent';">
+                    <div class="file-card" onclick="downloadFile('games')" style="background: linear-gradient(135deg, #be185d, #ec4899); padding: 16px 12px; border-radius: 8px; text-align: center; cursor: pointer; transition: all 0.2s; border: 1px solid transparent; color: white;" onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='#00d4ff';" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='transparent';">
                         <div style="font-size: 32px; margin-bottom: 8px;">🎮</div>
                         <div style="font-size: 12px; font-weight: bold; margin-bottom: 4px;">Games</div>
                         <div style="font-size: 10px; opacity: 0.8;">234 MB</div>
@@ -1525,6 +1485,41 @@ function openAboutPopup(e) {
             </div>
             
             <div class="card tech-showcase">
+            <!-- OpenAI Chatbox Widget -->
+            <div class="card" id="ai-chatbox" style="margin-bottom:24px;">
+                <div class="card-header ai-chatbox-header">
+                    <img class="card-icon ai-chatbox-logo" src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/openai.svg" alt="OpenAI Logo" style="background:#fff;border-radius:6px;padding:2px;width:28px;height:28px;border:1.5px solid #e3e6f0;">
+                    <h2 class="ai-chatbox-title">OpenAI</h2>
+                </div>
+                <div id="chat-messages" class="ai-chatbox-messages"></div>
+                <form id="chat-form" class="ai-chatbox-form">
+                    <input id="chat-input" autocomplete="off" placeholder="Stel je vraag..." class="ai-chatbox-input" />
+                    <button class="ai-chatbox-send">Send</button>
+                </form>
+            <script>
+            const chatForm = document.getElementById('chat-form');
+            const chatInput = document.getElementById('chat-input');
+            const chatMessages = document.getElementById('chat-messages');
+            chatForm.onsubmit = async e => {
+                e.preventDefault();
+                const vraag = chatInput.value.trim();
+                if (!vraag) return;
+                chatMessages.innerHTML += `<div style=\"margin-bottom:8px;\"><b>Jij:</b> ${vraag}</div>`;
+                chatInput.value = '';
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                chatMessages.innerHTML += `<div id=\"ai-typing\" style=\"color:#888;\">AI is aan het typen...</div>`;
+                const res = await fetch('/api/openai', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: vraag })
+                });
+                const data = await res.json();
+                document.getElementById('ai-typing').remove();
+                chatMessages.innerHTML += `<div style=\"margin-bottom:8px;\"><b>AI:</b> ${data.choices?.[0]?.message?.content || 'Geen antwoord.'}</div>`;
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            };
+            </script>
+            </div>
                 <div class="card-header">
                     <div class="card-icon">🚀</div>
                     <h2>Tech Showcase</h2>
@@ -1544,19 +1539,47 @@ function openAboutPopup(e) {
         <div class="card">
             <h2>💬 Get in touch</h2>
             <p>Please feel free to reach out and say hello.</p>
-            <div class="contact-form">
+            <form id="contact-form" class="contact-form" action="https://formspree.io/f/xgvpzgaz" method="POST" style="margin-top:18px;">
                 <div class="form-group">
-                    <input type="text" name="name" id="name" class="form-input" placeholder="Name" required>
+                    <input type="text" name="name" id="contact-name" class="form-input" placeholder="Name" required>
                 </div>
                 <div class="form-group">
-                    <input type="email" name="email" id="email" class="form-input" placeholder="Email" required>
+                    <input type="email" name="email" id="contact-email" class="form-input" placeholder="Email" required>
                 </div>
                 <div class="form-group">
-                    <textarea name="message" id="message" class="form-input" placeholder="Your message..." rows="4" required></textarea>
+                    <textarea name="message" id="contact-message" class="form-textarea" placeholder="Your message..." rows="4" required></textarea>
                 </div>
-                <button type="button" class="submit-btn" id="submit-btn" onclick="sendMessage()">Send Message</button>
-            </div>
-            <div id="form-status" style="margin-top: 12px; display: none;"></div>
+                <button type="submit" class="submit-btn">Send Message</button>
+                <div id="contact-form-msg" style="margin-top:8px;font-size:0.98em;"></div>
+            </form>
+            <script>
+            document.getElementById('contact-form').onsubmit = async function(e) {
+                e.preventDefault();
+                const form = e.target;
+                const msg = document.getElementById('contact-form-msg');
+                msg.textContent = 'Sending...';
+                msg.style.color = '#4ade80';
+                const data = new FormData(form);
+                try {
+                    const res = await fetch(form.action, {
+                        method: 'POST',
+                        body: data,
+                        headers: { 'Accept': 'application/json' }
+                    });
+                    if (res.ok) {
+                        msg.textContent = '✅ Message sent! I will reply soon.';
+                        msg.style.color = '#4ade80';
+                        form.reset();
+                    } else {
+                        msg.textContent = 'Error sending message. Please try again later.';
+                        msg.style.color = '#e57373';
+                    }
+                } catch (err) {
+                    msg.textContent = 'Technical error: ' + err.message;
+                    msg.style.color = '#e57373';
+                }
+            };
+            </script>
         </div>
 
         <!-- Skills -->
@@ -1830,7 +1853,7 @@ function openAboutPopup(e) {
         <div class="footer">
             <p class="footer-text">
                 Made with ❤️ by mister@2025 • 
-                <a href="#" class="text-link">chattgbt@gmail.com</a>
+                <a href="#" class="text-link">james@live.nl</a>
             </p>
         </div>
     </div>
@@ -1847,7 +1870,8 @@ function openAboutPopup(e) {
             const password = prompt('🔐 Enter Admin Password:');
             if (password === 'mister2025') {
                 console.log('✅ Login successful');
-                createAdminPanel();
+                localStorage.setItem('isAdmin', 'true');
+                window.location.href = 'admin.html';
             } else if (password !== null) {
                 alert('❌ Invalid password');
             }
@@ -4282,6 +4306,59 @@ ${matrixContent}
         });
     </script>
 </body>
+    <!-- CV Popup Modal (verplaatst naar einde body) -->
+    <div id="cv-popup-modal" class="cv-popup-modal">
+        <div class="cv-popup-content">
+            <h2 class="cv-popup-title">CV downloaden of bekijken</h2>
+            <div class="cv-popup-info">Alleen PDF beschikbaar, code vereist voor downloaden.</div>
+            <input id="cv-popup-code" type="text" class="admin-input cv-popup-input" placeholder="Voer code in om te downloaden">
+            <div class="cv-popup-btn-row">
+                <button onclick="toggleCVPreview()" id="cv-preview-toggle-btn" class="cv-popup-btn">Bekijk CV (PDF)</button>
+                <button onclick="downloadCVPopup()" class="cv-popup-btn download">Download CV (PDF)</button>
+            </div>
+            <div id="cv-popup-preview" class="cv-popup-preview">
+                <embed id="cv-embed" src="cv/NEW CV 7-8.pdf" type="application/pdf" width="100%" height="220px" class="cv-popup-embed">
+            </div>
+            <button onclick="document.getElementById('cv-popup-modal').style.display='none'" class="cv-popup-btn close">Sluiten</button>
+            <div id="cv-popup-msg" class="cv-popup-msg"></div>
+        </div>
+    </div>
+    <script>
+    // Demo CV popup met code en preview
+    function showCVPopup() {
+        document.getElementById('cv-popup-modal').style.display = 'flex';
+        document.getElementById('cv-popup-code').value = '';
+        document.getElementById('cv-popup-msg').textContent = '';
+        document.getElementById('cv-popup-preview').style.display = 'none';
+        document.getElementById('cv-embed').height = '220px';
+        document.getElementById('cv-preview-toggle-btn').textContent = 'Bekijk CV (PDF)';
+    }
+
+    function toggleCVPreview() {
+        var preview = document.getElementById('cv-popup-preview');
+        var embed = document.getElementById('cv-embed');
+        var btn = document.getElementById('cv-preview-toggle-btn');
+        if (preview.style.display === 'block') {
+            preview.style.display = 'none';
+            embed.height = '220px';
+            btn.textContent = 'Bekijk CV (PDF)';
+        } else {
+            preview.style.display = 'block';
+            embed.height = '480px';
+            btn.textContent = 'Bekijk kleiner';
+        }
+    }
+
+    function downloadCVPopup() {
+        var code = document.getElementById('cv-popup-code').value.trim();
+        if (code === 'jouwcode') {
+            window.open('cv/NEW CV 7-8.pdf', '_blank');
+            document.getElementById('cv-popup-modal').style.display = 'none';
+        } else {
+            document.getElementById('cv-popup-msg').textContent = 'Ongeldige code!';
+        }
+    }
+    </script>
     <!-- Supabase JS CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js"></script>
     <script>

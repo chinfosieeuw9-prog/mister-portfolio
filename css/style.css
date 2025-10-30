@@ -1,3 +1,462 @@
+/* --- Admin notificatiebalk bovenaan --- */
+.admin-notification-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    z-index: 99999;
+    padding: 16px 0;
+    text-align: center;
+    font-size: 1.08em;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    border-radius: 0 0 12px 12px;
+    box-shadow: 0 4px 24px #0005;
+    transition: background 0.2s, color 0.2s;
+}
+.admin-notification-bar.info {
+    background: #23234a;
+    color: #4ade80;
+}
+.admin-notification-bar.success {
+    background: #22c55e;
+    color: #fff;
+}
+.admin-notification-bar.error {
+    background: #ef4444;
+    color: #fff;
+}
+/* --- Algemene admin widget en formulier styling --- */
+.admin-form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+.admin-form-btn {
+    background: #4ade80;
+    color: #23234a;
+    font-weight: 700;
+    border-radius: 6px;
+    padding: 10px 22px;
+    border: none;
+    margin-top: 6px;
+    transition: background 0.2s;
+}
+.admin-form-btn:hover {
+    background: #22c55e;
+}
+.admin-form-msg {
+    color: #4ade80;
+    font-size: 0.97em;
+    margin-top: 6px;
+    min-height: 18px;
+}
+.admin-info {
+    color: #4ade80;
+    font-size: 0.98em;
+    margin-bottom: 8px;
+}
+.admin-list {
+    background: #181828;
+    border-radius: 8px;
+    padding: 10px 12px;
+    color: #e3e6f0;
+    margin-bottom: 0;
+    font-size: 1em;
+}
+.admin-list li {
+    border-bottom: 1px solid #23234a;
+    padding: 6px 0;
+}
+.admin-list li:last-child {
+    border-bottom: none;
+}
+/* --- CV Admin Popup Modal Styling (Admin) --- */
+.cv-admin-info {
+    margin-bottom: 10px;
+    color: #4ade80;
+    font-size: 0.98em;
+}
+.cv-admin-popup-modal {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    background: #23234a;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px #000;
+    padding: 24px;
+    margin-top: 18px;
+    max-width: 340px;
+    position: relative;
+    z-index: 1000;
+}
+.cv-admin-popup-title {
+    color: #4ade80;
+    margin-top: 0;
+    margin-bottom: 12px;
+    font-size: 1.1em;
+    font-weight: 700;
+}
+.cv-admin-popup-embed {
+    border-radius: 8px;
+    background: #fff;
+    margin-bottom: 12px;
+}
+.cv-admin-popup-input {
+    margin-bottom: 10px;
+}
+.cv-admin-popup-download {
+    background: #22c55e;
+    color: #fff;
+    margin-bottom: 6px;
+}
+.cv-admin-popup-download:hover {
+    background: #16a34a;
+}
+.cv-admin-popup-close {
+    background: #ef4444;
+    color: #fff;
+    margin-top: 10px;
+}
+.cv-admin-popup-close:hover {
+    background: #dc2626;
+}
+.cv-admin-popup-msg {
+    color: #ef4444;
+    margin-top: 8px;
+    font-weight: 600;
+    min-height: 18px;
+}
+/* --- Logboek tab styling --- */
+.tab-logboek {
+    display: none;
+}
+.logboek-list {
+    max-height: 260px;
+    overflow-y: auto;
+    background: #181828;
+    border-radius: 8px;
+    padding: 10px 8px;
+    font-size: 0.98em;
+    color: #e3e6f0;
+}
+.logboek-empty {
+    color: #888;
+}
+.logboek-item {
+    border-bottom: 1px solid #23234a;
+    padding: 6px 0;
+}
+.logboek-tijd {
+    color: #4ade80;
+}
+.logboek-agent {
+    font-size: 0.92em;
+    color: #888;
+}
+.logboek-clear-btn {
+    margin-top: 10px;
+    background: #ef4444;
+    color: #fff;
+}
+.logboek-clear-btn:hover {
+    background: #dc2626;
+}
+/* --- Sitebeheer tab styling --- */
+.sitebeheer-table {
+    width: 100%;
+    color: #e3e6f0;
+    font-size: 1em;
+    border-collapse: collapse;
+    margin-bottom: 18px;
+}
+.sitebeheer-table th {
+    color: #4ade80;
+    text-align: left;
+    font-weight: 700;
+    padding: 6px 8px;
+    border-bottom: 1px solid #23234a;
+}
+.sitebeheer-table td {
+    padding: 6px 8px;
+    border-bottom: 1px solid #23234a;
+}
+.sitebeheer-visitors {
+    font-size: 1.1em;
+    margin-bottom: 8px;
+}
+.sitebeheer-lastvisit {
+    font-size: 1em;
+    color: #bfc3d9;
+}
+.sitebeheer-totaldownloads {
+    font-size: 1.2em;
+    color: #4ade80;
+    font-weight: 700;
+}
+/* --- CV Popup Modal --- */
+.cv-popup-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.7);
+    z-index: 99999;
+    align-items: center;
+    justify-content: center;
+}
+.cv-popup-content {
+    background: #23234a;
+    padding: 32px 28px;
+    max-width: 380px;
+    width: 96vw;
+    border-radius: 14px;
+    box-shadow: 0 8px 32px #000;
+    color: #e3e6f0;
+    position: relative;
+    overflow-y: auto;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.cv-popup-title {
+    margin-top: 0;
+    font-size: 1.2em;
+}
+.cv-popup-info {
+    font-size: 0.98em;
+    color: #4ade80;
+    margin-bottom: 8px;
+}
+.cv-popup-input {
+    margin-bottom: 10px;
+}
+.cv-popup-btn-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+.cv-popup-btn {
+    background: #4ade80;
+    color: #23234a;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.cv-popup-btn.download {
+    background: #22c55e;
+}
+.cv-popup-btn.close {
+    margin-top: 8px;
+    background: #ef4444;
+    color: #fff;
+}
+.cv-popup-btn.close:hover {
+    background: #dc2626;
+}
+.cv-popup-preview {
+    display: none;
+    width: 100%;
+    margin-bottom: 12px;
+}
+.cv-popup-embed {
+    border-radius: 8px;
+    background: #fff;
+}
+.cv-popup-msg {
+    color: #ef4444;
+    margin-top: 8px;
+}
+/* --- Visuele indicator actieve tab --- */
+.admin-tab-demo {
+    padding: 8px 18px;
+    background: #23234a;
+    color: #e3e6f0;
+    border: none;
+    border-radius: 8px 8px 0 0;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background 0.2s, color 0.2s;
+}
+.admin-tab-demo.active {
+    background: linear-gradient(135deg, #4ade80 0%, #23234a 100%);
+    color: #23234a;
+    box-shadow: 0 2px 8px #4ade8044;
+    font-weight: 700;
+    transform: scale(1.08);
+}
+/* --- To-Do Widget Styles --- */
+.todo-form {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+.todo-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.todo-list li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+.todo-list span {
+    flex: 1;
+    font-size: 1em;
+}
+.todo-list .admin-btn {
+    font-size: 0.9em;
+    padding: 6px 12px;
+}
+@media (max-width: 600px) {
+    .todo-form {
+        gap: 4px;
+    }
+    .todo-list .admin-btn {
+        padding: 6px 8px;
+        font-size: 0.95em;
+    }
+}
+.admin-logout-btn {
+    background: #ef4444;
+    color: #fff;
+    font-weight: 700;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 18px;
+    cursor: pointer;
+    box-shadow: 0 2px 8px #0002;
+    transition: background 0.2s;
+}
+.admin-logout-btn:hover {
+    background: #dc2626;
+}
+/* --- Admin Widget Structure --- */
+.admin-widget {
+    background: #23234a;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px #0002;
+    padding: 18px 16px;
+    margin-bottom: 18px;
+}
+.admin-widget-title {
+    font-size: 1.15em;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: #4ade80;
+}
+/* --- Admin Demo Cleanup --- */
+.admin-layout-switch {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    margin-bottom: 18px;
+}
+.admin-tabs-layout {
+    display: block;
+}
+.admin-panels-layout {
+    display: none;
+}
+.admin-tab-content-demo {
+    display: none;
+}
+.admin-tab-content-demo.active {
+    display: block;
+}
+.tab-news.active, .tab-cv.active, .tab-files.active, .tab-settings.active {
+    display: block;
+}
+.admin-demo-muted {
+    color: #aaa;
+}
+/* --- CV Admin Popup Styles --- */
+.cv-admin-desc {
+    margin-bottom: 12px;
+}
+.cv-admin-btn-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.cv-admin-popup {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.7);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+}
+.cv-admin-popup-content {
+    background: #23234a;
+    padding: 28px 18px;
+    max-width: 96vw;
+    width: 420px;
+    border-radius: 14px;
+    box-shadow: 0 8px 32px #000;
+    color: #e3e6f0;
+    position: relative;
+    overflow-y: auto;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.cv-popup-title {
+    margin-top: 0;
+    margin-bottom: 12px;
+    color: #4ade80;
+    font-size: 1.1em;
+}
+.cv-preview-area {
+    width: 100%;
+    min-height: 320px;
+    max-height: 60vh;
+    overflow: auto;
+    background: #181828;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.cv-download-links {
+    display: flex;
+    gap: 10px;
+}
+.cv-download-link {
+    background: #4ade80;
+    color: #23234a;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 700;
+    text-decoration: none;
+}
+.cv-popup-close {
+    margin-top: 18px;
+    background: #ef4444;
+    color: #fff;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 6px;
+    font-weight: 700;
+    cursor: pointer;
+}
 /* AI Chatbox Widget Styles */
 .card#ai-chatbox {
     /* Gebruik exact dezelfde stijl als .card, behalve padding (0) zodat header/inputs flush zijn */

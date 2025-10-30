@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Paneel - Mister</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body { background: #181828; color: #e3e6f0; font-family: 'Inter', sans-serif; }
+        .admin-container { max-width: 480px; margin: 0 auto; padding: 32px 12px; }
+    .admin-card { background: #23234a; border-radius: 14px; box-shadow: 0 8px 32px #0002; padding: 28px 20px; margin-bottom: 24px; position: relative; }
+        .admin-title { font-size: 1.5em; font-weight: 700; margin-bottom: 18px; color: #4ade80; }
+        .admin-section { margin-bottom: 32px; }
+        .admin-label { font-weight: 600; margin-bottom: 6px; display: block; }
+        .admin-input, .admin-textarea { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #181828; color: #e3e6f0; margin-bottom: 12px; }
+        .admin-btn { background: #4ade80; color: #23234a; border: none; padding: 10px 22px; border-radius: 6px; font-weight: 700; cursor: pointer; margin-top: 6px; }
+        .admin-btn:hover { background: #22c55e; }
+        .admin-cv-section { margin-top: 32px; }
+        .cv-download-form { display: flex; gap: 8px; }
+        .cv-download-input { flex: 1; }
+        #news-form-msg, #cv-msg { margin-top: 8px; font-size: 0.95em; }
+        @media (max-width: 600px) {
+            .admin-container { padding: 12px 2vw; }
+            .admin-card { padding: 16px 6px; }
+        }
+    </style>
+</head>
+<body>
+    <div id="admin-notification-bar" class="admin-notification-bar" style="display:none;"></div>
+    <script>
+    // Notificatiebalk-functie
+    function showAdminNotification(msg, type = 'info', duration = 3500) {
+        const bar = document.getElementById('admin-notification-bar');
+        bar.textContent = msg;
+        bar.className = 'admin-notification-bar ' + (type === 'error' ? 'error' : type === 'success' ? 'success' : 'info');
+        bar.style.display = 'block';
+        setTimeout(() => { bar.style.display = 'none'; }, duration);
+    }
+
+    // Voorbeeld: testmelding bij laden
+    document.addEventListener('DOMContentLoaded', function() {
+        showAdminNotification('Welkom in het adminpaneel!', 'success', 2200);
+    });
+    // Anti-kopieerscript: blokkeer rechtsklik, tekstselectie en bekende sneltoetsen
+    document.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+    });
+    document.addEventListener('selectstart', function(e) {
+        e.preventDefault();
+    });
+    document.addEventListener('keydown', function(e) {
+        // Ctrl+C, Ctrl+U, Ctrl+S, F12, Ctrl+Shift+I
+        if ((e.ctrlKey && (e.key === 'c' || e.key === 'u' || e.key === 's')) ||
+            (e.key === 'F12') ||
+            (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'i')) {
+            e.preventDefault();
+            return false;
+        }
+    });
+    </script>
+    <script>
+    // Zorg dat admin status uit localStorage wordt gelezen
+    window.isAdmin = localStorage.getItem('isAdmin') === 'true';
+    </script>
+        <div class="admin-container">
+            <!-- Tabs Layout (standaard) -->
+            <div id="admin-tabs-layout" class="admin-tabs-layout">
+                <div class="admin-card">
+                    <button id="admin-logout-btn" class="admin-btn admin-logout-btn">Uitloggen</button>
+                    <div class="admin-title">Admin Paneel (Tabs)</div>
+                    <script>
+                    // Zorg dat de uitlogknop altijd werkt
+                    document.getElementById('admin-logout-btn').onclick = function() {
+                        localStorage.removeItem('isAdmin');
+                        showAdminNotification('Je bent uitgelogd.', 'success', 1800);
+                        setTimeout(() => { window.location.href = 'index.html'; }, 1200);
+                    };
+                    </script>
+        <!-- JS code moved to <script> below -->
+                    <div class="admin-tabs-demo">
+                        <button class="admin-tab-demo active" data-tab="news">Nieuws</button>
+                        <button class="admin-tab-demo" data-tab="cv">CV</button>
+                        <button class="admin-tab-demo" data-tab="files">Bestanden</button>
+                        <button class="admin-tab-demo" data-tab="sitebeheer">Sitebeheer</button>
+                        <button class="admin-tab-demo" data-tab="logboek">Logboek</button>
+                        <button class="admin-tab-demo" data-tab="settings">Instellingen</button>
+                        <div class="admin-tab-content-demo tab-logboek" id="tab-logboek" style="display:none;">
+                            <div class="admin-widget">
+                                <h3 class="admin-widget-title">Activiteitenlogboek</h3>
+                                <div id="logboek-list" class="logboek-list">
+                                    <div class="logboek-empty">Logboek wordt geladen...</div>
+                                </div>
+                                <button class="admin-btn logboek-clear-btn" type="button" onclick="clearLogboek()">Logboek wissen</button>
+                            </div>
+                        </div>
+                        <script>
+                        // Activiteitenlogboek (localStorage)
+                        function addLogboekEntry(action) {
+                            const logs = JSON.parse(localStorage.getItem('adminLogboek') || '[]');
+                            logs.unshift({
+                                tijd: new Date().toLocaleString(),
+                                actie: action,
+                                agent: navigator.userAgent
+                            });
+                            localStorage.setItem('adminLogboek', JSON.stringify(logs.slice(0, 100)));
+                            renderLogboek();
+                        }
+
+                        function renderLogboek() {
+                            const logs = JSON.parse(localStorage.getItem('adminLogboek') || '[]');
+                            const list = document.getElementById('logboek-list');
+                            if (!list) return;
+                            if (logs.length === 0) {
+                                list.innerHTML = '<div class="logboek-empty">Geen activiteiten gelogd.</div>';
+                                return;
+                            }
+                            list.innerHTML = logs.map(log =>
+                                `<div class='logboek-item'>
+                                    <span class='logboek-tijd'>${log.tijd}</span> — <b>${log.actie}</b><br>
+                                    <span class='logboek-agent'>${log.agent}</span>
+                                </div>`
+                            ).join('');
+                        }
+
+                        function clearLogboek() {
+                            if (confirm('Weet je zeker dat je het logboek wilt wissen?')) {
+                                localStorage.removeItem('adminLogboek');
+                                renderLogboek();
+                                showAdminNotification('Logboek gewist.', 'info');
+                            }
+                        }
+
+                        // Log standaard admin acties (voorbeeld)
+                        document.addEventListener('DOMContentLoaded', function() {
+                            renderLogboek();
+                            addLogboekEntry('Adminpaneel geopend');
+                        });
+                        </script>
+                    <div class="admin-tab-content-demo tab-sitebeheer" id="tab-sitebeheer" style="display:none;">
+                        <div class="admin-widget">
+                            <h3 class="admin-widget-title">Statistieken per categorie</h3>
+                            <table class="sitebeheer-table">
+                                <thead>
+                                    <tr>
+                                        <th>Categorie</th>
+                                        <th>Aantal downloads</th>
+                                        <th>Laatst gedownload</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td>CV</td><td id="stat-cv">3</td><td id="stat-cv-last">2025-10-29 21:12</td></tr>
+                                    <tr><td>System Tools</td><td id="stat-tools">7</td><td id="stat-tools-last">2025-10-30 09:44</td></tr>
+                                    <tr><td>Network Utils</td><td id="stat-network">2</td><td id="stat-network-last">2025-10-28 16:02</td></tr>
+                                    <tr><td>Security Pack</td><td id="stat-security">1</td><td id="stat-security-last">2025-10-27 13:55</td></tr>
+                                    <tr><td>Archives</td><td id="stat-archives">0</td><td id="stat-archives-last">-</td></tr>
+                                    <tr><td>Games</td><td id="stat-games">4</td><td id="stat-games-last">2025-10-29 18:20</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="admin-widget">
+                            <h3 class="admin-widget-title">Bezoekersstatistieken</h3>
+                            <div class="sitebeheer-visitors">Totaal unieke bezoekers: <span id="stat-visitors">42</span></div>
+                            <div class="sitebeheer-lastvisit">Laatste bezoek: <span id="stat-last-visit">2025-10-30 10:01</span></div>
+                        </div>
+                        <div class="admin-widget">
+                            <h3 class="admin-widget-title">Totaal aantal downloads</h3>
+                            <div class="sitebeheer-totaldownloads">17</div>
+                        </div>
+                        <div class="admin-demo-muted">(Demo: cijfers zijn voorbeelddata, klaar voor backend-koppeling)</div>
+                    </div>
+                    </div>
+                    <div class="admin-tab-content-demo tab-news active" id="tab-news">
+                        <div class="admin-widget">
+                            <h3 class="admin-widget-title">Nieuws toevoegen</h3>
+                            <form id="news-admin-form" class="admin-form">
+                                <label class="admin-label" for="news-title">Titel</label>
+                                <input class="admin-input" type="text" id="news-title" required>
+                                <label class="admin-label" for="news-content">Bericht</label>
+                                <textarea class="admin-textarea" id="news-content" required></textarea>
+                                <label class="admin-label" for="news-link">Link (optioneel)</label>
+                                <input class="admin-input" type="text" id="news-link">
+                                <button class="admin-btn admin-form-btn" type="submit">Toevoegen</button>
+                                <div id="news-form-msg" class="admin-form-msg"></div>
+                            </form>
+                        </div>
+                        <div class="admin-widget">
+                            <h3 class="admin-widget-title">Geplaatste nieuwsberichten (demo)</h3>
+                            <ul id="news-list-admin" class="news-list-demo admin-list"></ul>
+                        </div>
+                    </div>
+                    <div class="admin-tab-content-demo tab-cv" id="tab-cv">
+                        <div class="admin-widget">
+                            <h3 class="admin-widget-title">CV uploaden (alleen admin)</h3>
+                            <form id="cv-upload-form" class="cv-upload-demo">
+                                <input type="file" accept=".pdf" class="admin-input" required>
+                                <button type="submit" class="admin-btn">Uploaden</button>
+                            </form>
+                            <div id="cv-upload-msg" class="admin-demo-muted">(Demo: upload werkt niet, alleen UI)</div>
+                        </div>
+                        <div class="admin-widget">
+                            <h3 class="admin-widget-title">CV bekijken & downloaden</h3>
+                            <div class="cv-admin-info">Alleen PDF beschikbaar voor privacy.</div>
+                            <button class="admin-btn" type="button" onclick="showCVAdminPopup()">Bekijk CV (PDF)</button>
+                            <div id="cv-admin-popup" class="cv-admin-popup-modal">
+                                <h3 class="cv-admin-popup-title">CV Voorbeeld (PDF)</h3>
+                                <embed src="cv/NEW CV 7-8.pdf" type="application/pdf" width="100%" height="220px" class="cv-admin-popup-embed">
+                                <input id="cv-admin-code" type="text" class="admin-input cv-admin-popup-input" placeholder="Voer code in om te downloaden">
+                                <button class="admin-btn cv-admin-popup-download" type="button" onclick="downloadCVAdmin()">Download CV (PDF)</button>
+                                <button class="admin-btn cv-admin-popup-close" type="button" onclick="closeCVAdminPopup()">Sluiten</button>
+                                <div id="cv-admin-msg" class="cv-admin-popup-msg"></div>
+                            </div>
+                        </div>
+                        <div class="admin-widget">
+                            <h3 class="admin-widget-title">CV Beheer (alleen admin)</h3>
+                            <div class="cv-admin-desc">Bekijk of download je CV in Word of PDF formaat. Klik op een knop voor een voorbeeld en downloadopties.</div>
+                            <div class="cv-admin-btn-row">
+                                <button class="admin-btn" type="button" onclick="showCVPopup('pdf')">Bekijk CV (PDF)</button>
+                                <button class="admin-btn" type="button" onclick="showCVPopup('docx')">Bekijk CV (Word)</button>
+                            </div>
+                            <div id="cv-admin-popup-tabs" class="cv-admin-popup">
+                                <div id="cv-admin-popup-content-tabs" class="cv-admin-popup-content">
+                                    <h3 id="cv-popup-title-tabs" class="cv-popup-title">CV Voorbeeld</h3>
+                                    <div id="cv-preview-area-tabs" class="cv-preview-area"></div>
+                                    <div class="cv-download-links">
+                                        <a id="cv-download-link-pdf-tabs" href="cv/NEW CV 7-8.pdf" download class="cv-download-link">Download PDF</a>
+                                        <a id="cv-download-link-docx-tabs" href="cv/NEW CV 7-8.docx" download class="cv-download-link">Download Word</a>
+                                    </div>
+                                    <button onclick="closeCVPopup()" class="cv-popup-close">Sluiten</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="admin-widget">
+                            <h3 class="admin-widget-title">CV uploaden (demo)</h3>
+                            <form class="cv-upload-demo">
+                                <input type="file" accept=".pdf,.docx" class="admin-input" required>
+                                <button type="submit" class="admin-btn">Uploaden</button>
+                            </form>
+                            <div class="admin-demo-muted">(Demo: upload werkt niet, alleen UI)</div>
+                        </div>
+                        <script>
+                        // CV upload (demo) notificatie en logboek
+                        document.getElementById('cv-upload-form').onsubmit = function(e) {
+                            e.preventDefault();
+                            showAdminNotification('CV upload (demo): bestand ontvangen!', 'success');
+                            addLogboekEntry('CV upload (demo)');
+                            document.getElementById('cv-upload-msg').textContent = 'Upload gesimuleerd!';
+                            this.reset();
+                        };
+                        // Bestand upload (demo) notificatie en logboek
+                        document.querySelectorAll('.file-upload-demo').forEach(form => {
+                            form.onsubmit = function(e) {
+                                e.preventDefault();
+                                showAdminNotification('Bestand upload (demo): bestand ontvangen!', 'success');
+                                addLogboekEntry('Bestand upload (demo)');
+                                const msg = this.parentElement.querySelector('.admin-form-msg');
+                                if(msg) msg.textContent = 'Upload gesimuleerd!';
+                                this.reset();
+                            };
+                        });
+                        </script>
+                    </div>
+        document.querySelectorAll('.admin-tab-demo').forEach(btn => {
+            document.getElementById(pdfId).style.display = 'inline-block';
+            document.getElementById(docxId).style.display = 'inline-block';
+            const title = document.getElementById(titleId);
+            const preview = document.getElementById(previewId);
+            if (type === 'pdf') {
+                title.textContent = 'CV Voorbeeld (PDF)';
+                preview.innerHTML = '<embed src="cv/NEW CV 7-8.pdf" type="application/pdf" width="100%" height="400px" style="border-radius:8px;background:#fff;">';
+            } else if (type === 'docx') {
+                title.textContent = 'CV Voorbeeld (Word)';
+                preview.innerHTML = '<div style="padding:24px 0;color:#aaa;text-align:center;">Voorbeeld van Word-bestand niet mogelijk in browser.<br>Download het bestand om te bekijken.</div>';
+            }
+            document.getElementById(popupId).style.display = 'flex';
+        }
+        function closeCVPopup() {
+            document.getElementById('cv-admin-popup-tabs').style.display = 'none';
+        }
+    </script>
+</body>
+    <script>
+    // CV upload (demo) notificatie en logboek
+    document.getElementById('cv-upload-form').onsubmit = function(e) {
+        e.preventDefault();
+        showAdminNotification('CV upload (demo): bestand ontvangen!', 'success');
+        addLogboekEntry('CV upload (demo)');
+        document.getElementById('cv-upload-msg').textContent = 'Upload gesimuleerd!';
+        this.reset();
+    };
+    // Bestand upload (demo) notificatie en logboek
+    document.querySelectorAll('.file-upload-demo').forEach(form => {
+        form.onsubmit = function(e) {
+            e.preventDefault();
+            showAdminNotification('Bestand upload (demo): bestand ontvangen!', 'success');
+            addLogboekEntry('Bestand upload (demo)');
+            const msg = this.parentElement.querySelector('.admin-form-msg');
+            if(msg) msg.textContent = 'Upload gesimuleerd!';
+            this.reset();
+        };
+    });
+    </script>
+    <script>
+    // Admin CV popup logic
+    function showCVAdminPopup() {
+        document.getElementById('cv-admin-popup').style.display = 'flex';
+    }
+    function closeCVAdminPopup() {
+        document.getElementById('cv-admin-popup').style.display = 'none';
+        document.getElementById('cv-admin-msg').textContent = '';
+        document.getElementById('cv-admin-code').value = '';
+    }
+    function downloadCVAdmin() {
+        const code = document.getElementById('cv-admin-code').value.trim();
+        if (code === 'jouwcode') {
+            window.open('cv/NEW CV 7-8.pdf', '_blank');
+            closeCVAdminPopup();
+        } else {
+            document.getElementById('cv-admin-msg').textContent = 'Ongeldige code!';
+        }
+    }
+    </script>
+</html>
