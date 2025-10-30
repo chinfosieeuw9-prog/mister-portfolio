@@ -44,6 +44,7 @@
     <!-- Favicon -->
 
     <link rel="stylesheet" href="css/style.css">
+    <script type="module" src="js/software-supabase.js"></script>
     <!-- Supabase JS CDN -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTYiIGN5PSIxNiIgcj0iMTYiIGZpbGw9InVybCgjZ3JhZGllbnQwX2xpbmVhcl8xXzEpIi8+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9ImdyYWRpZW50MF9saW5lYXJfMV8xIiB4MT0iMCIgeTE9IjAiIHgyPSIzMiIgeTI9IjMyIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMyZDFiNjkiLz4KPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjNWIyMWI2Ii8+CjwvbGluZWFyR3JhZGllbnQ+CjwvZGVmcz4KPC9zdmc+">
     <script src="js/admin-panel.js"></script>
@@ -1219,24 +1220,6 @@
     });
     </script>
     <!-- Upload Dialog -->
-    <div id="uploadDialog" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); z-index:9999; align-items:center; justify-content:center;">
-        <form id="uploadForm" style="background:#fff; padding:32px; border-radius:12px; box-shadow:0 8px 32px rgba(0,0,0,0.2); min-width:320px; max-width:90vw; display:flex; flex-direction:column; gap:16px;">
-            <h2 style="color:#2d1b69;">Software Upload</h2>
-            <input type="file" name="file" required style="border:1px dashed #2d1b69; padding:12px;" />
-            <input type="text" name="name" placeholder="Naam software" required style="padding:8px; border-radius:6px; border:1px solid #ccc;" />
-            <select name="category" required style="padding:8px; border-radius:6px; border:1px solid #ccc;">
-                <option value="">Categorie kiezen</option>
-                <option value="tool">Tool</option>
-                <option value="game">Game</option>
-                <option value="utility">Utility</option>
-            </select>
-            <textarea name="description" placeholder="Beschrijving (optioneel)" style="padding:8px; border-radius:6px; border:1px solid #ccc;"></textarea>
-            <div style="display:flex; gap:12px; justify-content:flex-end;">
-                <button type="button" id="cancelUpload" style="background:#ef4444; color:#fff; border:none; padding:8px 16px; border-radius:6px; cursor:pointer;">Annuleren</button>
-                <button type="submit" style="background:#10b981; color:#fff; border:none; padding:8px 16px; border-radius:6px; cursor:pointer;">⬆️ Upload</button>
-            </div>
-        </form>
-    </div>
     <div class="container">
         <!-- Header -->
         <div class="header">
@@ -1259,7 +1242,7 @@
             <a href="https://github.com/chinfosieeuw9-prog" target="_blank" rel="noopener noreferrer" class="social-link">
                 <span>📱</span>Github
             </a>
-            <a href="admin.html" class="social-link" id="admin-panel-link" style="display:none;"><span>🛠️</span>Admin</a>
+            <a href="admin.html" class="social-link admin-panel-link-hidden" id="admin-panel-link"><span>🛠️</span>Admin</a>
         <script>
         // Toon admin link als admin ingelogd is
         function updateAdminPanelLink() {
@@ -1297,7 +1280,7 @@
         <!-- Featured Card met afbeelding - Klikbaar voor profiel -->
         <div class="featured-card" onclick="openProfileModal()">
             <div class="featured-image">
-                <img src="background1.jpg?v=3" alt="About" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
+                <img src="background1.jpg?v=3" alt="About" class="featured-image-img">
             </div>
             <div class="featured-content">
                 <div class="featured-title">Mijn verhaal &amp; missie</div>
@@ -1317,7 +1300,7 @@ function openAboutPopup(e) {
     popup.style.alignItems = 'center';
     popup.style.justifyContent = 'center';
         popup.innerHTML = `
-            <div id="about-popup-content" style="background:#23234a;padding:32px 28px;max-width:540px;width:96vw;border-radius:14px;box-shadow:0 8px 32px #000;color:#e3e6f0;position:relative;overflow-y:auto;max-height:90vh;">
+            <div id="about-popup-content" class="about-popup-content">
                 <h2 style="margin-top:0;font-size:1.3em;">Mijn verhaal & missie</h2>
                 <h3 style='margin-bottom:6px;'>Over mij</h3>
                 <p style='margin-top:0;'>Als IT-professional met een sterke focus op webdevelopment, automatisering, cloud en cybersecurity help ik organisaties sneller, veiliger en schaalbaarder te werken. De basis werd jaren geleden gelegd met het demonteren van pc’s en het bouwen van de eerste websites; inmiddels combineer ik die hands-on mentaliteit met moderne engineering-praktijken zoals CI/CD, infrastructure as code en secure-by-design principes.</p>
@@ -1365,13 +1348,13 @@ function openAboutPopup(e) {
             <!-- NIEUWS WIDGET (Supabase powered) -->
             <div class="card" id="news-widget">
                 <!-- Beheerformulier voor nieuws toevoegen (alleen admin) -->
-                <form id="news-admin-form" class="admin-only" style="background:#181828; border-radius:8px; padding:12px 14px; margin-bottom:12px; border:1px solid #23234a; display:flex; flex-direction:column; gap:8px; max-width:420px; display:none;">
-                    <div style="font-weight:600; font-size:1.05em; margin-bottom:2px; color:#e3e6f0;">Nieuws toevoegen</div>
-                    <input type="text" id="news-title" placeholder="Titel" required style="padding:7px; border-radius:5px; border:1px solid #333; background:#23234a; color:#fff;">
-                    <textarea id="news-content" placeholder="Bericht" required style="padding:7px; border-radius:5px; border:1px solid #333; background:#23234a; color:#fff;"></textarea>
-                    <input type="text" id="news-link" placeholder="Link (optioneel)" style="padding:7px; border-radius:5px; border:1px solid #333; background:#23234a; color:#fff;">
-                    <button type="submit" style="background:#2d1b69; color:#fff; border:none; border-radius:5px; padding:8px 0; font-weight:600; cursor:pointer;">Toevoegen</button>
-                    <div id="news-form-msg" style="font-size:0.95em; margin-top:2px;"></div>
+                <form id="news-admin-form" class="admin-only news-admin-form">
+                    <div class="news-form-title">Nieuws toevoegen</div>
+                    <input type="text" id="news-title" placeholder="Titel" required class="news-form-input">
+                    <textarea id="news-content" placeholder="Bericht" required class="news-form-input"></textarea>
+                    <input type="text" id="news-link" placeholder="Link (optioneel)" class="news-form-input">
+                    <button type="submit" class="news-form-btn">Toevoegen</button>
+                    <div id="news-form-msg" class="news-form-msg"></div>
                 </form>
         <script>
         // Toggle nieuws toevoegen-formulier alleen zichtbaar voor admin
@@ -1388,41 +1371,31 @@ function openAboutPopup(e) {
                     <h2>Nieuws</h2>
                 </div>
                 <p>Blijf op de hoogte van het laatste nieuws!</p>
-                <div id="news-list" style="min-height: 80px; max-height: 220px; overflow-y: auto; background: #181828; border-radius: 6px; padding: 10px 8px; color: #e3e6f0; max-height:40vh; overflow-y:auto;"></div>
-            <button id="load-more-news" style="margin:10px auto 0 auto;display:block;background:#23234a;color:#fff;border:none;border-radius:5px;padding:8px 18px;font-weight:600;cursor:pointer;">Meer laden</button>
-            <div style="font-size: 12px; color: #888; margin-top: 6px;">(Hier komt straks het Supabase nieuws-overzicht)</div>
+                <div id="news-list" class="news-list"></div>
+            <button id="load-more-news" class="news-load-more">Meer laden</button>
             </div>
             
             <div class="card">
                 <div class="card-header">
-                    <div class="card-icon"></div>
+                    <div class="card-icon">🔗</div>
                     <h2>Links</h2>
                 </div>
                 <p>Useful resources and external links</p>
-                <div class="links-container" style="
-                    max-height: 150px; 
-                    overflow-y: auto; 
-                    padding-right: 8px;
-                    scrollbar-width: thin;
-                    scrollbar-color: #00d4ff #1a1a1a;
-                    display: grid;
-                    grid-template-columns: 1fr 1fr;
-                    gap: 4px;
-                ">
+                <div class="links-container">
                     <!-- Professional -->
-                    <a href="https://azure.microsoft.com" target="_blank" rel="noopener noreferrer" class="link-item" style="font-size: 11px; padding: 6px 8px;">🌐 Azure</a>
-                    <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="link-item" style="font-size: 11px; padding: 6px 8px;">💻 GitHub</a>
-                    <a href="https://docs.microsoft.com" target="_blank" rel="noopener noreferrer" class="link-item" style="font-size: 11px; padding: 6px 8px;">📚 MS Docs</a>
-                    <a href="https://cybersecuritynews.com" target="_blank" rel="noopener noreferrer" class="link-item" style="font-size: 11px; padding: 6px 8px;">🔐 CyberSec</a>
+                    <a href="https://azure.microsoft.com" target="_blank" rel="noopener noreferrer" class="link-item link-item-small">🌐 Azure</a>
+                    <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="link-item link-item-small">💻 GitHub</a>
+                    <a href="https://docs.microsoft.com" target="_blank" rel="noopener noreferrer" class="link-item link-item-small">📚 MS Docs</a>
+                    <a href="https://cybersecuritynews.com" target="_blank" rel="noopener noreferrer" class="link-item link-item-small">🔐 CyberSec</a>
                     <!-- News -->
-                    <a href="https://tweakers.net" target="_blank" rel="noopener noreferrer" class="link-item" style="font-size: 11px; padding: 6px 8px;">📰 Tweakers</a>
-                    <a href="https://bright.nl" target="_blank" rel="noopener noreferrer" class="link-item" style="font-size: 11px; padding: 6px 8px;">💡 Bright</a>
+                    <a href="https://tweakers.net" target="_blank" rel="noopener noreferrer" class="link-item link-item-small">📰 Tweakers</a>
+                    <a href="https://bright.nl" target="_blank" rel="noopener noreferrer" class="link-item link-item-small">💡 Bright</a>
                     <!-- Study -->
-                    <a href="https://www.skills.google/" target="_blank" rel="noopener noreferrer" class="link-item" style="font-size: 11px; padding: 6px 8px;">🎓 Google</a>
-                    <a href="https://learn.microsoft.com/en-us/" target="_blank" rel="noopener noreferrer" class="link-item" style="font-size: 11px; padding: 6px 8px;">📖 MS Learn</a>
-                    <a href="https://tryhackme.com/" target="_blank" rel="noopener noreferrer" class="link-item" style="font-size: 11px; padding: 6px 8px;">💻 TryHack</a>
-                    <a href="https://pll.harvard.edu/catalog/free" target="_blank" rel="noopener noreferrer" class="link-item" style="font-size: 11px; padding: 6px 8px;">🏛️ Harvard</a>
-                    <a href="https://github.com/cloudcommunity/Free-Certifications" target="_blank" rel="noopener noreferrer" class="link-item" style="font-size: 11px; padding: 6px 8px;">🏆 Free Certs</a>
+                    <a href="https://www.skills.google/" target="_blank" rel="noopener noreferrer" class="link-item link-item-small">🎓 Google</a>
+                    <a href="https://learn.microsoft.com/en-us/" target="_blank" rel="noopener noreferrer" class="link-item link-item-small">📖 MS Learn</a>
+                    <a href="https://tryhackme.com/" target="_blank" rel="noopener noreferrer" class="link-item link-item-small">💻 TryHack</a>
+                    <a href="https://pll.harvard.edu/catalog/free" target="_blank" rel="noopener noreferrer" class="link-item link-item-small">🏛️ Harvard</a>
+                    <a href="https://github.com/cloudcommunity/Free-Certifications" target="_blank" rel="noopener noreferrer" class="link-item link-item-small">🏆 Free Certs</a>
                 </div>
             </div>
             
@@ -1434,52 +1407,43 @@ function openAboutPopup(e) {
                 <p>Download tools and get support</p>
                 
                 <!-- File Explorer Grid -->
-                <div style="
-                    display: grid; 
-                    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); 
-                    gap: 12px; 
-                    margin: 16px 0;
-                    background: #0a0a0a;
-                    padding: 16px;
-                    border-radius: 8px;
-                    border: 1px solid #333;
-                ">
+                <div class="file-card-grid">
                     <!-- File Items -->
-                    <div class="file-card" onclick="downloadFile('system-tools')" style="background: linear-gradient(135deg, #1e3a8a, #3b82f6); padding: 16px 12px; border-radius: 8px; text-align: center; cursor: pointer; transition: all 0.2s; border: 1px solid transparent; color: white;" onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='#00d4ff';" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='transparent';">
-                        <div style="font-size: 32px; margin-bottom: 8px;">📁</div>
-                        <div style="font-size: 12px; font-weight: bold; margin-bottom: 4px;">System Tools</div>
-                        <div style="font-size: 10px; opacity: 0.8;">45.2 MB</div>
-                        <div style="font-size: 10px; opacity: 0.6;">3 items</div>
+                    <div class="file-card file-card-system-tools" onclick="downloadFile('system-tools')">
+                        <div class="file-card-icon">📁</div>
+                        <div class="file-card-title">System Tools</div>
+                        <div class="file-card-size">45.2 MB</div>
+                        <div class="file-card-meta">3 items</div>
                     </div>
-                    <div class="file-card" onclick="downloadFile('network-utils')" style="background: linear-gradient(135deg, #059669, #10b981); padding: 16px 12px; border-radius: 8px; text-align: center; cursor: pointer; transition: all 0.2s; border: 1px solid transparent; color: white;" onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='#00d4ff';" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='transparent';">
-                        <div style="font-size: 32px; margin-bottom: 8px;">🔧</div>
-                        <div style="font-size: 12px; font-weight: bold; margin-bottom: 4px;">Network Utils</div>
-                        <div style="font-size: 10px; opacity: 0.8;">23.7 MB</div>
-                        <div style="font-size: 10px; opacity: 0.6;">5 tools</div>
+                    <div class="file-card file-card-network-utils" onclick="downloadFile('network-utils')">
+                        <div class="file-card-icon">🔧</div>
+                        <div class="file-card-title">Network Utils</div>
+                        <div class="file-card-size">23.7 MB</div>
+                        <div class="file-card-meta">5 tools</div>
                     </div>
-                    <div class="file-card" onclick="downloadFile('security-pack')" style="background: linear-gradient(135deg, #dc2626, #ef4444); padding: 16px 12px; border-radius: 8px; text-align: center; cursor: pointer; transition: all 0.2s; border: 1px solid transparent; color: white;" onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='#00d4ff';" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='transparent';">
-                        <div style="font-size: 32px; margin-bottom: 8px;">🛡️</div>
-                        <div style="font-size: 12px; font-weight: bold; margin-bottom: 4px;">Security Pack</div>
-                        <div style="font-size: 10px; opacity: 0.8;">67.1 MB</div>
-                        <div style="font-size: 10px; opacity: 0.6;">7 apps</div>
+                    <div class="file-card file-card-security-pack" onclick="downloadFile('security-pack')">
+                        <div class="file-card-icon">🛡️</div>
+                        <div class="file-card-title">Security Pack</div>
+                        <div class="file-card-size">67.1 MB</div>
+                        <div class="file-card-meta">7 apps</div>
                     </div>
-                    <div class="file-card" onclick="showCVPopup()" style="background: linear-gradient(135deg, #22c55e, #4ade80); padding: 16px 12px; border-radius: 8px; text-align: center; cursor: pointer; transition: all 0.2s; border: 1px solid transparent; color: white;" onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='#00d4ff';" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='transparent';">
-                        <div style="font-size: 32px; margin-bottom: 8px;">📄</div>
-                        <div style="font-size: 12px; font-weight: bold; margin-bottom: 4px;">CV</div>
-                        <div style="font-size: 10px; opacity: 0.8;">Download</div>
-                        <div style="font-size: 10px; opacity: 0.6;">Laatste versie</div>
+                    <div class="file-card file-card-cv" onclick="showCVPopup()">
+                        <div class="file-card-icon">📄</div>
+                        <div class="file-card-title">CV</div>
+                        <div class="file-card-size">Download</div>
+                        <div class="file-card-meta">Laatste versie</div>
                     </div>
-                    <div class="file-card" onclick="downloadFile('archives')" style="background: linear-gradient(135deg, #581c87, #8b5cf6); padding: 16px 12px; border-radius: 8px; text-align: center; cursor: pointer; transition: all 0.2s; border: 1px solid transparent; color: white;" onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='#00d4ff';" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='transparent';">
-                        <div style="font-size: 32px; margin-bottom: 8px;">🗄️</div>
-                        <div style="font-size: 12px; font-weight: bold; margin-bottom: 4px;">Archives</div>
-                        <div style="font-size: 10px; opacity: 0.8;">156 MB</div>
-                        <div style="font-size: 10px; opacity: 0.6;">4 packs</div>
+                    <div class="file-card file-card-archives" onclick="downloadFile('archives')">
+                        <div class="file-card-icon">🗄️</div>
+                        <div class="file-card-title">Archives</div>
+                        <div class="file-card-size">156 MB</div>
+                        <div class="file-card-meta">4 packs</div>
                     </div>
-                    <div class="file-card" onclick="downloadFile('games')" style="background: linear-gradient(135deg, #be185d, #ec4899); padding: 16px 12px; border-radius: 8px; text-align: center; cursor: pointer; transition: all 0.2s; border: 1px solid transparent; color: white;" onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='#00d4ff';" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='transparent';">
-                        <div style="font-size: 32px; margin-bottom: 8px;">🎮</div>
-                        <div style="font-size: 12px; font-weight: bold; margin-bottom: 4px;">Games</div>
-                        <div style="font-size: 10px; opacity: 0.8;">234 MB</div>
-                        <div style="font-size: 10px; opacity: 0.6;">8 games</div>
+                    <div class="file-card file-card-games" onclick="downloadFile('games')">
+                        <div class="file-card-icon">🎮</div>
+                        <div class="file-card-title">Games</div>
+                        <div class="file-card-size">234 MB</div>
+                        <div class="file-card-meta">8 games</div>
                     </div>
                 </div>
             </div>

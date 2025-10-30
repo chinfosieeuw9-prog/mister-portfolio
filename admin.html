@@ -28,37 +28,6 @@
 <body>
     <div id="admin-notification-bar" class="admin-notification-bar" style="display:none;"></div>
     <script>
-    // Notificatiebalk-functie
-    function showAdminNotification(msg, type = 'info', duration = 3500) {
-        const bar = document.getElementById('admin-notification-bar');
-        bar.textContent = msg;
-        bar.className = 'admin-notification-bar ' + (type === 'error' ? 'error' : type === 'success' ? 'success' : 'info');
-        bar.style.display = 'block';
-        setTimeout(() => { bar.style.display = 'none'; }, duration);
-    }
-
-    // Voorbeeld: testmelding bij laden
-    document.addEventListener('DOMContentLoaded', function() {
-        showAdminNotification('Welkom in het adminpaneel!', 'success', 2200);
-    });
-    // Anti-kopieerscript: blokkeer rechtsklik, tekstselectie en bekende sneltoetsen
-    document.addEventListener('contextmenu', function(e) {
-        e.preventDefault();
-    });
-    document.addEventListener('selectstart', function(e) {
-        e.preventDefault();
-    });
-    document.addEventListener('keydown', function(e) {
-        // Ctrl+C, Ctrl+U, Ctrl+S, F12, Ctrl+Shift+I
-        if ((e.ctrlKey && (e.key === 'c' || e.key === 'u' || e.key === 's')) ||
-            (e.key === 'F12') ||
-            (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'i')) {
-            e.preventDefault();
-            return false;
-        }
-    });
-    </script>
-    <script>
     // Zorg dat admin status uit localStorage wordt gelezen
     window.isAdmin = localStorage.getItem('isAdmin') === 'true';
     </script>
@@ -68,22 +37,99 @@
                 <div class="admin-card">
                     <button id="admin-logout-btn" class="admin-btn admin-logout-btn">Uitloggen</button>
                     <div class="admin-title">Admin Paneel (Tabs)</div>
-                    <script>
-                    // Zorg dat de uitlogknop altijd werkt
-                    document.getElementById('admin-logout-btn').onclick = function() {
-                        localStorage.removeItem('isAdmin');
-                        showAdminNotification('Je bent uitgelogd.', 'success', 1800);
-                        setTimeout(() => { window.location.href = 'index.html'; }, 1200);
-                    };
-                    </script>
         <!-- JS code moved to <script> below -->
                     <div class="admin-tabs-demo">
                         <button class="admin-tab-demo active" data-tab="news">Nieuws</button>
+                        <button class="admin-tab-demo" data-tab="users">Gebruikersbeheer</button>
+                        <button class="admin-tab-demo" data-tab="limits">Uploadlimieten</button>
                         <button class="admin-tab-demo" data-tab="cv">CV</button>
                         <button class="admin-tab-demo" data-tab="files">Bestanden</button>
+                    <!-- Bestanden tab -->
+                    <div class="admin-tab-content-demo tab-files" id="tab-files" style="display:none;">
+                        <div class="admin-widget">
+                            <h3 class="admin-widget-title">Bestand uploaden</h3>
+                            <form id="file-upload-form" class="file-upload-form">
+                                <label class="admin-label" for="file-upload-map">Map kiezen</label>
+                                <select id="file-upload-map" class="admin-input" required>
+                                    <option value="system-tools">System Tools</option>
+                                    <option value="netwerk-tools">Netwerk Tools</option>
+                                    <option value="security-tools">Security Tools</option>
+                                    <option value="archives">Archives</option>
+                                    <option value="software">Software</option>
+                                </select>
+                                <input type="file" class="admin-input" id="file-upload-input" required>
+                                <button type="submit" class="admin-btn">Uploaden</button>
+                            </form>
+                            <div id="file-upload-msg" class="admin-form-msg"></div>
+                        </div>
+                        <div class="admin-widget">
+                            <h3 class="admin-widget-title">Bestanden beheren</h3>
+                            <ul id="file-list" class="admin-list"><!-- Dynamisch gevuld --></ul>
+                            <div id="file-list-msg" class="admin-form-msg"></div>
+                        </div>
+                    </div>
                         <button class="admin-tab-demo" data-tab="sitebeheer">Sitebeheer</button>
                         <button class="admin-tab-demo" data-tab="logboek">Logboek</button>
                         <button class="admin-tab-demo" data-tab="settings">Instellingen</button>
+                    <!-- Uploadlimieten tab -->
+                        <div class="admin-tab-content-demo tab-limits" id="tab-limits" style="display:none;">
+                            <div class="admin-widget">
+                                <h3 class="admin-widget-title">Uploadlimieten instellen</h3>
+                                <div class="admin-demo-muted">(Demo: alleen UI, geen backend)</div>
+                                <form id="upload-limits-form" class="admin-form">
+                                    <label class="admin-label" for="limit-cv">CV (PDF)</label>
+                                    <input class="admin-input" type="number" id="limit-cv" min="1" max="50" value="5" required placeholder="Max uploads per dag">
+                                    <label class="admin-label" for="limit-tools">System Tools</label>
+                                    <input class="admin-input" type="number" id="limit-tools" min="1" max="50" value="10" required placeholder="Max uploads per dag">
+                                    <label class="admin-label" for="limit-network">Network Utils</label>
+                                    <input class="admin-input" type="number" id="limit-network" min="1" max="50" value="10" required placeholder="Max uploads per dag">
+                                    <label class="admin-label" for="limit-security">Security Pack</label>
+                                    <input class="admin-input" type="number" id="limit-security" min="1" max="50" value="5" required placeholder="Max uploads per dag">
+                                    <label class="admin-label" for="limit-archives">Archives</label>
+                                    <input class="admin-input" type="number" id="limit-archives" min="1" max="50" value="5" required placeholder="Max uploads per dag">
+                                    <label class="admin-label" for="limit-games">Games</label>
+                                    <input class="admin-input" type="number" id="limit-games" min="1" max="50" value="5" required placeholder="Max uploads per dag">
+                                    <button class="admin-btn" type="submit">Opslaan</button>
+                                    <div id="upload-limits-msg" class="admin-form-msg"></div>
+                                </form>
+                            </div>
+                        </div>
+                    <!-- Gebruikersbeheer tab -->
+                    <div class="admin-tab-content-demo tab-users" id="tab-users" style="display:none;">
+                        <div class="admin-widget">
+                            <h3 class="admin-widget-title">Gebruikersbeheer</h3>
+                            <div class="admin-demo-muted">(Demo: alleen UI, geen backend)</div>
+                            <h4 class="admin-widget-subtitle">Admins</h4>
+                            <ul id="admin-list-demo" class="admin-list">
+                                <li>admin (jij)</li>
+                                <li>beheerder2</li>
+                            </ul>
+                        </div>
+                        <div class="admin-widget">
+                            <h4 class="admin-widget-subtitle">Wachtwoord wijzigen</h4>
+                            <form id="change-password-form" class="admin-form">
+                                <label class="admin-label" for="current-password">Huidig wachtwoord</label>
+                                <input class="admin-input" type="password" id="current-password" required placeholder="Huidig wachtwoord">
+                                <label class="admin-label" for="new-password">Nieuw wachtwoord</label>
+                                <input class="admin-input" type="password" id="new-password" required placeholder="Nieuw wachtwoord">
+                                <label class="admin-label" for="confirm-password">Bevestig nieuw wachtwoord</label>
+                                <input class="admin-input" type="password" id="confirm-password" required placeholder="Bevestig nieuw wachtwoord">
+                                <button class="admin-btn" type="submit">Wijzigen</button>
+                                <div id="change-password-msg" class="admin-form-msg"></div>
+                            </form>
+                        </div>
+                        <div class="admin-widget">
+                            <h4 class="admin-widget-subtitle">Nieuwe admin toevoegen</h4>
+                            <form id="add-admin-form" class="admin-form">
+                                <label class="admin-label" for="new-admin-name">Gebruikersnaam</label>
+                                <input class="admin-input" type="text" id="new-admin-name" required placeholder="Gebruikersnaam">
+                                <label class="admin-label" for="new-admin-password">Wachtwoord</label>
+                                <input class="admin-input" type="password" id="new-admin-password" required placeholder="Wachtwoord">
+                                <button class="admin-btn" type="submit">Toevoegen</button>
+                                <div id="add-admin-msg" class="admin-form-msg"></div>
+                            </form>
+                        </div>
+                    </div>
                         <div class="admin-tab-content-demo tab-logboek" id="tab-logboek" style="display:none;">
                             <div class="admin-widget">
                                 <h3 class="admin-widget-title">Activiteitenlogboek</h3>
@@ -211,6 +257,14 @@
                             </div>
                         </div>
                         <div class="admin-widget">
+                            <h3 class="admin-widget-title">CV-bestanden beheren</h3>
+                            <div class="admin-demo-muted">(Demo: alleen UI, geen backend)</div>
+                            <ul id="cv-file-list" class="admin-list">
+                                <!-- Dynamisch gevuld door JS -->
+                            </ul>
+                            <div id="cv-file-msg" class="admin-form-msg"></div>
+                        </div>
+                        <div class="admin-widget">
                             <h3 class="admin-widget-title">CV Beheer (alleen admin)</h3>
                             <div class="cv-admin-desc">Bekijk of download je CV in Word of PDF formaat. Klik op een knop voor een voorbeeld en downloadopties.</div>
                             <div class="cv-admin-btn-row">
@@ -230,12 +284,6 @@
                             </div>
                         </div>
                         <div class="admin-widget">
-                            <h3 class="admin-widget-title">CV uploaden (demo)</h3>
-                            <form class="cv-upload-demo">
-                                <input type="file" accept=".pdf,.docx" class="admin-input" required>
-                                <button type="submit" class="admin-btn">Uploaden</button>
-                            </form>
-                            <div class="admin-demo-muted">(Demo: upload werkt niet, alleen UI)</div>
                         </div>
                         <script>
                         // CV upload (demo) notificatie en logboek
@@ -259,46 +307,9 @@
                         });
                         </script>
                     </div>
-        document.querySelectorAll('.admin-tab-demo').forEach(btn => {
-            document.getElementById(pdfId).style.display = 'inline-block';
-            document.getElementById(docxId).style.display = 'inline-block';
-            const title = document.getElementById(titleId);
-            const preview = document.getElementById(previewId);
-            if (type === 'pdf') {
-                title.textContent = 'CV Voorbeeld (PDF)';
-                preview.innerHTML = '<embed src="cv/NEW CV 7-8.pdf" type="application/pdf" width="100%" height="400px" style="border-radius:8px;background:#fff;">';
-            } else if (type === 'docx') {
-                title.textContent = 'CV Voorbeeld (Word)';
-                preview.innerHTML = '<div style="padding:24px 0;color:#aaa;text-align:center;">Voorbeeld van Word-bestand niet mogelijk in browser.<br>Download het bestand om te bekijken.</div>';
-            }
-            document.getElementById(popupId).style.display = 'flex';
-        }
-        function closeCVPopup() {
-            document.getElementById('cv-admin-popup-tabs').style.display = 'none';
-        }
-    </script>
+        <!-- JS functionaliteit is alleen in <script> blokken, niet als tekst zichtbaar in de UI -->
 </body>
-    <script>
-    // CV upload (demo) notificatie en logboek
-    document.getElementById('cv-upload-form').onsubmit = function(e) {
-        e.preventDefault();
-        showAdminNotification('CV upload (demo): bestand ontvangen!', 'success');
-        addLogboekEntry('CV upload (demo)');
-        document.getElementById('cv-upload-msg').textContent = 'Upload gesimuleerd!';
-        this.reset();
-    };
-    // Bestand upload (demo) notificatie en logboek
-    document.querySelectorAll('.file-upload-demo').forEach(form => {
-        form.onsubmit = function(e) {
-            e.preventDefault();
-            showAdminNotification('Bestand upload (demo): bestand ontvangen!', 'success');
-            addLogboekEntry('Bestand upload (demo)');
-            const msg = this.parentElement.querySelector('.admin-form-msg');
-            if(msg) msg.textContent = 'Upload gesimuleerd!';
-            this.reset();
-        };
-    });
-    </script>
+    <!-- Removed duplicate upload/logout inline scripts; logic handled by ES module. -->
     <script>
     // Admin CV popup logic
     function showCVAdminPopup() {
@@ -318,5 +329,19 @@
             document.getElementById('cv-admin-msg').textContent = 'Ongeldige code!';
         }
     }
+    </script>
+
+    <!-- Load tab navigation and Supabase integration (ES module) -->
+    <script type="module" src="js/admin-tabs-supabase.js"></script>
+    <script>
+    window.addEventListener('error', function(e) {
+        const bar = document.getElementById('admin-notification-bar');
+        if (bar) {
+            bar.style.display = 'block';
+            bar.className = 'admin-notification-bar error';
+            bar.textContent = 'Fout in admin script: ' + (e.message || e);
+        }
+        console.error('Admin script error:', e);
+    });
     </script>
 </html>
