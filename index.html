@@ -1108,16 +1108,13 @@
             border-bottom: none;
         }
 
-        /* Admin-only view: when body has .admin-only, hide all non-admin content */
-        body.admin-only .header,
-        body.admin-only .version-badge,
-        body.admin-only .featured-card,
-        body.admin-only #software-card,
-        body.admin-only .card:not(#admin-panel .card):not(#admin-access .card):not(#admin-panel),
-        body.admin-only .footer,
-        body.admin-only .social-links { display: none !important; }
-        body.admin-only #admin-panel { display: block !important; }
-        body.admin-only .container { max-width: 1000px; }
+    /* Admin-only view: show only the Admin Panel as a dedicated page */
+    body.admin-only .container > *:not(#admin-panel) { display: none !important; }
+    body.admin-only #admin-panel { display: block !important; }
+    body.admin-only .container { max-width: 1000px; }
+    /* Hide any overlays/popups in admin-only page mode */
+    body.admin-only .profile-modal,
+    body.admin-only #uploadDialog { display: none !important; }
         
         /* Links Container */
         .links-container {
