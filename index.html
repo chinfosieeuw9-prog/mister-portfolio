@@ -1107,6 +1107,17 @@
         .news-item:last-child {
             border-bottom: none;
         }
+
+        /* Admin-only view: when body has .admin-only, hide all non-admin content */
+        body.admin-only .header,
+        body.admin-only .version-badge,
+        body.admin-only .featured-card,
+        body.admin-only #software-card,
+        body.admin-only .card:not(#admin-panel .card):not(#admin-access .card):not(#admin-panel),
+        body.admin-only .footer,
+        body.admin-only .social-links { display: none !important; }
+        body.admin-only #admin-panel { display: block !important; }
+        body.admin-only .container { max-width: 1000px; }
         
         /* Links Container */
         .links-container {
@@ -1216,7 +1227,7 @@
             <p class="title">Cloud | Azure | 365 | Python\C\C+ | Automation | Cybersecurity analyse</p>
         </div>
         <div style="text-align:center;">
-            <span class="version-badge" id="site-version">v2025.11.01-13</span>
+            <span class="version-badge" id="site-version">v2025.11.01-15</span>
         </div>
         
         <!-- Social Links -->
@@ -1612,7 +1623,7 @@
         <!-- Footer -->
         <div class="footer">
             <p class="footer-text">
-                Made with ❤️ by mister@2025 • Version <span id="site-version-footer">v2025.11.01-13</span> • 
+                Made with ❤️ by mister@2025 • Version <span id="site-version-footer">v2025.11.01-15</span> • 
                 <a href="#" class="text-link">chattgbt@gmail.com</a>
             </p>
         </div>
@@ -1627,6 +1638,17 @@
     let softwareSortKey = 'date_desc';
     let explorerMode = 'admin'; // 'admin' for full controls, 'public' for read-only modal
         let activityLogs = JSON.parse(localStorage.getItem('activityLogs') || '[]');
+        // Admin session helpers (client-side only)
+        function setAdminSession(minutes=60) {
+            try { localStorage.setItem('adminSession', JSON.stringify({ ts: Date.now(), exp: Date.now() + minutes*60*1000 })); } catch {}
+        }
+        function hasAdminSession() {
+            try {
+                const s = JSON.parse(localStorage.getItem('adminSession')||'null');
+                return s && typeof s.exp==='number' && Date.now() < s.exp;
+            } catch { return false; }
+        }
+        function clearAdminSession() { try { localStorage.removeItem('adminSession'); } catch {} }
         
         // Simple admin login function
         function showAdminLogin() {
@@ -1744,18 +1766,16 @@
                 const isValid = password.length === correctPassword.length && password === correctPassword;
                 setTimeout(() => {
                     if (isValid) {
+                        // Success: establish session and navigate to admin-only view
                         loginAttempts = 0;
                         setLockUntil(0);
                         errBox.style.display = 'none';
                         clearUnseen();
                         addActivityLog('✅ Admin login success');
+                        try { setAdminSession(60); } catch {}
                         close();
-                        document.getElementById('admin-panel').classList.remove('hidden');
-                        document.getElementById('admin-access').classList.add('hidden');
-                        showAdminTab('software');
-                        loadSoftwareList();
-                        document.getElementById('admin-panel').scrollIntoView({ behavior: 'smooth' });
-                        showAdminButtons();
+                        const base = window.location.pathname.replace(/\?.*$/,'');
+                        window.location.href = base + '?admin=1&clean=1';
                     } else {
                         if (loginAttempts >= MAX_ATTEMPTS) {
                             setLockUntil(Date.now() + LOCKOUT_TIME);
@@ -4261,13 +4281,16 @@ ${matrixContent}
         }
         
         function logoutAdmin() {
+            try { clearAdminSession(); } catch {}
             document.getElementById('admin-panel').classList.add('hidden');
-            document.getElementById('admin-password').value = '';
-            
+            const pw = document.getElementById('admin-password'); if (pw) pw.value = '';
+            document.body.classList.remove('admin-only');
             // Hide admin-only buttons
             hideAdminButtons();
-            
-            alert('👋 Logged out successfully');
+            addActivityLog('👋 Admin logged out');
+            // Navigate back to base (remove any admin params)
+            const base = window.location.pathname.replace(/\?.*$/,'');
+            window.location.href = base;
         }
         
         // Profile Modal functionality
@@ -4340,6 +4363,39 @@ ${matrixContent}
         // Initialize all systems when page loads
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🚀 Initializing website systems...');
+            // Router: handle admin-only view via URL param
+            try {
+                const params = new URLSearchParams(window.location.search);
+                const isAdminRoute = params.get('admin') === '1';
+                if (isAdminRoute) {
+                    if (hasAdminSession && typeof hasAdminSession === 'function' && hasAdminSession()) {
+                        // Enable admin-only layout
+                        document.body.classList.add('admin-only');
+                        const panel = document.getElementById('admin-panel');
+                        const access = document.getElementById('admin-access');
+                        if (panel) panel.classList.remove('hidden');
+                        if (access) access.classList.add('hidden');
+                        // Initialize admin view
+                        try { showAdminTab('software'); } catch {}
+                        try { loadSoftwareList(); } catch {}
+                        try { localStorage.setItem('adminFailedUnseen','0'); const b=document.getElementById('admin-failed-badge'); if(b) b.remove(); } catch {}
+                        // Clean auxiliary param if present
+                        if (params.get('clean') === '1') {
+                            history.replaceState(null, '', window.location.pathname + '?admin=1');
+                        }
+                        console.log('✅ Admin-only view active');
+                    } else {
+                        console.warn('🔒 Admin session missing/expired. Prompting login.');
+                        setTimeout(() => {
+                            openAdminLoginModal();
+                            setTimeout(() => {
+                                const box = document.getElementById('admin-modal-error');
+                                if (box) { box.textContent = '🔒 Session required. Log in to access Admin.'; box.style.display = 'block'; }
+                            }, 50);
+                        }, 50);
+                    }
+                }
+            } catch (e) { console.warn('Router init error', e); }
             
             // Initialize data arrays if they don't exist
             if (!localStorage.getItem('uploadedSoftware')) {
@@ -4402,6 +4458,12 @@ ${matrixContent}
                 adminLoginBtn.addEventListener('click', function(e) {
                     e.preventDefault();
                     console.log('🔐 Admin button clicked');
+                    // If session is active, go directly to admin-only view
+                    if (hasAdminSession()) {
+                        const base = window.location.pathname.replace(/\?.*$/,'');
+                        window.location.href = base + '?admin=1&clean=1';
+                        return;
+                    }
                     openAdminLoginModal();
                 });
                 console.log('✅ Admin login modal handler attached');
@@ -4444,18 +4506,13 @@ ${matrixContent}
                     // Add artificial delay to prevent timing attacks
                     setTimeout(() => {
                         if (isValid) {
+                            // Success: establish session and go to admin-only view
                             loginAttempts = 0; // Reset on successful login
                             addActivityLog('✅ Admin login success (form)');
-                            alert('🎉 Admin Login Successful!\n\nWelcome to the Admin Panel!\n\n🔒 Secure session established');
-                            document.getElementById('admin-access').classList.add('hidden');
-                            document.getElementById('admin-panel').classList.remove('hidden');
                             try { localStorage.setItem('adminFailedUnseen','0'); const b=document.getElementById('admin-failed-badge'); if(b) b.remove(); } catch {}
-                            showAdminTab('software'); // Start met software tab voor verkenner
-                            loadSoftwareList();
-                            document.getElementById('admin-panel').scrollIntoView({ behavior: 'smooth' });
-                            
-                            // Show admin-only buttons
-                            showAdminButtons();
+                            try { setAdminSession(60); } catch {}
+                            const base = window.location.pathname.replace(/\?.*$/,'');
+                            window.location.href = base + '?admin=1&clean=1';
                         } else {
                             const remaining = MAX_ATTEMPTS - loginAttempts;
                             addActivityLog('🔐 Admin login failed (form, ' + remaining + ' over)');
