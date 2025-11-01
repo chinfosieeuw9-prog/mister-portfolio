@@ -1,10 +1,13 @@
-
 # backup-mister.ps1
 # Opties:
 # - Alleen .html, .css, .js bestanden backuppen
 # - Automatisch oude backups (>30 dagen) verwijderen
 # - Logbestand bijhouden
 # - Vaste naam voor backup (optioneel als argument)
+
+param(
+    [string]$BackupName = ""
+)
 
 $source = "C:\Users\Jordan\Desktop\sites\mister.us.kg"
 $backupDir = "C:\Users\Jordan\Desktop\mister-backups"
@@ -30,10 +33,6 @@ function Get-NextVersion {
     }
     return "v$major.$minor"
 }
-
-param(
-    [string]$BackupName = ""
-)
 
 if ($BackupName -eq "") {
     $BackupName = Get-NextVersion $backupDir
