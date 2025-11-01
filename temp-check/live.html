@@ -1216,7 +1216,7 @@
             <p class="title">Cloud | Azure | 365 | Python\C\C+ | Automation | Cybersecurity analyse</p>
         </div>
         <div style="text-align:center;">
-            <span class="version-badge" id="site-version">v2025.11.01-11</span>
+            <span class="version-badge" id="site-version">v2025.11.01-12</span>
         </div>
         
         <!-- Social Links -->
@@ -1612,7 +1612,7 @@
         <!-- Footer -->
         <div class="footer">
             <p class="footer-text">
-                Made with ❤️ by mister@2025 • Version <span id="site-version-footer">v2025.11.01-11</span> • 
+                Made with ❤️ by mister@2025 • Version <span id="site-version-footer">v2025.11.01-12</span> • 
                 <a href="#" class="text-link">chattgbt@gmail.com</a>
             </p>
         </div>
@@ -1620,9 +1620,11 @@
     
     <script>
         // Global variables - initialize early to prevent temporal dead zone errors
-        let currentFolder = 'all';
-        let viewMode = 'grid';
-        let uploadedSoftware = JSON.parse(localStorage.getItem('uploadedSoftware') || '[]');
+    let currentFolder = 'all';
+    let viewMode = 'grid';
+    let uploadedSoftware = JSON.parse(localStorage.getItem('uploadedSoftware') || '[]');
+    let softwareSearchQuery = '';
+    let softwareSortKey = 'date_desc';
         let activityLogs = JSON.parse(localStorage.getItem('activityLogs') || '[]');
         
         // Simple admin login function
@@ -2542,9 +2544,32 @@
 
                         <!-- File Browser -->
                         <div style="background: #1a1a1a; padding: 16px; overflow-y: auto;">
-                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #333;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:12px;flex-wrap:wrap;">
                                 <h3 id="current-folder" style="color:#00d4ff;margin:0;">All Software</h3>
+                                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                                    <input id="software-search" type="search" placeholder="Zoek naam/bestand..." style="padding:8px 10px;border-radius:8px;border:1px solid #374151;background:#0f172a;color:#e5e7eb;outline:none;min-width:200px" oninput="setSoftwareSearch(this.value)">
+                                    <select id="software-sort" style="padding:8px 10px;border-radius:8px;border:1px solid #374151;background:#0f172a;color:#e5e7eb;outline:none;" onchange="setSoftwareSort(this.value)">
+                                        <option value="date_desc">Nieuwste eerst</option>
+                                        <option value="date_asc">Oudste eerst</option>
+                                        <option value="name_asc">Naam A→Z</option>
+                                        <option value="name_desc">Naam Z→A</option>
+                                        <option value="size_desc">Grootte ↓</option>
+                                        <option value="size_asc">Grootte ↑</option>
+                                        <option value="dl_desc">Downloads ↓</option>
+                                        <option value="dl_asc">Downloads ↑</option>
+                                    </select>
+                                    <button class="tech-btn" onclick="exportSoftwareJSON()" title="Exporteer als JSON">⬇️ Export</button>
+                                    <input type="file" id="import-software-file" accept="application/json" style="display:none" />
+                                    <button class="tech-btn" onclick="document.getElementById('import-software-file').click()" title="Importeer JSON">⬆️ Import</button>
+                                </div>
+                            </div>
+
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid #333;">
                                 <div id="items-count" style="color:#666;font-size:12px;"></div>
+                                <div style="display:flex;gap:6px;align-items:center;">
+                                    <button class="view-btn" data-view="grid" onclick="setViewMode('grid')" style="padding:6px 10px;border-radius:8px;border:1px solid #374151;background:#0f172a;color:#e5e7eb;">🔳 Grid</button>
+                                    <button class="view-btn" data-view="list" onclick="setViewMode('list')" style="padding:6px 10px;border-radius:8px;border:1px solid #374151;background:#0f172a;color:#e5e7eb;">📄 Lijst</button>
+                                </div>
                             </div>
 
                             <div id="explorer-content"></div>
@@ -2572,6 +2597,18 @@
             try { setViewMode('grid'); } catch(e) {}
             try { selectFolder('all'); } catch(e) {}
             try { loadExplorerContent(); } catch(e) {}
+
+            // Hook import change
+            try {
+                const imp = document.getElementById('import-software-file');
+                if (imp) {
+                    imp.addEventListener('change', (ev)=> {
+                        const f = ev.target.files && ev.target.files[0];
+                        if (f) importSoftwareFromFile(f);
+                        ev.target.value = '';
+                    });
+                }
+            } catch(err) { console.warn('import hook failed', err); }
 
             // Close by clicking backdrop
             modal.addEventListener('click', (e) => {
@@ -3668,6 +3705,75 @@ ${matrixContent}
             
             loadExplorerContent();
         }
+
+        // Search/sort controls
+        function setSoftwareSearch(val) {
+            softwareSearchQuery = (val || '').trim();
+            loadExplorerContent();
+        }
+
+        function setSoftwareSort(val) {
+            softwareSortKey = val || 'date_desc';
+            loadExplorerContent();
+        }
+
+        // Export/import helpers
+        function exportSoftwareJSON() {
+            try {
+                const data = JSON.stringify(uploadedSoftware || [], null, 2);
+                const blob = new Blob([data], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                const ts = new Date().toISOString().replace(/[:]/g,'-').slice(0,19);
+                a.download = `software-export-${ts}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+                addActivityLog('⬇️ Software export created');
+            } catch (e) {
+                alert('❌ Export mislukt: ' + e.message);
+            }
+        }
+
+        function importSoftwareFromFile(file) {
+            const reader = new FileReader();
+            reader.onerror = () => alert('❌ Lezen mislukt');
+            reader.onload = () => {
+                try {
+                    const arr = JSON.parse(reader.result);
+                    if (!Array.isArray(arr)) throw new Error('Ongeldig JSON-formaat (verwacht een array)');
+                    let added = 0, skipped = 0;
+                    const byId = new Map((uploadedSoftware||[]).map(s=>[String(s.id), s]));
+                    arr.forEach(item => {
+                        // Minimal shape normalization
+                        const s = {
+                            id: item.id || Date.now()+Math.floor(Math.random()*1000),
+                            name: item.name || item.filename || 'Unknown',
+                            filename: item.filename || item.name || 'unknown.bin',
+                            category: item.category || 'utilities',
+                            size: Number(item.size)||0,
+                            uploadDate: item.uploadDate || new Date().toISOString(),
+                            downloads: Number(item.downloads)||0,
+                            description: item.description || '',
+                            icon: item.icon || getFileIcon(item.filename||'unknown.bin')
+                        };
+                        const key = String(s.id);
+                        if (byId.has(key)) { skipped++; return; }
+                        uploadedSoftware.push(s);
+                        byId.set(key, s);
+                        added++;
+                    });
+                    localStorage.setItem('uploadedSoftware', JSON.stringify(uploadedSoftware));
+                    addActivityLog(`⬆️ Import: ${added} toegevoegd, ${skipped} overgeslagen`);
+                    alert(`✅ Import gereed\nToegevoegd: ${added}\nOvergeslagen (dubbel): ${skipped}`);
+                    loadExplorerContent();
+                    updatePublicSoftwareList();
+                } catch (e) {
+                    alert('❌ Import fout: ' + e.message);
+                }
+            };
+            reader.readAsText(file);
+        }
         
         function loadExplorerContent() {
             const { container, itemsCountEl } = getExplorerScope();
@@ -3692,6 +3798,32 @@ ${matrixContent}
             if (currentFolder !== 'all') {
                 filteredSoftware = uploadedSoftware.filter(software => software.category === currentFolder);
             }
+            // Apply search query
+            const q = (softwareSearchQuery || '').trim().toLowerCase();
+            if (q) {
+                filteredSoftware = filteredSoftware.filter(s =>
+                    (s.name && s.name.toLowerCase().includes(q)) ||
+                    (s.filename && s.filename.toLowerCase().includes(q)) ||
+                    (s.description && s.description.toLowerCase().includes(q))
+                );
+            }
+            // Sorting
+            const sortKey = softwareSortKey || 'date_desc';
+            const sorter = (a,b)=>0;
+            const byName = (a,b)=> (a.name||'').localeCompare(b.name||'');
+            const bySize = (a,b)=> (a.size||0) - (b.size||0);
+            const byDate = (a,b)=> new Date(a.uploadDate||0) - new Date(b.uploadDate||0);
+            const byDl = (a,b)=> (a.downloads||0) - (b.downloads||0);
+            switch (sortKey) {
+                case 'name_asc': filteredSoftware.sort(byName); break;
+                case 'name_desc': filteredSoftware.sort((a,b)=>-byName(a,b)); break;
+                case 'size_asc': filteredSoftware.sort(bySize); break;
+                case 'size_desc': filteredSoftware.sort((a,b)=>-bySize(a,b)); break;
+                case 'date_asc': filteredSoftware.sort(byDate); break;
+                case 'date_desc': filteredSoftware.sort((a,b)=>-byDate(a,b)); break;
+                case 'dl_asc': filteredSoftware.sort(byDl); break;
+                case 'dl_desc': filteredSoftware.sort((a,b)=>-byDl(a,b)); break;
+            }
             if (itemsCountEl) {
                 itemsCountEl.textContent = filteredSoftware.length + ' item' + (filteredSoftware.length === 1 ? '' : 's');
             }
@@ -3705,13 +3837,13 @@ ${matrixContent}
                     const ph = document.createElement('div');
                     ph.className = 'software-item';
                     ph.style.opacity = '0.6';
-                    ph.innerHTML = '<div class="software-icon">⬜</div><div class="software-name">Leeg</div><div class="software-size">—</div>';
+                    ph.innerHTML = '<div class="software-icon">⬜</div><div class="software-name">Geen resultaten</div><div class="software-size">—</div>';
                     gridWrapper.appendChild(ph);
                 }
                 container.appendChild(gridWrapper);
                 const hint = document.createElement('div');
                 hint.style.cssText = 'color:#888;margin-top:12px;text-align:center;';
-                hint.innerHTML = 'Geen software gevonden in deze categorie. <button class="tech-btn" onclick="showUploadDialog()" style="margin-left:8px;">⬆️ Upload</button>';
+                hint.innerHTML = 'Geen software gevonden. <button class="tech-btn" onclick="showUploadDialog()" style="margin-left:8px;">⬆️ Upload</button>';
                 container.appendChild(hint);
                 return;
             }
