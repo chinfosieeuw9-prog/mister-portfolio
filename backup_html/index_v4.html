@@ -1179,16 +1179,12 @@
     </style>
 </head>
 <body>
-        
-        <!-- Site config (no secrets) -->
-        <script>
-            // CAPTCHA provider: 'hcaptcha' or 'recaptcha'
-            // Update the SITE KEY only; do NOT put any secret here.
-            window.CAPTCHA_PROVIDER = window.CAPTCHA_PROVIDER || 'hcaptcha';
-            // Public site key from your hCaptcha site
-            window.CAPTCHA_SITE_KEY = window.CAPTCHA_SITE_KEY || '4f1a4efe-fe14-4f3a-8420-2fcec5e27df4';
-        </script>
-    
+        <!-- TEMP TEST BANNER -->
+        <div id="test-top-banner" style="position:fixed; top:0; left:0; width:100%; background:#ff0066; color:#fff; text-align:center; padding:8px 12px; z-index:100000; font-weight:700; box-shadow:0 2px 8px rgba(0,0,0,.4);">
+            Test Banner: index.html is LIVE
+            <button id="test-top-btn" onclick="alert('Live update: ' + new Date().toLocaleTimeString())" style="margin-left:12px; background:#111; color:#fff; border:none; padding:6px 10px; border-radius:6px; cursor:pointer;">Click test</button>
+        </div>
+        <div style="height:36px;"></div>
     <!-- Upload Dialog -->
     <div id="uploadDialog" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); z-index:9999; align-items:center; justify-content:center;">
         <form id="uploadForm" style="background:#fff; padding:32px; border-radius:12px; box-shadow:0 8px 32px rgba(0,0,0,0.2); min-width:320px; max-width:90vw; display:flex; flex-direction:column; gap:16px;">
@@ -1216,7 +1212,7 @@
             <p class="title">Cloud | Azure | 365 | Python\C\C+ | Automation | Cybersecurity analyse</p>
         </div>
         <div style="text-align:center;">
-            <span class="version-badge" id="site-version">v2025.11.01-10</span>
+            <span class="version-badge" id="site-version">v2025.11.01-02</span>
         </div>
         
         <!-- Social Links -->
@@ -1332,8 +1328,6 @@
                 <div class="form-group">
                     <textarea name="message" id="message" class="form-input" placeholder="Je bericht..." rows="4" required></textarea>
                 </div>
-                <!-- CAPTCHA widget renders here when configured -->
-                <div class="form-group" id="captcha-container" style="min-height: 0; margin-top: 6px;"></div>
                 <!-- Honeypots tegen spam -->
                 <input type="text" name="_gotcha" id="_gotcha" tabindex="-1" autocomplete="off" style="display:none">
                 <input type="text" name="company" id="company" tabindex="-1" autocomplete="off" style="display:none">
@@ -1612,7 +1606,7 @@
         <!-- Footer -->
         <div class="footer">
             <p class="footer-text">
-                Made with ❤️ by mister@2025 • Version <span id="site-version-footer">v2025.11.01-10</span> • 
+                Made with ❤️ by mister@2025 • Version <span id="site-version-footer">v2025.11.01-02</span> • 
                 <a href="#" class="text-link">chattgbt@gmail.com</a>
             </p>
         </div>
@@ -2972,76 +2966,8 @@
             return loginAttempts < MAX_ATTEMPTS;
         }
         
-        // CAPTCHA integration (supports reCAPTCHA v2 checkbox and hCaptcha)
-        const CAPTCHA_PROVIDER = (window.CAPTCHA_PROVIDER || '').toLowerCase(); // 'recaptcha' | 'hcaptcha'
-        const CAPTCHA_SITE_KEY = window.CAPTCHA_SITE_KEY || '';
-        let captchaWidgetId = null;
-        let captchaToken = '';
-
-        function loadScriptOnce(src, onloadName, onload) {
-            if (document.querySelector(`script[data-src="${src}"]`)) {
-                if (typeof onload === 'function') setTimeout(onload, 0);
-                return;
-            }
-            const s = document.createElement('script');
-            s.src = src;
-            s.async = true;
-            s.defer = true;
-            s.setAttribute('data-src', src);
-            if (onloadName) {
-                try { window[onloadName] = onload; } catch {}
-            } else {
-                s.onload = onload;
-            }
-            document.head.appendChild(s);
-        }
-
-        function renderCaptcha() {
-            const container = document.getElementById('captcha-container');
-            if (!container) return;
-            if (!CAPTCHA_PROVIDER || !CAPTCHA_SITE_KEY) return; // Not configured yet
-
-            if (CAPTCHA_PROVIDER === 'recaptcha') {
-                loadScriptOnce('https://www.google.com/recaptcha/api.js?onload=onRecaptchaLoad&render=explicit', 'onRecaptchaLoad', function() {
-                    try {
-                        if (!window.grecaptcha) return;
-                        if (captchaWidgetId !== null && container.children.length) return; // Already rendered
-                        captchaWidgetId = window.grecaptcha.render(container, {
-                            sitekey: CAPTCHA_SITE_KEY,
-                            callback: function(token){ captchaToken = token || ''; },
-                            'expired-callback': function(){ captchaToken = ''; }
-                        });
-                    } catch (e) { console.error('[captcha] recaptcha render failed', e); }
-                });
-            } else if (CAPTCHA_PROVIDER === 'hcaptcha') {
-                loadScriptOnce('https://js.hcaptcha.com/1/api.js?onload=onHcaptchaLoad&render=explicit', 'onHcaptchaLoad', function() {
-                    try {
-                        if (!window.hcaptcha) return;
-                        if (captchaWidgetId !== null && container.children.length) return; // Already rendered
-                        captchaWidgetId = window.hcaptcha.render(container, {
-                            sitekey: CAPTCHA_SITE_KEY,
-                            callback: function(token){ captchaToken = token || ''; },
-                            'expired-callback': function(){ captchaToken = ''; }
-                        });
-                    } catch (e) { console.error('[captcha] hcaptcha render failed', e); }
-                });
-            }
-        }
-
-        function resetCaptcha() {
-            try {
-                if (CAPTCHA_PROVIDER === 'recaptcha' && window.grecaptcha && captchaWidgetId !== null) {
-                    window.grecaptcha.reset(captchaWidgetId);
-                }
-                if (CAPTCHA_PROVIDER === 'hcaptcha' && window.hcaptcha && captchaWidgetId !== null) {
-                    window.hcaptcha.reset(captchaWidgetId);
-                }
-            } catch {}
-            captchaToken = '';
-        }
-        
         // Contact form handler - Formspree
-    async function sendMessage() {
+        async function sendMessage() {
             const submitBtn = document.getElementById('submit-btn');
             const formStatus = document.getElementById('form-status');
             const form = document.getElementById('contact-form');
@@ -3058,15 +2984,6 @@
             }
 
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            // Human-time gate: require a few seconds on page before sending
-            const MIN_DELAY_MS = 4000; // 4s
-            const elapsed = (typeof window.__contactLoadedAt === 'number') ? (Date.now() - window.__contactLoadedAt) : MIN_DELAY_MS;
-            if (elapsed < MIN_DELAY_MS) {
-                formStatus.style.display = 'block';
-                formStatus.style.color = '#ef4444';
-                formStatus.textContent = 'Even geduld… beveiligingscontrole. Probeer over enkele seconden opnieuw.';
-                return;
-            }
             if (!name || name.length < 2) {
                 formStatus.style.display = 'block';
                 formStatus.style.color = '#ef4444';
@@ -3086,16 +3003,6 @@
                 return;
             }
 
-            // If CAPTCHA is configured, require a token
-            if (CAPTCHA_PROVIDER && CAPTCHA_SITE_KEY) {
-                if (!captchaToken) {
-                    formStatus.style.display = 'block';
-                    formStatus.style.color = '#ef4444';
-                    formStatus.textContent = 'Bevestig de CAPTCHA alstublieft.';
-                    return;
-                }
-            }
-
             submitBtn.textContent = 'Verzenden...';
             submitBtn.disabled = true;
 
@@ -3103,30 +3010,10 @@
                 const formData = new FormData();
                 formData.append('name', name);
                 formData.append('email', email);
-                // Improve deliverability: set Reply-To for Formspree
-                formData.append('replyto', email);
-                formData.append('_replyto', email);
                 formData.append('message', message);
-                // More specific subject helps inboxing
-                formData.append('_subject', `Nieuw bericht via mister.us.kg — ${name}`);
+                formData.append('_subject', 'Nieuw bericht via mister.us.kg');
                 formData.append('_data_source', 'fetch');
                 formData.append('_website', window.location.href);
-                // Extra context (can help spam heuristics and triage)
-                try {
-                    formData.append('_t', new Date().toISOString());
-                    formData.append('user_agent', navigator.userAgent);
-                    if (window.__contactLoadedAt) {
-                        const seconds = Math.max(0, Math.round((Date.now() - window.__contactLoadedAt) / 1000));
-                        formData.append('page_time_s', String(seconds));
-                    }
-                } catch {}
-
-                // Attach CAPTCHA token if configured
-                if (CAPTCHA_PROVIDER === 'recaptcha' && captchaToken) {
-                    formData.append('g-recaptcha-response', captchaToken);
-                } else if (CAPTCHA_PROVIDER === 'hcaptcha' && captchaToken) {
-                    formData.append('h-captcha-response', captchaToken);
-                }
 
                 const res = await fetch('https://formspree.io/f/xgvpzgaz', {
                     method: 'POST',
@@ -3151,7 +3038,6 @@
             } finally {
                 submitBtn.textContent = 'Verstuur';
                 submitBtn.disabled = false;
-                if (CAPTCHA_PROVIDER && CAPTCHA_SITE_KEY) { resetCaptcha(); }
                 return false;
             }
         }
@@ -3180,10 +3066,6 @@
         
         // Contact form handler
         document.addEventListener('DOMContentLoaded', function() {
-            // Mark contact loaded time (helps simple human timing checks)
-            try { window.__contactLoadedAt = Date.now(); } catch {}
-            // Try to render CAPTCHA if configured
-            try { renderCaptcha(); } catch (e) { console.warn('[captcha] not rendered', e); }
             // Zorg dat het formulier nooit navigeert
             const submitBtnEl = document.getElementById('submit-btn');
             const contactForm = document.getElementById('contact-form');

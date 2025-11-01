@@ -1216,7 +1216,7 @@
             <p class="title">Cloud | Azure | 365 | Python\C\C+ | Automation | Cybersecurity analyse</p>
         </div>
         <div style="text-align:center;">
-            <span class="version-badge" id="site-version">v2025.11.01-10</span>
+            <span class="version-badge" id="site-version">v2025.11.01-09</span>
         </div>
         
         <!-- Social Links -->
@@ -1612,7 +1612,7 @@
         <!-- Footer -->
         <div class="footer">
             <p class="footer-text">
-                Made with ❤️ by mister@2025 • Version <span id="site-version-footer">v2025.11.01-10</span> • 
+                Made with ❤️ by mister@2025 • Version <span id="site-version-footer">v2025.11.01-09</span> • 
                 <a href="#" class="text-link">chattgbt@gmail.com</a>
             </p>
         </div>
@@ -3058,15 +3058,6 @@
             }
 
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            // Human-time gate: require a few seconds on page before sending
-            const MIN_DELAY_MS = 4000; // 4s
-            const elapsed = (typeof window.__contactLoadedAt === 'number') ? (Date.now() - window.__contactLoadedAt) : MIN_DELAY_MS;
-            if (elapsed < MIN_DELAY_MS) {
-                formStatus.style.display = 'block';
-                formStatus.style.color = '#ef4444';
-                formStatus.textContent = 'Even geduld… beveiligingscontrole. Probeer over enkele seconden opnieuw.';
-                return;
-            }
             if (!name || name.length < 2) {
                 formStatus.style.display = 'block';
                 formStatus.style.color = '#ef4444';

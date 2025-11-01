@@ -1,4 +1,3 @@
-import { supabase } from './supabase-client.js';
 // Zorg dat de uitlogknop altijd werkt
 document.addEventListener('DOMContentLoaded', function() {
     const logoutBtn = document.getElementById('admin-logout-btn');
@@ -25,132 +24,79 @@ async function loadFiles() {
             allFiles = allFiles.concat(data.map(f => ({ ...f, folder })));
         }
     }
-    // Boomstructuur bouwen: {folder: [files]}
-    const tree = {};
+    if (allFiles.length === 0) {
+        list.innerHTML = '<li>Geen bestanden gevonden.</li>';
+        return;
+    }
+    list.innerHTML = '';
     allFiles.forEach(file => {
-        if (!tree[file.folder]) tree[file.folder] = [];
-        tree[file.folder].push(file);
-    });
-    Object.keys(tree).forEach(folder => {
-        // Map-node
-        const folderLi = document.createElement('li');
-        folderLi.textContent = '📁 ' + folder;
-        folderLi.style.fontWeight = 'bold';
-        folderLi.style.marginTop = '10px';
-        folderLi.style.listStyle = 'none';
-        list.appendChild(folderLi);
-        // Bestanden in map
-        tree[folder].forEach(file => {
-            const li = document.createElement('li');
-            li.style.listStyle = 'none';
-            li.style.marginLeft = '22px';
-            // Bestand-icoon en naam (klikbaar)
-            const nameSpan = document.createElement('span');
-            nameSpan.textContent = '📄 ' + file.name;
-            nameSpan.style.cursor = 'pointer';
-            nameSpan.style.color = '#2563eb';
-            nameSpan.addEventListener('click', function() {
-                showInlinePreview(file);
-            });
-            li.appendChild(nameSpan);
-            // Upload-datum
-            if (file.created_at) {
-                const date = new Date(file.created_at);
-                const dateStr = date.toLocaleDateString('nl-NL', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
-                const dateSpan = document.createElement('span');
-                dateSpan.textContent = dateStr;
-                dateSpan.style.color = '#aaa';
-                dateSpan.style.fontSize = '0.95em';
-                dateSpan.style.marginLeft = '8px';
-                li.appendChild(dateSpan);
-            }
-            // Download-link (compat: oude en nieuwe Supabase SDK)
-            let publicUrl = '';
-            const supabasePath = file.folder + '/' + file.name;
-            const publicUrlObj = supabase.storage.from('Bestanden').getPublicUrl(supabasePath);
-            if (publicUrlObj.publicUrl) {
-                publicUrl = publicUrlObj.publicUrl;
-            } else if (publicUrlObj.data && publicUrlObj.data.publicUrl) {
-                publicUrl = publicUrlObj.data.publicUrl;
-            }
-            if (publicUrl && publicUrl.startsWith('https://')) {
-                const a = document.createElement('a');
-                a.href = publicUrl;
-                a.textContent = 'Download';
-                a.className = 'admin-btn file-btn';
-                a.style.marginLeft = '8px';
-                li.appendChild(a);
-            }
-            folderLi.appendChild(li);
-        });
-    });
-}
-// Inline preview functie
-function showInlinePreview(file) {
-    let previewDiv = document.getElementById('inline-preview');
-    if (!previewDiv) {
-        previewDiv = document.createElement('div');
-        previewDiv.id = 'inline-preview';
-        previewDiv.style.position = 'fixed';
-        previewDiv.style.top = '60px';
-        previewDiv.style.right = '40px';
-        previewDiv.style.background = '#fff';
-        previewDiv.style.border = '1px solid #ccc';
-        previewDiv.style.padding = '18px';
-        previewDiv.style.zIndex = 1000;
-        previewDiv.style.maxWidth = '420px';
-        previewDiv.style.maxHeight = '80vh';
-        previewDiv.style.overflow = 'auto';
-        document.body.appendChild(previewDiv);
-    }
-    // Leegmaken
-    previewDiv.innerHTML = '';
-    // Titel
-    const title = document.createElement('div');
-    title.textContent = 'Preview: ' + file.name;
-    title.style.fontWeight = 'bold';
-    title.style.marginBottom = '8px';
-    previewDiv.appendChild(title);
-    // Ophalen publicUrl
-    const supabasePath = file.folder + '/' + file.name;
-    const publicUrlObj = supabase.storage.from('Bestanden').getPublicUrl(supabasePath);
-    let publicUrl = '';
-    if (publicUrlObj.publicUrl) {
-        publicUrl = publicUrlObj.publicUrl;
-    } else if (publicUrlObj.data && publicUrlObj.data.publicUrl) {
-        publicUrl = publicUrlObj.data.publicUrl;
-    }
-    // Preview type bepalen
-    if (publicUrl && /\.(jpg|jpeg|png|gif|webp)$/i.test(file.name)) {
-        const img = document.createElement('img');
-        img.src = publicUrl;
-        img.style.maxWidth = '400px';
-        img.style.maxHeight = '60vh';
-        previewDiv.appendChild(img);
-    } else if (publicUrl && /\.(txt|md|json|js|css|html)$/i.test(file.name)) {
-        fetch(publicUrl)
-            .then(r => r.text())
-            .then(text => {
-                const pre = document.createElement('pre');
-                pre.textContent = text.substring(0, 2000) + (text.length > 2000 ? '\n... (ingekort)' : '');
-                previewDiv.appendChild(pre);
-            });
-    } else if (publicUrl) {
+        const li = document.createElement('li');
+        // Bestandsnaam
+        const nameSpan = document.createElement('span');
+        nameSpan.textContent = file.name;
+        li.appendChild(nameSpan);
+        // Map-label
+        const folderLabel = document.createElement('span');
+        folderLabel.textContent = file.folder;
+        folderLabel.style.background = '#23234a';
+        folderLabel.style.color = '#4ade80';
+        folderLabel.style.fontSize = '0.95em';
+        folderLabel.style.padding = '2px 8px';
+        folderLabel.style.borderRadius = '8px';
+        folderLabel.style.marginLeft = '10px';
+        folderLabel.style.marginRight = '4px';
+        li.appendChild(folderLabel);
+        // Upload-datum
+        if (file.created_at) {
+            const date = new Date(file.created_at);
+            const dateStr = date.toLocaleDateString('nl-NL', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+            const dateSpan = document.createElement('span');
+            dateSpan.textContent = dateStr;
+            dateSpan.style.color = '#aaa';
+            dateSpan.style.fontSize = '0.95em';
+            dateSpan.style.marginLeft = '8px';
+            li.appendChild(dateSpan);
+        }
+        // Download link
         const a = document.createElement('a');
-        a.href = publicUrl;
-        a.textContent = 'Open bestand';
-        a.target = '_blank';
-        previewDiv.appendChild(a);
-    } else {
-        previewDiv.textContent = 'Geen preview beschikbaar.';
-    }
-    // Sluitknop
-    const closeBtn = document.createElement('button');
-    closeBtn.textContent = 'Sluiten';
-    closeBtn.style.marginTop = '12px';
-    closeBtn.onclick = () => previewDiv.remove();
-    previewDiv.appendChild(closeBtn);
+        a.href = supabase.storage.from('Bestanden').getPublicUrl(file.folder + '/' + file.name).publicUrl;
+        a.textContent = 'Download';
+    a.className = 'admin-btn file-btn';
+    a.style.marginLeft = '8px';
+    a.style.fontSize = '0.92em';
+    a.style.padding = '3px 12px';
+    a.style.height = '26px';
+    a.setAttribute('download', file.name);
+    li.appendChild(a);
+    // Verwijderknop
+    const delBtn = document.createElement('button');
+    delBtn.textContent = 'Verwijderen';
+    delBtn.className = 'admin-btn file-btn';
+    delBtn.style.background = '#ef4444';
+    delBtn.style.marginLeft = '4px';
+    delBtn.style.fontSize = '0.92em';
+    delBtn.style.padding = '3px 12px';
+    delBtn.style.height = '26px';
+    delBtn.onclick = async function() {
+            if (!confirm('Weet je zeker dat je dit bestand wilt verwijderen?')) return;
+            delBtn.disabled = true;
+            delBtn.textContent = 'Verwijderen...';
+            const { error } = await supabase.storage.from('Bestanden').remove([file.folder + '/' + file.name]);
+            if (error) {
+                alert('Fout bij verwijderen: ' + error.message);
+                delBtn.disabled = false;
+                delBtn.textContent = 'Verwijderen';
+                return;
+            }
+            if (typeof showAdminNotification === 'function') showAdminNotification('Bestand verwijderd: ' + file.name, 'success');
+            if (typeof addLogboekEntry === 'function') addLogboekEntry('Bestand verwijderd: ' + file.name);
+            await loadFiles();
+        };
+        li.appendChild(delBtn);
+        list.appendChild(li);
+    });
 }
+document.addEventListener('DOMContentLoaded', loadFiles);
 
 // Upload bestand naar gekozen map
 document.addEventListener('DOMContentLoaded', function() {
@@ -186,7 +132,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 // Supabase CV-bestanden ophalen en tonen in beheer (demo)
-
+import { supabase } from './supabase-client.js';
 
 async function loadCVFiles() {
     const list = document.getElementById('cv-file-list');
@@ -321,4 +267,3 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
 });
-// ...einde script...

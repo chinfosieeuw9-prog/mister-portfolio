@@ -1180,15 +1180,6 @@
 </head>
 <body>
         
-        <!-- Site config (no secrets) -->
-        <script>
-            // CAPTCHA provider: 'hcaptcha' or 'recaptcha'
-            // Update the SITE KEY only; do NOT put any secret here.
-            window.CAPTCHA_PROVIDER = window.CAPTCHA_PROVIDER || 'hcaptcha';
-            // Public site key from your hCaptcha site
-            window.CAPTCHA_SITE_KEY = window.CAPTCHA_SITE_KEY || '4f1a4efe-fe14-4f3a-8420-2fcec5e27df4';
-        </script>
-    
     <!-- Upload Dialog -->
     <div id="uploadDialog" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); z-index:9999; align-items:center; justify-content:center;">
         <form id="uploadForm" style="background:#fff; padding:32px; border-radius:12px; box-shadow:0 8px 32px rgba(0,0,0,0.2); min-width:320px; max-width:90vw; display:flex; flex-direction:column; gap:16px;">
@@ -1216,7 +1207,7 @@
             <p class="title">Cloud | Azure | 365 | Python\C\C+ | Automation | Cybersecurity analyse</p>
         </div>
         <div style="text-align:center;">
-            <span class="version-badge" id="site-version">v2025.11.01-10</span>
+            <span class="version-badge" id="site-version">v2025.11.01-06</span>
         </div>
         
         <!-- Social Links -->
@@ -1612,7 +1603,7 @@
         <!-- Footer -->
         <div class="footer">
             <p class="footer-text">
-                Made with ❤️ by mister@2025 • Version <span id="site-version-footer">v2025.11.01-10</span> • 
+                Made with ❤️ by mister@2025 • Version <span id="site-version-footer">v2025.11.01-06</span> • 
                 <a href="#" class="text-link">chattgbt@gmail.com</a>
             </p>
         </div>
@@ -3058,15 +3049,6 @@
             }
 
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            // Human-time gate: require a few seconds on page before sending
-            const MIN_DELAY_MS = 4000; // 4s
-            const elapsed = (typeof window.__contactLoadedAt === 'number') ? (Date.now() - window.__contactLoadedAt) : MIN_DELAY_MS;
-            if (elapsed < MIN_DELAY_MS) {
-                formStatus.style.display = 'block';
-                formStatus.style.color = '#ef4444';
-                formStatus.textContent = 'Even geduld… beveiligingscontrole. Probeer over enkele seconden opnieuw.';
-                return;
-            }
             if (!name || name.length < 2) {
                 formStatus.style.display = 'block';
                 formStatus.style.color = '#ef4444';

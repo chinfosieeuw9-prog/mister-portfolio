@@ -42,66 +42,126 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     
     <!-- Favicon -->
+
+    <link rel="stylesheet" href="css/style.css">
+    <script type="module" src="js/software-supabase.js"></script>
     <!-- Supabase JS CDN -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTYiIGN5PSIxNiIgcj0iMTYiIGZpbGw9InVybCgjZ3JhZGllbnQwX2xpbmVhcl8xXzEpIi8+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9ImdyYWRpZW50MF9saW5lYXJfMV8xIiB4MT0iMCIgeTE9IjAiIHgyPSIzMiIgeTI9IjMyIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMyZDFiNjkiLz4KPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjNWIyMWI2Ii8+CjwvbGluZWFyR3JhZGllbnQ+CjwvZGVmcz4KPC9zdmc+">
+    <script src="js/admin-panel.js"></script>
     
     <style>
-        /* Reset and base */
-        html, body { background:#0a0a0a; overflow-x:hidden; }
-        * { margin:0; padding:0; box-sizing:border-box; }
-        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background:
-                radial-gradient(circle at 20% 80%, rgba(120,119,198,0.15) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(255,255,255,0.08) 0%, transparent 50%),
-                radial-gradient(circle at 40% 40%, rgba(120,119,198,0.12) 0%, transparent 50%),
-                repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(255,255,255,0.04) 3px, rgba(255,255,255,0.04) 6px),
-                repeating-linear-gradient(-45deg, transparent, transparent 4px, rgba(120,119,198,0.03) 4px, rgba(120,119,198,0.03) 8px),
-                #0a0a0a;
-            color:#ffffff;
-            line-height:1.6;
-            font-size:15px;
-            position:relative;
+                #181828,
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 119, 198, 0.12) 0%, transparent 50%);
         }
         
-        body::before {
-            content:'';
-            position:fixed;
-            top:0; left:0; width:100%; height:100%;
-            background:
-                radial-gradient(circle at 25% 25%, rgba(120,119,198,0.10) 0%, transparent 60%),
-                radial-gradient(circle at 75% 75%, rgba(120,119,198,0.08) 0%, transparent 60%),
-                radial-gradient(circle at 50% 10%, rgba(255,255,255,0.05) 0%, transparent 40%);
-            pointer-events:none;
-            z-index:-1;
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 40px 20px;
         }
-        
-        .container { position:relative; z-index:2; }
-        .container { max-width:600px; margin:0 auto; padding:40px 20px; }
         
         /* Header */
-        .header { text-align:center; margin-bottom:40px; }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
         .avatar {
-            width:100px; height:100px; border-radius:50%;
-            background-image:url('facep2.jpg'); background-size:cover; background-position:center; background-repeat:no-repeat;
-            margin:0 auto 20px; display:flex; align-items:center; justify-content:center; position:relative;
-            box-shadow: 0 12px 40px rgba(91,33,182,0.4), 0 6px 20px rgba(76,29,149,0.3), 0 3px 10px rgba(0,0,0,0.4), inset 0 3px 6px rgba(255,255,255,0.3), inset 0 -3px 6px rgba(0,0,0,0.3);
-            border:2px solid rgba(147,134,234,0.15); overflow:hidden; cursor:pointer; transition:all .3s ease;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-image: url('facep2.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            box-shadow: 
+                0 12px 40px rgba(91, 33, 182, 0.4),
+                0 6px 20px rgba(76, 29, 149, 0.3),
+                0 3px 10px rgba(0, 0, 0, 0.4),
+                inset 0 3px 6px rgba(255, 255, 255, 0.3),
+                inset 0 -3px 6px rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(147, 134, 234, 0.15);
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
         }
-        .avatar:hover { background-image:url('faceP1.png'); transform:scale(1.05); box-shadow: 0 15px 50px rgba(91,33,182,0.6), 0 8px 25px rgba(76,29,149,0.5), 0 4px 12px rgba(0,0,0,0.6), inset 0 3px 6px rgba(255,255,255,0.4), inset 0 -3px 6px rgba(0,0,0,0.4); }
+        
+        .avatar:hover {
+            background-image: url('faceP1.png');
+            transform: scale(1.05);
+            box-shadow: 
+                0 15px 50px rgba(91, 33, 182, 0.6),
+                0 8px 25px rgba(76, 29, 149, 0.5),
+                0 4px 12px rgba(0, 0, 0, 0.6),
+                inset 0 3px 6px rgba(255, 255, 255, 0.4),
+                inset 0 -3px 6px rgba(0, 0, 0, 0.4);
+        }
+        
         .avatar::before {
-            content:''; position:absolute; top:8%; left:20%; width:40%; height:40%;
-            background: radial-gradient(ellipse at center, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.3) 30%, rgba(196,181,253,0.1) 60%, transparent 80%);
-            border-radius:50%; transform:rotate(-20deg); filter:blur(.5px); z-index:2;
+            content: '';
+            position: absolute;
+            top: 8%;
+            left: 20%;
+            width: 40%;
+            height: 40%;
+            background: 
+                radial-gradient(ellipse at center, 
+                    rgba(255, 255, 255, 0.6) 0%, 
+                    rgba(255, 255, 255, 0.3) 30%,
+                    rgba(196, 181, 253, 0.1) 60%, 
+                    transparent 80%);
+            border-radius: 50%;
+            transform: rotate(-20deg);
+            filter: blur(0.5px);
+            z-index: 2;
         }
+        
         .avatar::after {
-            content:''; position:absolute; top:15%; right:25%; width:20%; height:20%;
-            background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.4) 40%, transparent 70%);
-            border-radius:50%; box-shadow: 0 0 8px rgba(255,255,255,0.3), inset 0 1px 2px rgba(255,255,255,0.6); z-index:2;
+            content: '';
+            position: absolute;
+            top: 15%;
+            right: 25%;
+            width: 20%;
+            height: 20%;
+            background: 
+                radial-gradient(circle, 
+                    rgba(255, 255, 255, 0.8) 0%, 
+                    rgba(255, 255, 255, 0.4) 40%,
+                    transparent 70%);
+            border-radius: 50%;
+            box-shadow: 
+                0 0 8px rgba(255, 255, 255, 0.3),
+                inset 0 1px 2px rgba(255, 255, 255, 0.6);
+            z-index: 2;
         }
-        .name { font-size:28px; font-weight:700; color:#ffffff; margin-bottom:6px; }
-        .title { font-size:16px; color:#aaa; font-weight:400; }
+        
+        .name {
+            font-size: 28px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 6px;
+        }
+        
+        .title {
+            font-size: 16px;
+            color: #aaa;
+            font-weight: 400;
+        }
         
         /* Social Links - originele grootte */
         .social-links {
@@ -285,18 +345,6 @@
         .text-link:hover {
             text-decoration: underline;
         }
-
-        /* Version badge */
-        .version-badge {
-            display: inline-block;
-            margin: 8px auto 0;
-            padding: 4px 10px;
-            border-radius: 999px;
-            background: linear-gradient(135deg, #2d1b69, #5b21b6);
-            color: #fff;
-            font-size: 12px;
-            border: 1px solid rgba(147,134,234,0.35);
-        }
         
         /* Form Styling */
         .form-group {
@@ -381,18 +429,13 @@
         
         /* Admin Styling */
         .admin-access {
-            /* visibility managed via .hidden class or :target fallback */
+            display: none;
             margin-top: 24px;
         }
         
         .admin-panel {
-            /* visibility managed via .hidden class */
+            display: none;
             margin-top: 24px;
-        }
-        
-        /* Fallback: als iemand op #admin-access klikt (zonder JS), toon blok */
-        #admin-access:target {
-            display: block !important;
         }
         
         .admin-tabs {
@@ -1027,27 +1070,6 @@
             transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(91, 33, 182, 0.3);
         }
-
-        /* Kleuren per categorie (software tegels) */
-        .tech-btn.cat-all { background: linear-gradient(135deg, #334155, #475569); border-color: rgba(148,163,184,0.4); }
-        .tech-btn.cat-utilities { background: linear-gradient(135deg, #065f46, #10b981); border-color: rgba(16,185,129,0.4); }
-        .tech-btn.cat-development { background: linear-gradient(135deg, #1e3a8a, #3b82f6); border-color: rgba(59,130,246,0.4); }
-        .tech-btn.cat-security { background: linear-gradient(135deg, #7f1d1d, #ef4444); border-color: rgba(239,68,68,0.45); }
-        .tech-btn.cat-multimedia { background: linear-gradient(135deg, #6b21a8, #a855f7); border-color: rgba(168,85,247,0.45); }
-        .tech-btn.cat-games { background: linear-gradient(135deg, #3f6212, #84cc16); border-color: rgba(132,204,22,0.45); }
-        .tech-btn.cat-office { background: linear-gradient(135deg, #064e3b, #22c55e); border-color: rgba(34,197,94,0.45); }
-        .tech-btn.cat-tools { background: linear-gradient(135deg, #0f172a, #475569); border-color: rgba(71,85,105,0.45); }
-        .tech-btn.cat-scripts { background: linear-gradient(135deg, #4a044e, #db2777); border-color: rgba(219,39,119,0.45); }
-
-        .tech-btn.cat-all:hover { box-shadow: 0 4px 12px rgba(148,163,184,0.35); }
-        .tech-btn.cat-utilities:hover { box-shadow: 0 4px 12px rgba(16,185,129,0.35); }
-        .tech-btn.cat-development:hover { box-shadow: 0 4px 12px rgba(59,130,246,0.35); }
-        .tech-btn.cat-security:hover { box-shadow: 0 4px 12px rgba(239,68,68,0.35); }
-        .tech-btn.cat-multimedia:hover { box-shadow: 0 4px 12px rgba(168,85,247,0.35); }
-        .tech-btn.cat-games:hover { box-shadow: 0 4px 12px rgba(132,204,22,0.35); }
-        .tech-btn.cat-office:hover { box-shadow: 0 4px 12px rgba(34,197,94,0.35); }
-        .tech-btn.cat-tools:hover { box-shadow: 0 4px 12px rgba(71,85,105,0.35); }
-        .tech-btn.cat-scripts:hover { box-shadow: 0 4px 12px rgba(219,39,119,0.35); }
         
         .tech-output {
             background: #0a0a0a;
@@ -1179,35 +1201,25 @@
     </style>
 </head>
 <body>
-        
-        <!-- Site config (no secrets) -->
-        <script>
-            // CAPTCHA provider: 'hcaptcha' or 'recaptcha'
-            // Update the SITE KEY only; do NOT put any secret here.
-            window.CAPTCHA_PROVIDER = window.CAPTCHA_PROVIDER || 'hcaptcha';
-            // Public site key from your hCaptcha site
-            window.CAPTCHA_SITE_KEY = window.CAPTCHA_SITE_KEY || '4f1a4efe-fe14-4f3a-8420-2fcec5e27df4';
-        </script>
-    
+    <script>
+    // Anti-kopieerscript: blokkeer rechtsklik, tekstselectie en bekende sneltoetsen
+    document.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+    });
+    document.addEventListener('selectstart', function(e) {
+        e.preventDefault();
+    });
+    document.addEventListener('keydown', function(e) {
+        // Ctrl+C, Ctrl+U, Ctrl+S, F12, Ctrl+Shift+I
+        if ((e.ctrlKey && (e.key === 'c' || e.key === 'u' || e.key === 's')) ||
+            (e.key === 'F12') ||
+            (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'i')) {
+            e.preventDefault();
+            return false;
+        }
+    });
+    </script>
     <!-- Upload Dialog -->
-    <div id="uploadDialog" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); z-index:9999; align-items:center; justify-content:center;">
-        <form id="uploadForm" style="background:#fff; padding:32px; border-radius:12px; box-shadow:0 8px 32px rgba(0,0,0,0.2); min-width:320px; max-width:90vw; display:flex; flex-direction:column; gap:16px;">
-            <h2 style="color:#2d1b69;">Software Upload</h2>
-            <input type="file" name="file" required style="border:1px dashed #2d1b69; padding:12px;" />
-            <input type="text" name="name" placeholder="Naam software" required style="padding:8px; border-radius:6px; border:1px solid #ccc;" />
-            <select name="category" required style="padding:8px; border-radius:6px; border:1px solid #ccc;">
-                <option value="">Categorie kiezen</option>
-                <option value="tool">Tool</option>
-                <option value="game">Game</option>
-                <option value="utility">Utility</option>
-            </select>
-            <textarea name="description" placeholder="Beschrijving (optioneel)" style="padding:8px; border-radius:6px; border:1px solid #ccc;"></textarea>
-            <div style="display:flex; gap:12px; justify-content:flex-end;">
-                <button type="button" id="cancelUpload" style="background:#ef4444; color:#fff; border:none; padding:8px 16px; border-radius:6px; cursor:pointer;">Annuleren</button>
-                <button type="submit" style="background:#10b981; color:#fff; border:none; padding:8px 16px; border-radius:6px; cursor:pointer;">⬆️ Upload</button>
-            </div>
-        </form>
-    </div>
     <div class="container">
         <!-- Header -->
         <div class="header">
@@ -1215,10 +1227,7 @@
             <h1 class="name">Mister</h1>
             <p class="title">Cloud | Azure | 365 | Python\C\C+ | Automation | Cybersecurity analyse</p>
         </div>
-        <div style="text-align:center;">
-            <span class="version-badge" id="site-version">v2025.11.01-10</span>
-        </div>
-        
+
         <!-- Social Links -->
         <div class="social-links">
             <a href="https://mister.us.kg" target="_blank" rel="noopener noreferrer" class="social-link">
@@ -1233,113 +1242,308 @@
             <a href="https://github.com/chinfosieeuw9-prog" target="_blank" rel="noopener noreferrer" class="social-link">
                 <span>📱</span>Github
             </a>
-            <a href="#cv" class="social-link" onclick="openCVPopup(); return false;">
-                <span>📄</span>CV
-            </a>
-            <a href="#admin-access" class="social-link admin-login-btn" id="admin-login-btn" onclick="return handleAdminClick(event);">
+            <a href="admin.html" class="social-link admin-panel-link-hidden" id="admin-panel-link"><span>🛠️</span>Admin</a>
+        <script>
+        // Toon admin link als admin ingelogd is
+        function updateAdminPanelLink() {
+            var link = document.getElementById('admin-panel-link');
+            var isAdmin = localStorage.getItem('isAdmin') === 'true';
+            if (isAdmin) {
+                link.style.display = 'inline-flex';
+            } else {
+                link.style.display = 'none';
+            }
+        }
+        // Hook in op admin login/logout events
+        (function() {
+            var origLogin = window.showAdminLogin;
+            window.showAdminLogin = function() {
+                origLogin();
+                updateAdminPanelLink();
+            };
+            var origLogout = window.logoutAdmin;
+            window.logoutAdmin = function() {
+                origLogout();
+                updateAdminPanelLink();
+            };
+            // Init bij laden
+            document.addEventListener('DOMContentLoaded', updateAdminPanelLink);
+            // Ook bij terugkomen op pagina
+            window.addEventListener('storage', updateAdminPanelLink);
+        })();
+        </script>
+            <a href="#" class="social-link admin-login-btn" id="admin-login-btn" onclick="event.preventDefault(); console.log('🔐 Admin clicked'); showAdminLogin(); return false;">
                 <span>🔐</span>Admin
             </a>
         </div>
-        
+
         <!-- Featured Card met afbeelding - Klikbaar voor profiel -->
         <div class="featured-card" onclick="openProfileModal()">
             <div class="featured-image">
-                <img src="background1.jpg?v=3" alt="About" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
+                <img src="background1.jpg?v=3" alt="About" class="featured-image-img">
             </div>
             <div class="featured-content">
-                <div class="featured-title">About</div>
-                <div class="featured-hint">Click to read more</div>
+                <div class="featured-title">Mijn verhaal &amp; missie</div>
+                <a class="featured-hint" href="#" onclick="openAboutPopup(event)">Click to read more</a>
+<script>
+function openAboutPopup(e) {
+    e.preventDefault();
+    const popup = document.createElement('div');
+    popup.style.position = 'fixed';
+    popup.style.top = '0';
+    popup.style.left = '0';
+    popup.style.width = '100vw';
+    popup.style.height = '100vh';
+    popup.style.background = 'rgba(0,0,0,0.7)';
+    popup.style.zIndex = '9999';
+    popup.style.display = 'flex';
+    popup.style.alignItems = 'center';
+    popup.style.justifyContent = 'center';
+        popup.innerHTML = `
+            <div id="about-popup-content" class="about-popup-content">
+                <h2 style="margin-top:0;font-size:1.3em;">Mijn verhaal & missie</h2>
+                <h3 style='margin-bottom:6px;'>Over mij</h3>
+                <p style='margin-top:0;'>Als IT-professional met een sterke focus op webdevelopment, automatisering, cloud en cybersecurity help ik organisaties sneller, veiliger en schaalbaarder te werken. De basis werd jaren geleden gelegd met het demonteren van pc’s en het bouwen van de eerste websites; inmiddels combineer ik die hands-on mentaliteit met moderne engineering-praktijken zoals CI/CD, infrastructure as code en secure-by-design principes.</p>
+                <h3 style='margin-bottom:6px;'>Missie</h3>
+                <p style='margin-top:0;'>Organisaties toekomstbestendig maken met slimme, betrouwbare en meetbare digitale oplossingen. Dat betekent: problemen niet alleen oplossen, maar structureel voorkomen via standaardisatie, automatisering en continue verbetering, steeds met de eindgebruiker én security als uitgangspunt.</p>
+                <h3 style='margin-bottom:6px;'>Kernexpertise</h3>
+                <ul style='margin-top:0;margin-bottom:12px;padding-left:18px;'>
+                    <li><b>Webdevelopment:</b> moderne front-end en API-gedreven back-end, performance tuning en toegankelijke UI’s met duidelijke case studies en meetbare impact.</li>
+                    <li><b>Automatisering:</b> scripting, CI/CD-pipelines, testautomatisering en herhaalbare deployments voor snelheid en kwaliteit.</li>
+                    <li><b>Cloud en hosting:</b> schaalbare web- en app-omgevingen, configuratiebeheer en kostenbewuste architectuurkeuzes.</li>
+                    <li><b>Cybersecurity:</b> hardening, least-privilege, secrets management en proactieve monitoring om risico’s te verlagen.</li>
+                </ul>
+                <h3 style='margin-bottom:6px;'>Werkwijze</h3>
+                <ul style='margin-top:0;margin-bottom:12px;padding-left:18px;'>
+                    <li><b>Analyse en value mapping:</b> eerst de bedrijfsdoelen, dan de technische keuzes; elke feature koppelt aan een KPI of duidelijke use case.</li>
+                    <li><b>Case-study aanpak:</b> probleem, proces, oplossing en resultaat transparant gedocumenteerd, inclusief lessons learned en metrics zoals laadtijd, foutreductie en conversie.</li>
+                    <li><b>Samenwerking en overdracht:</b> duidelijke documentatie, kennisdeling en handover zodat teams zelfstandig verder kunnen.</li>
+                </ul>
+                <h3 style='margin-bottom:6px;'>Wat ik oplever</h3>
+                <ul style='margin-top:0;margin-bottom:12px;padding-left:18px;'>
+                    <li>Veilige, snelle websites en webapps met aantoonbare verbeteringen in performance en UX</li>
+                    <li>Geautomatiseerde pipelines die releasetijd verkorten en kwaliteit verhogen.</li>
+                    <li>Robuuste cloud-omgevingen met monitoring, logging en kosteninzicht.</li>
+                    <li>Security-by-default implementaties die compliance ondersteunen en incidenten voorkomen.</li>
+                </ul>
+                <h3 style='margin-bottom:6px;'>Samenwerken</h3>
+                <p style='margin-top:0;'>Zoek je iemand die techniek, veiligheid en businessresultaat verbindt en dit aantoonbaar maakt met cases en metrics? Laten we kennismaken en je doelen vertalen naar een concreet, uitvoerbaar plan.</p>
+                <button id="about-popup-close" style="position:absolute;top:12px;right:16px;background:#4ade80;color:#23234a;border:none;padding:6px 16px;border-radius:6px;font-weight:600;cursor:pointer;">Sluiten</button>
+            </div>
+        `;
+    popup.addEventListener('click', function(ev) {
+        if (ev.target === popup) popup.remove();
+    });
+    popup.querySelector('#about-popup-close').onclick = function() { popup.remove(); };
+    document.body.appendChild(popup);
+}
+</script>
             </div>
         </div>
+
+
         
         <!-- Main Cards -->
-        <!-- Nieuws (uniform card-stijl) -->
-        <div class="card">
-            <div class="card-header">
-                <div class="card-icon">📰</div>
-                <h2>Nieuws</h2>
+        <div class="cards-grid">
+            <!-- NIEUWS WIDGET (Supabase powered) -->
+            <div class="card" id="news-widget">
+                <!-- Beheerformulier voor nieuws toevoegen (alleen admin) -->
+                <form id="news-admin-form" class="admin-only news-admin-form">
+                    <div class="news-form-title">Nieuws toevoegen</div>
+                    <input type="text" id="news-title" placeholder="Titel" required class="news-form-input">
+                    <textarea id="news-content" placeholder="Bericht" required class="news-form-input"></textarea>
+                    <input type="text" id="news-link" placeholder="Link (optioneel)" class="news-form-input">
+                    <button type="submit" class="news-form-btn">Toevoegen</button>
+                    <div id="news-form-msg" class="news-form-msg"></div>
+                </form>
+        <script>
+        // Toggle nieuws toevoegen-formulier alleen zichtbaar voor admin
+        function showNewsAdminForm(isAdmin) {
+            var form = document.getElementById('news-admin-form');
+            if (form) form.style.display = isAdmin ? 'flex' : 'none';
+        }
+        // Voorbeeld: koppel aan je bestaande login/logout logica
+        // showNewsAdminForm(true) bij login, showNewsAdminForm(false) bij logout
+        // Voeg deze aan je admin login/logout success callbacks toe
+        </script>
+                <div class="card-header">
+                    <div class="card-icon">📰</div>
+                    <h2>Nieuws</h2>
+                </div>
+                <p>Blijf op de hoogte van het laatste nieuws!</p>
+                <div id="news-list" class="news-list"></div>
+            <button id="load-more-news" class="news-load-more">Meer laden</button>
             </div>
-            <p>Blijf op de hoogte van het laatste nieuws!</p>
-            <div id="news-log" style="min-height: 48px; max-height: 180px; overflow-y: auto; background: #0f0f0f; border-radius: 8px; padding: 10px 8px; color: #e3e6f0; margin-top: 12px; border: 1px solid #333;">DIT IS EEN TEST 05:23</div>
-        </div>
-        <!-- Software (3x3 grid) -->
-        <div class="card" id="software-card">
-            <div class="card-header">
-                <div class="card-icon">💾</div>
-                <h2>Software</h2>
+            
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">🔗</div>
+                    <h2>Links</h2>
+                </div>
+                <p>Useful resources and external links</p>
+                <div class="links-container">
+                    <!-- Professional -->
+                    <a href="https://azure.microsoft.com" target="_blank" rel="noopener noreferrer" class="link-item link-item-small">🌐 Azure</a>
+                    <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="link-item link-item-small">💻 GitHub</a>
+                    <a href="https://docs.microsoft.com" target="_blank" rel="noopener noreferrer" class="link-item link-item-small">📚 MS Docs</a>
+                    <a href="https://cybersecuritynews.com" target="_blank" rel="noopener noreferrer" class="link-item link-item-small">🔐 CyberSec</a>
+                    <!-- News -->
+                    <a href="https://tweakers.net" target="_blank" rel="noopener noreferrer" class="link-item link-item-small">📰 Tweakers</a>
+                    <a href="https://bright.nl" target="_blank" rel="noopener noreferrer" class="link-item link-item-small">💡 Bright</a>
+                    <!-- Study -->
+                    <a href="https://www.skills.google/" target="_blank" rel="noopener noreferrer" class="link-item link-item-small">🎓 Google</a>
+                    <a href="https://learn.microsoft.com/en-us/" target="_blank" rel="noopener noreferrer" class="link-item link-item-small">📖 MS Learn</a>
+                    <a href="https://tryhackme.com/" target="_blank" rel="noopener noreferrer" class="link-item link-item-small">💻 TryHack</a>
+                    <a href="https://pll.harvard.edu/catalog/free" target="_blank" rel="noopener noreferrer" class="link-item link-item-small">🏛️ Harvard</a>
+                    <a href="https://github.com/cloudcommunity/Free-Certifications" target="_blank" rel="noopener noreferrer" class="link-item link-item-small">🏆 Free Certs</a>
+                </div>
             </div>
-            <p>Kies een categorie om de Software Explorer te openen.</p>
-            <div class="software-grid" style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 12px;">
-                <button class="tech-btn cat-all" onclick="openSoftwareCategory('all')">🗂️ All</button>
-                <button class="tech-btn cat-utilities" onclick="openSoftwareCategory('utilities')">🔧 Utilities</button>
-                <button class="tech-btn cat-development" onclick="openSoftwareCategory('development')">💻 Development</button>
-                <button class="tech-btn cat-security" onclick="openSoftwareCategory('security')">🛡️ Security</button>
-                <button class="tech-btn cat-multimedia" onclick="openSoftwareCategory('multimedia')">🎵 Multimedia</button>
-                <button class="tech-btn cat-games" onclick="openSoftwareCategory('games')">🎮 Games</button>
-                <button class="tech-btn cat-office" onclick="openSoftwareCategory('office')">📊 Office</button>
-                <button class="tech-btn cat-tools" onclick="openSoftwareCategory('utilities')">🧰 Tools</button>
-                <button class="tech-btn cat-scripts" onclick="openSoftwareCategory('development')">📜 Scripts</button>
+            
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">💾</div>
+                    <h2>Software & Helpdesk</h2>
+                </div>
+                <p>Download tools and get support</p>
+                
+                <!-- File Explorer Grid -->
+                <div class="file-card-grid">
+                    <!-- File Items -->
+                    <div class="file-card file-card-system-tools" onclick="downloadFile('system-tools')">
+                        <div class="file-card-icon">📁</div>
+                        <div class="file-card-title">System Tools</div>
+                        <div class="file-card-size">45.2 MB</div>
+                        <div class="file-card-meta">3 items</div>
+                    </div>
+                    <div class="file-card file-card-network-utils" onclick="downloadFile('network-utils')">
+                        <div class="file-card-icon">🔧</div>
+                        <div class="file-card-title">Network Utils</div>
+                        <div class="file-card-size">23.7 MB</div>
+                        <div class="file-card-meta">5 tools</div>
+                    </div>
+                    <div class="file-card file-card-security-pack" onclick="downloadFile('security-pack')">
+                        <div class="file-card-icon">🛡️</div>
+                        <div class="file-card-title">Security Pack</div>
+                        <div class="file-card-size">67.1 MB</div>
+                        <div class="file-card-meta">7 apps</div>
+                    </div>
+                    <div class="file-card file-card-cv" onclick="showCVPopup()">
+                        <div class="file-card-icon">📄</div>
+                        <div class="file-card-title">CV</div>
+                        <div class="file-card-size">Download</div>
+                        <div class="file-card-meta">Laatste versie</div>
+                    </div>
+                    <div class="file-card file-card-archives" onclick="downloadFile('archives')">
+                        <div class="file-card-icon">🗄️</div>
+                        <div class="file-card-title">Archives</div>
+                        <div class="file-card-size">156 MB</div>
+                        <div class="file-card-meta">4 packs</div>
+                    </div>
+                    <div class="file-card file-card-games" onclick="downloadFile('games')">
+                        <div class="file-card-icon">🎮</div>
+                        <div class="file-card-title">Games</div>
+                        <div class="file-card-size">234 MB</div>
+                        <div class="file-card-meta">8 games</div>
+                    </div>
+                </div>
             </div>
-        </div>
-        <!-- Links (uniform card-stijl) -->
-        <div class="card">
-            <div class="card-header">
-                <div class="card-icon">🔗</div>
-                <h2>Links</h2>
+            
+            <div class="card tech-showcase">
+            <!-- OpenAI Chatbox Widget -->
+            <div class="card" id="ai-chatbox" style="margin-bottom:24px;">
+                <div class="card-header ai-chatbox-header">
+                    <img class="card-icon ai-chatbox-logo" src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/openai.svg" alt="OpenAI Logo" style="background:#fff;border-radius:6px;padding:2px;width:28px;height:28px;border:1.5px solid #e3e6f0;">
+                    <h2 class="ai-chatbox-title">OpenAI</h2>
+                </div>
+                <div id="chat-messages" class="ai-chatbox-messages"></div>
+                <form id="chat-form" class="ai-chatbox-form">
+                    <input id="chat-input" autocomplete="off" placeholder="Stel je vraag..." class="ai-chatbox-input" />
+                    <button class="ai-chatbox-send">Send</button>
+                </form>
+            <script>
+            const chatForm = document.getElementById('chat-form');
+            const chatInput = document.getElementById('chat-input');
+            const chatMessages = document.getElementById('chat-messages');
+            chatForm.onsubmit = async e => {
+                e.preventDefault();
+                const vraag = chatInput.value.trim();
+                if (!vraag) return;
+                chatMessages.innerHTML += `<div style=\"margin-bottom:8px;\"><b>Jij:</b> ${vraag}</div>`;
+                chatInput.value = '';
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                chatMessages.innerHTML += `<div id=\"ai-typing\" style=\"color:#888;\">AI is aan het typen...</div>`;
+                const res = await fetch('/api/openai', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: vraag })
+                });
+                const data = await res.json();
+                document.getElementById('ai-typing').remove();
+                chatMessages.innerHTML += `<div style=\"margin-bottom:8px;\"><b>AI:</b> ${data.choices?.[0]?.message?.content || 'Geen antwoord.'}</div>`;
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            };
+            </script>
             </div>
-            <p>Useful resources and external links</p>
-            <div class="links-container" style="max-height: 150px; overflow-y: auto; padding-right: 8px; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 12px;">
-                <a href="https://azure.microsoft.com" target="_blank" rel="noopener noreferrer" class="link-item" style="font-size: 11px; padding: 6px 8px; color: #38bdf8; background: #23234a; border-radius: 6px;">Azure</a>
-                <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="link-item" style="font-size: 11px; padding: 6px 8px; color: #22d3ee; background: #23234a; border-radius: 6px;">GitHub</a>
-                <a href="https://docs.microsoft.com" target="_blank" rel="noopener noreferrer" class="link-item" style="font-size: 11px; padding: 6px 8px; color: #4ade80; background: #23234a; border-radius: 6px;">MS Docs</a>
-                <a href="https://cybersecuritynews.com" target="_blank" rel="noopener noreferrer" class="link-item" style="font-size: 11px; padding: 6px 8px; color: #f59e42; background: #23234a; border-radius: 6px;">CyberSec</a>
-                <a href="https://tweakers.net" target="_blank" rel="noopener noreferrer" class="link-item" style="font-size: 11px; padding: 6px 8px; color: #818cf8; background: #23234a; border-radius: 6px;">Tweakers</a>
-                <a href="https://bright.nl" target="_blank" rel="noopener noreferrer" class="link-item" style="font-size: 11px; padding: 6px 8px; color: #f43f5e; background: #23234a; border-radius: 6px;">Bright</a>
-                <a href="https://www.skills.google/" target="_blank" rel="noopener noreferrer" class="link-item" style="font-size: 11px; padding: 6px 8px; color: #22c55e; background: #23234a; border-radius: 6px;">Google</a>
-                <a href="https://learn.microsoft.com/en-us/" target="_blank" rel="noopener noreferrer" class="link-item" style="font-size: 11px; padding: 6px 8px; color: #fbbf24; background: #23234a; border-radius: 6px;">MS Learn</a>
-                <a href="https://tryhackme.com/" target="_blank" rel="noopener noreferrer" class="link-item" style="font-size: 11px; padding: 6px 8px; color: #a21caf; background: #23234a; border-radius: 6px;">TryHack</a>
-                <a href="https://pll.harvard.edu/catalog/free" target="_blank" rel="noopener noreferrer" class="link-item" style="font-size: 11px; padding: 6px 8px; color: #be185d; background: #23234a; border-radius: 6px;">Harvard</a>
-                <a href="https://github.com/cloudcommunity/Free-Certifications" target="_blank" rel="noopener noreferrer" class="link-item" style="font-size: 11px; padding: 6px 8px; color: #64748b; background: #23234a; border-radius: 6px;">Free Certs</a>
+                <div class="card-header">
+                    <div class="card-icon">🚀</div>
+                    <h2>Tech Showcase</h2>
+                </div>
+                <p>Interactive tech demos & system insights</p>
+                <div class="tech-buttons">
+                    <button class="tech-btn" onclick="showSystemInfo()">📊 System Info</button>
+                    <button class="tech-btn" onclick="runSpeedTest()">⚡ Speed Test</button>
+                    <button class="tech-btn" onclick="startMatrixRain()">🔢 Matrix Rain</button>
+                    <button class="tech-btn" onclick="showDeviceStats()">📱 Device Stats</button>
+                </div>
+                <div id="tech-output" class="tech-output"></div>
             </div>
-        </div>
-        
-        <!-- Category Button Grid removed per request -->
-        <!-- OpenAI Chat Widget (uniform card) -->
-        <!-- Demo explorers removed per request -->
-        <div class="card">
-            <div class="card-header">
-                <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/openai.svg" alt="OpenAI" class="card-icon" style="width:28px;height:28px;background:#fff;border-radius:6px;padding:2px;border:1px solid #e3e6f0;">
-                <h2>OpenAI</h2>
-            </div>
-            <div id="openai-chat-messages" class="chat-messages" style="background:#181828;border-radius:12px;min-height:120px;max-height:220px;margin-bottom:12px;overflow-y:auto;color:#e3e6f0;padding:12px;border:1px solid #23234a;"></div>
-            <form id="openai-chat-form" class="chat-form" style="display:flex;gap:0;">
-                <input id="openai-chat-input" type="text" placeholder="Stel je vraag..." class="chat-input" style="flex:1;background:#23234a;color:#fff;border:none;border-radius:8px 0 0 8px;padding:12px 14px;font-size:1em;">
-                <button type="submit" class="chat-send" style="background:#22c55e;color:#fff;border:none;border-radius:0 8px 8px 0;padding:0 22px;font-size:1em;font-weight:600;cursor:pointer;">Send</button>
-            </form>
         </div>
         
         <!-- Get in touch - Contact Form -->
         <div class="card">
             <h2>💬 Get in touch</h2>
             <p>Please feel free to reach out and say hello.</p>
-            <form id="contact-form" class="contact-form">
+            <form id="contact-form" class="contact-form" action="https://formspree.io/f/xgvpzgaz" method="POST" style="margin-top:18px;">
                 <div class="form-group">
-                    <input type="text" name="name" id="name" class="form-input" placeholder="Naam" required>
+                    <input type="text" name="name" id="contact-name" class="form-input" placeholder="Name" required>
                 </div>
                 <div class="form-group">
-                    <input type="email" name="email" id="email" class="form-input" placeholder="Email" required>
+                    <input type="email" name="email" id="contact-email" class="form-input" placeholder="Email" required>
                 </div>
                 <div class="form-group">
-                    <textarea name="message" id="message" class="form-input" placeholder="Je bericht..." rows="4" required></textarea>
+                    <textarea name="message" id="contact-message" class="form-textarea" placeholder="Your message..." rows="4" required></textarea>
                 </div>
-                <!-- CAPTCHA widget renders here when configured -->
-                <div class="form-group" id="captcha-container" style="min-height: 0; margin-top: 6px;"></div>
-                <!-- Honeypots tegen spam -->
-                <input type="text" name="_gotcha" id="_gotcha" tabindex="-1" autocomplete="off" style="display:none">
-                <input type="text" name="company" id="company" tabindex="-1" autocomplete="off" style="display:none">
-                <button type="button" class="submit-btn" id="submit-btn">Verstuur</button>
+                <button type="submit" class="submit-btn">Send Message</button>
+                <div id="contact-form-msg" style="margin-top:8px;font-size:0.98em;"></div>
             </form>
-            <div id="form-status" style="margin-top: 12px; display: none;"></div>
+            <script>
+            document.getElementById('contact-form').onsubmit = async function(e) {
+                e.preventDefault();
+                const form = e.target;
+                const msg = document.getElementById('contact-form-msg');
+                msg.textContent = 'Sending...';
+                msg.style.color = '#4ade80';
+                const data = new FormData(form);
+                try {
+                    const res = await fetch(form.action, {
+                        method: 'POST',
+                        body: data,
+                        headers: { 'Accept': 'application/json' }
+                    });
+                    if (res.ok) {
+                        msg.textContent = '✅ Message sent! I will reply soon.';
+                        msg.style.color = '#4ade80';
+                        form.reset();
+                    } else {
+                        msg.textContent = 'Error sending message. Please try again later.';
+                        msg.style.color = '#e57373';
+                    }
+                } catch (err) {
+                    msg.textContent = 'Technical error: ' + err.message;
+                    msg.style.color = '#e57373';
+                }
+            };
+            </script>
         </div>
 
         <!-- Skills -->
@@ -1612,8 +1816,8 @@
         <!-- Footer -->
         <div class="footer">
             <p class="footer-text">
-                Made with ❤️ by mister@2025 • Version <span id="site-version-footer">v2025.11.01-10</span> • 
-                <a href="#" class="text-link">chattgbt@gmail.com</a>
+                Made with ❤️ by mister@2025 • 
+                <a href="#" class="text-link">james@live.nl</a>
             </p>
         </div>
     </div>
@@ -1630,7 +1834,8 @@
             const password = prompt('🔐 Enter Admin Password:');
             if (password === 'mister2025') {
                 console.log('✅ Login successful');
-                createAdminPanel();
+                localStorage.setItem('isAdmin', 'true');
+                window.location.href = 'admin.html';
             } else if (password !== null) {
                 alert('❌ Invalid password');
             }
@@ -1640,80 +1845,8 @@
         function handleAdminClick(event) {
             event.preventDefault();
             console.log('🔐 Direct admin button clicked');
-            // Open modal login i.p.v. scrollen
-            openAdminLoginModal();
+            toggleAdminAccess();
             return false;
-        }
-
-        // Admin Login Modal
-        function openAdminLoginModal() {
-            // verwijder bestaande
-            const existing = document.getElementById('admin-login-modal');
-            if (existing) existing.remove();
-
-            const overlay = document.createElement('div');
-            overlay.id = 'admin-login-modal';
-            overlay.className = 'modal-overlay';
-            overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;z-index:100000;';
-            overlay.innerHTML = `
-                <div style="background:#111827;border:1px solid #374151;border-radius:12px;width:90%;max-width:380px;color:#e5e7eb;box-shadow:0 20px 50px rgba(0,0,0,.6)">
-                    <div style="padding:16px 20px;background:linear-gradient(135deg,#7c3aed,#2563eb);border-radius:12px 12px 0 0;color:#fff;display:flex;align-items:center;justify-content:space-between;">
-                        <div style="font-weight:700;">🔐 Admin Login</div>
-                        <button id="admin-modal-close" style="background:rgba(255,255,255,0.2);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer">✕</button>
-                    </div>
-                    <div style="padding:20px;display:flex;flex-direction:column;gap:12px;">
-                        <label for="admin-modal-password" style="font-size:12px;color:#9ca3af;">Wachtwoord</label>
-                        <input type="password" id="admin-modal-password" placeholder="Voer wachtwoord in" style="padding:12px;border-radius:8px;border:1px solid #374151;background:#0f172a;color:#e5e7eb;outline:none;">
-                        <div id="admin-modal-error" style="display:none;color:#f87171;font-size:12px;"></div>
-                        <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px;">
-                            <button id="admin-modal-cancel" style="background:#ef4444;border:none;color:#fff;padding:10px 16px;border-radius:8px;cursor:pointer;font-weight:600;">Annuleren</button>
-                            <button id="admin-modal-login" style="background:#22c55e;border:none;color:#111;padding:10px 16px;border-radius:8px;cursor:pointer;font-weight:800;">Inloggen</button>
-                        </div>
-                    </div>
-                </div>`;
-            document.body.appendChild(overlay);
-            
-            const close = () => overlay.remove();
-            overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
-            overlay.querySelector('#admin-modal-close').addEventListener('click', close);
-            overlay.querySelector('#admin-modal-cancel').addEventListener('click', close);
-            const pwInput = overlay.querySelector('#admin-modal-password');
-            const errBox = overlay.querySelector('#admin-modal-error');
-            const loginBtn = overlay.querySelector('#admin-modal-login');
-
-            const doLogin = () => {
-                if (!checkRateLimit()) {
-                    errBox.textContent = 'Te veel pogingen. Wacht 5 minuten.';
-                    errBox.style.display = 'block';
-                    return;
-                }
-                const password = pwInput.value || '';
-                loginAttempts++;
-                lastAttemptTime = Date.now();
-                const correctPassword = 'mister2025';
-                const isValid = password.length === correctPassword.length && password === correctPassword;
-                setTimeout(() => {
-                    if (isValid) {
-                        loginAttempts = 0;
-                        close();
-                        document.getElementById('admin-panel').classList.remove('hidden');
-                        document.getElementById('admin-access').classList.add('hidden');
-                        showAdminTab('software');
-                        loadSoftwareList();
-                        document.getElementById('admin-panel').scrollIntoView({ behavior: 'smooth' });
-                        showAdminButtons();
-                    } else {
-                        errBox.textContent = 'Onjuist wachtwoord.';
-                        errBox.style.display = 'block';
-                        pwInput.value = '';
-                        pwInput.focus();
-                    }
-                }, 400 + Math.random()*400);
-            };
-
-            loginBtn.addEventListener('click', doLogin);
-            pwInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') doLogin(); });
-            setTimeout(() => pwInput.focus(), 50);
         }
         
         // Admin access - triple click on footer to show admin login
@@ -2514,73 +2647,226 @@
                         padding: 16px 20px; color: white; display: flex;
                         justify-content: space-between; align-items: center;
                     ">
-                        <h2 style="margin: 0; display: flex; align-items: center; gap: 8px;">💾 Software Explorer</h2>
-                        <button onclick="this.closest('.modal-overlay').remove()" style="background: rgba(255,255,255,0.2); border: none; color: white; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;">✕</button>
+                        <h2 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                            💾 Software Explorer
+                        </h2>
+                        <button onclick="this.closest('.modal-overlay').remove()" style="
+                            background: rgba(255,255,255,0.2); border: none; color: white;
+                            width: 32px; height: 32px; border-radius: 50%; cursor: pointer;
+                            display: flex; align-items: center; justify-content: center;
+                        ">✕</button>
                     </div>
-
+                    
+                    <!-- Stats Dashboard -->
+                    <div style="
+                        display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                        gap: 12px; padding: 16px; background: #0f0f0f;
+                    ">
+                        <div class="stat-widget" style="
+                            background: linear-gradient(135deg, #059669, #0d9488); 
+                            padding: 16px; border-radius: 8px; color: white;
+                        ">
+                            <div style="font-size: 24px; font-weight: bold;">12</div>
+                            <div style="opacity: 0.9;">📁 Total Files</div>
+                        </div>
+                        <div class="stat-widget" style="
+                            background: linear-gradient(135deg, #dc2626, #ef4444);
+                            padding: 16px; border-radius: 8px; color: white;
+                        ">
+                            <div style="font-size: 24px; font-weight: bold;">847</div>
+                            <div style="opacity: 0.9;">📊 Downloads</div>
+                        </div>
+                        <div class="stat-widget" style="
+                            background: linear-gradient(135deg, #7c2d12, #ea580c);
+                            padding: 16px; border-radius: 8px; color: white;
+                        ">
+                            <div style="font-size: 24px; font-weight: bold;">2.4 GB</div>
+                            <div style="opacity: 0.9;">💽 Storage Used</div>
+                        </div>
+                    </div>
+                    
                     <!-- Main Content -->
-                    <div style="flex: 1; display: grid; grid-template-columns: 220px 1fr; gap: 1px; background: #333;">
+                    <div style="
+                        flex: 1; display: grid; grid-template-columns: 200px 1fr;
+                        gap: 1px; background: #333;
+                    ">
                         <!-- Sidebar -->
                         <div style="background: #1a1a1a; padding: 16px;">
                             <h3 style="color: #00d4ff; margin: 0 0 12px 0; font-size: 14px;">📂 CATEGORIES</h3>
                             <div class="folder-list" style="display: flex; flex-direction: column; gap: 8px;">
-                                <div class="folder-item active" data-folder="all" onclick="selectFolder('all')" style="padding:8px 12px;background:#2a2a2a;border-radius:6px;cursor:pointer;color:#ccc;">🗂️ All</div>
-                                <div class="folder-item" data-folder="utilities" onclick="selectFolder('utilities')" style="padding:8px 12px;background:#2a2a2a;border-radius:6px;cursor:pointer;color:#ccc;">🔧 Utilities</div>
-                                <div class="folder-item" data-folder="development" onclick="selectFolder('development')" style="padding:8px 12px;background:#2a2a2a;border-radius:6px;cursor:pointer;color:#ccc;">💻 Development</div>
-                                <div class="folder-item" data-folder="security" onclick="selectFolder('security')" style="padding:8px 12px;background:#2a2a2a;border-radius:6px;cursor:pointer;color:#ccc;">🛡️ Security</div>
-                                <div class="folder-item" data-folder="multimedia" onclick="selectFolder('multimedia')" style="padding:8px 12px;background:#2a2a2a;border-radius:6px;cursor:pointer;color:#ccc;">🎵 Multimedia</div>
-                                <div class="folder-item" data-folder="games" onclick="selectFolder('games')" style="padding:8px 12px;background:#2a2a2a;border-radius:6px;cursor:pointer;color:#ccc;">🎮 Games</div>
-                                <div class="folder-item" data-folder="office" onclick="selectFolder('office')" style="padding:8px 12px;background:#2a2a2a;border-radius:6px;cursor:pointer;color:#ccc;">📊 Office</div>
+                                <div onclick="selectFolder('games')" style="
+                                    padding: 8px 12px; background: #2a2a2a; border-radius: 6px;
+                                    cursor: pointer; color: #ccc; display: flex; align-items: center; gap: 8px;
+                                    transition: all 0.2s;
+                                " onmouseover="this.style.background='#3a3a3a'" onmouseout="this.style.background='#2a2a2a'">
+                                    🎮 Games (4)
+                                </div>
+                                <div onclick="selectFolder('utilities')" style="
+                                    padding: 8px 12px; background: #2a2a2a; border-radius: 6px;
+                                    cursor: pointer; color: #ccc; display: flex; align-items: center; gap: 8px;
+                                    transition: all 0.2s;
+                                " onmouseover="this.style.background='#3a3a3a'" onmouseout="this.style.background='#2a2a2a'">
+                                    🔧 Tools (5)
+                                </div>
+                                <div onclick="selectFolder('development')" style="
+                                    padding: 8px 12px; background: #2a2a2a; border-radius: 6px;
+                                    cursor: pointer; color: #ccc; display: flex; align-items: center; gap: 8px;
+                                    transition: all 0.2s;
+                                " onmouseover="this.style.background='#3a3a3a'" onmouseout="this.style.background='#2a2a2a'">
+                                    📜 Scripts (3)
+                                </div>
                             </div>
-
+                            
                             <h3 style="color: #00d4ff; margin: 20px 0 12px 0; font-size: 14px;">⚡ ACTIONS</h3>
                             <div style="display: flex; flex-direction: column; gap: 8px;">
-                                <button id="green-upload-btn" onclick="showUploadDialog();" style="background: linear-gradient(135deg, #16a34a, #22c55e); border: none; color: white; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">⬆️ Upload</button>
-                                <button onclick="refreshExplorer()" style="background: linear-gradient(135deg, #0369a1, #0ea5e9); border: none; color: white; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">🔄 Refresh</button>
+                                <button id="green-upload-btn" onclick="showUploadDialog();" style="
+                                    background: linear-gradient(135deg, #16a34a, #22c55e);
+                                    border: none; color: white; padding: 8px 12px;
+                                    border-radius: 6px; cursor: pointer; font-size: 12px;
+                                ">⬆️ Upload</button>
+                                <button onclick="refreshExplorer()" style="
+                                    background: linear-gradient(135deg, #0369a1, #0ea5e9);
+                                    border: none; color: white; padding: 8px 12px;
+                                    border-radius: 6px; cursor: pointer; font-size: 12px;
+                                ">🔄 Refresh</button>
+
                             </div>
                         </div>
-
+                        
                         <!-- File Browser -->
                         <div style="background: #1a1a1a; padding: 16px; overflow-y: auto;">
-                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #333;">
-                                <h3 id="current-folder" style="color:#00d4ff;margin:0;">All Software</h3>
-                                <div id="items-count" style="color:#666;font-size:12px;"></div>
+                            <div style="
+                                display: flex; justify-content: space-between; align-items: center;
+                                margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #333;
+                            ">
+                                <h3 style="color: #00d4ff; margin: 0;">📄 All Files</h3>
+                                <div style="color: #666; font-size: 12px;">12 items</div>
                             </div>
-
-                            <div id="explorer-content"></div>
+                            
+                            <div id="file-list" style="
+                                display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                                gap: 12px;
+                            ">
+                                <!-- Sample Files -->
+                                <div class="file-item" style="
+                                    background: #2a2a2a; border-radius: 8px; padding: 12px;
+                                    text-align: center; cursor: pointer; transition: all 0.2s;
+                                    border: 1px solid transparent;
+                                " onmouseover="this.style.background='#3a3a3a'; this.style.borderColor='#00d4ff';" 
+                                  onmouseout="this.style.background='#2a2a2a'; this.style.borderColor='transparent';">
+                                    <div style="font-size: 32px; margin-bottom: 8px;">🎮</div>
+                                    <div style="color: #ccc; font-size: 12px; font-weight: bold;">Game.exe</div>
+                                    <div style="color: #666; font-size: 10px;">45.2 MB</div>
+                                </div>
+                                
+                                <div class="file-item" style="
+                                    background: #2a2a2a; border-radius: 8px; padding: 12px;
+                                    text-align: center; cursor: pointer; transition: all 0.2s;
+                                    border: 1px solid transparent;
+                                " onmouseover="this.style.background='#3a3a3a'; this.style.borderColor='#00d4ff';" 
+                                  onmouseout="this.style.background='#2a2a2a'; this.style.borderColor='transparent';">
+                                    <div style="font-size: 32px; margin-bottom: 8px;">🔧</div>
+                                    <div style="color: #ccc; font-size: 12px; font-weight: bold;">Tool.exe</div>
+                                    <div style="color: #666; font-size: 10px;">12.8 MB</div>
+                                </div>
+                                
+                                <div class="file-item" style="
+                                    background: #2a2a2a; border-radius: 8px; padding: 12px;
+                                    text-align: center; cursor: pointer; transition: all 0.2s;
+                                    border: 1px solid transparent;
+                                " onmouseover="this.style.background='#3a3a3a'; this.style.borderColor='#00d4ff';" 
+                                  onmouseout="this.style.background='#2a2a2a'; this.style.borderColor='transparent';">
+                                    <div style="font-size: 32px; margin-bottom: 8px;">📜</div>
+                                    <div style="color: #ccc; font-size: 12px; font-weight: bold;">script.py</div>
+                                    <div style="color: #666; font-size: 10px;">2.3 KB</div>
+                                </div>
+                                
+                                <div class="file-item" style="
+                                    background: #2a2a2a; border-radius: 8px; padding: 12px;
+                                    text-align: center; cursor: pointer; transition: all 0.2s;
+                                    border: 1px solid transparent;
+                                " onmouseover="this.style.background='#3a3a3a'; this.style.borderColor='#00d4ff';" 
+                                  onmouseout="this.style.background='#2a2a2a'; this.style.borderColor='transparent';">
+                                    <div style="font-size: 32px; margin-bottom: 8px;">📦</div>
+                                    <div style="color: #ccc; font-size: 12px; font-weight: bold;">archive.zip</div>
+                                    <div style="color: #666; font-size: 10px;">156 MB</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             `;
             
             document.body.appendChild(modal);
-
-            // Seed demo data if none exists so grid isn't empty (incl. CV als Office)
-            try {
-                if (!uploadedSoftware || uploadedSoftware.length === 0) {
-                    uploadedSoftware = [
-                        { id: Date.now()+1, name: 'Tool.exe', filename: 'Tool.exe', category: 'utilities', size: 12*1024*1024, downloads: 8, uploadDate: new Date().toISOString(), icon: '🔧' },
-                        { id: Date.now()+2, name: 'script.py', filename: 'script.py', category: 'development', size: 2300, downloads: 3, uploadDate: new Date().toISOString(), icon: '📜' },
-                        { id: Date.now()+3, name: 'Game.exe', filename: 'Game.exe', category: 'games', size: 45*1024*1024, downloads: 12, uploadDate: new Date().toISOString(), icon: '🎮' },
-                        { id: Date.now()+4, name: 'CV.pdf', filename: 'CV.pdf', category: 'office', size: 256*1024, downloads: 1, uploadDate: new Date().toISOString(), icon: '📄', description: 'Curriculum Vitae' }
-                    ];
-                    localStorage.setItem('uploadedSoftware', JSON.stringify(uploadedSoftware));
-                }
-            } catch(e) {}
-
-            // Initialize view
-            try { setViewMode('grid'); } catch(e) {}
-            try { selectFolder('all'); } catch(e) {}
-            try { loadExplorerContent(); } catch(e) {}
-
-            // Close by clicking backdrop
+            
+            // Add escape key listener
             modal.addEventListener('click', (e) => {
                 if (e.target === modal) modal.remove();
             });
         }
 
         function openNewsManager() {
-            alert('📰 News Manager komt binnenkort (UI wordt nog gebouwd).');
+            // Create advanced news manager modal
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center;
+                z-index: 1000; backdrop-filter: blur(5px);
+            `;
+            
+            modal.innerHTML = `
+                <div class="news-manager" style="
+                    background: #1a1a1a; border: 1px solid #333; border-radius: 12px;
+                    width: 95%; max-width: 800px; height: 85%; max-height: 700px;
+                    display: flex; flex-direction: column; overflow: hidden;
+                ">
+                    <!-- Header -->
+                    <div style="
+                        background: linear-gradient(135deg, #00d4ff, #0088cc);
+                        padding: 16px 20px; color: white; display: flex;
+                        justify-content: space-between; align-items: center;
+                    ">
+                        <h2 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                            📰 Advanced News Manager
+                        </h2>
+                        <button onclick="this.closest('.modal-overlay').remove()" style="
+                            background: rgba(255,255,255,0.2); border: none; color: white;
+                            width: 32px; height: 32px; border-radius: 6px; cursor: pointer;
+                            display: flex; align-items: center; justify-content: center;
+                        ">✕</button>
+                    </div>
+                    
+                    <!-- Content -->
+                    <div style="padding: 20px; overflow-y: auto; display: flex; gap: 20px;">
+                        <!-- Beheerformulier en widget worden onderaan body toegevoegd -->
+                title: title,
+                content: content,
+                link: link,
+                linkTitle: linkTitle,
+                date: new Date().toLocaleDateString('nl-NL', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                }),
+                timestamp: new Date().toISOString()
+            };
+            
+            // Add to storage
+            newsArticles.unshift(article); // Add to beginning
+            localStorage.setItem('newsArticles', JSON.stringify(newsArticles));
+            
+            // Update displays
+            loadNewsDisplay();
+            loadNewsItemsManager();
+            
+            // Clear form
+            document.getElementById('news-title').value = '';
+            document.getElementById('news-content').value = '';
+            document.getElementById('news-link').value = '';
+            document.getElementById('news-link-title').value = '';
+            
+            alert('📰 News article published successfully!');
         }
 
         function loadNewsDisplay() {
@@ -2601,28 +2887,15 @@
             newsArticles.slice(0, 5).forEach(article => { // Show latest 5
                 const item = document.createElement('div');
                 item.className = 'news-item';
-                // styles
-                item.style.cursor = 'pointer';
-                item.style.padding = '8px';
-                item.style.borderRadius = '6px';
-                item.style.marginBottom = '6px';
-                item.style.border = '1px solid transparent';
-                item.style.transition = 'all 0.2s';
-
-                const t = document.createElement('div');
-                t.style.fontWeight = 'bold';
-                t.style.color = '#00d4ff';
-                t.style.marginBottom = '2px';
-                t.textContent = article.title;
-
-                const d = document.createElement('div');
-                d.style.fontSize = '11px';
-                d.style.color = '#999';
-                d.textContent = article.date;
-
-                item.appendChild(t);
-                item.appendChild(d);
-
+                item.style.cssText = `
+                    cursor: pointer; padding: 8px; border-radius: 6px; margin-bottom: 6px;
+                    border: 1px solid transparent; transition: all 0.2s;
+                `;
+                item.innerHTML = `
+                    <div style="font-weight: bold; color: #00d4ff; margin-bottom: 2px;">${article.title}</div>
+                    <div style="font-size: 11px; color: #999;">${article.date}</div>
+                `;
+                
                 item.onmouseover = () => {
                     item.style.borderColor = '#00d4ff';
                     item.style.background = 'rgba(0, 212, 255, 0.1)';
@@ -2631,7 +2904,7 @@
                     item.style.borderColor = 'transparent';
                     item.style.background = 'transparent';
                 };
-
+                
                 item.onclick = () => openNewsArticle(article);
                 container.appendChild(item);
             });
@@ -2640,99 +2913,55 @@
         }
 
         function openNewsArticle(article) {
-            // Create overlay
-            const overlay = document.createElement('div');
-            overlay.className = 'modal-overlay';
-            overlay.style.position = 'fixed';
-            overlay.style.top = '0';
-            overlay.style.left = '0';
-            overlay.style.width = '100%';
-            overlay.style.height = '100%';
-            overlay.style.background = 'rgba(0,0,0,0.8)';
-            overlay.style.display = 'flex';
-            overlay.style.alignItems = 'center';
-            overlay.style.justifyContent = 'center';
-            overlay.style.zIndex = '1000';
-            overlay.style.backdropFilter = 'blur(5px)';
-
-            // Card container
-            const card = document.createElement('div');
-            card.style.background = '#1a1a1a';
-            card.style.border = '1px solid #333';
-            card.style.borderRadius = '12px';
-            card.style.width = '90%';
-            card.style.maxWidth = '600px';
-            card.style.maxHeight = '80vh';
-            card.style.overflowY = 'auto';
-            card.style.padding = '0';
-
-            // Header
-            const header = document.createElement('div');
-            header.style.background = 'linear-gradient(135deg, #00d4ff, #0088cc)';
-            header.style.padding = '20px';
-            header.style.color = 'white';
-            header.style.borderRadius = '12px 12px 0 0';
-
-            const h2 = document.createElement('h2');
-            h2.style.margin = '0 0 8px 0';
-            h2.textContent = article.title || '';
-            const dateP = document.createElement('p');
-            dateP.style.margin = '0';
-            dateP.style.opacity = '0.9';
-            dateP.style.fontSize = '14px';
-            // Avoid template literals to prevent parse issues in older engines
-            dateP.textContent = '📅 ' + (article.date || '');
-            header.appendChild(h2);
-            header.appendChild(dateP);
-
-            // Body
-            const body = document.createElement('div');
-            body.style.padding = '20px';
-            const contentDiv = document.createElement('div');
-            contentDiv.style.color = '#ccc';
-            contentDiv.style.lineHeight = '1.6';
-            contentDiv.style.marginBottom = '16px';
-            contentDiv.style.fontSize = '15px';
-            contentDiv.textContent = article.content || '';
-            body.appendChild(contentDiv);
-
-            if (article.link) {
-                const a = document.createElement('a');
-                a.href = article.link;
-                a.target = '_blank';
-                a.style.display = 'inline-block';
-                a.style.background = 'linear-gradient(135deg, #00d4ff, #0088cc)';
-                a.style.color = 'white';
-                a.style.padding = '10px 16px';
-                a.style.borderRadius = '6px';
-                a.style.textDecoration = 'none';
-                a.style.fontWeight = 'bold';
-                a.style.marginTop = '8px';
-                a.textContent = (article.linkTitle || 'Open link') + ' →';
-                body.appendChild(a);
-            }
-
-            const closeBtn = document.createElement('button');
-            closeBtn.textContent = 'Close';
-            closeBtn.style.display = 'block';
-            closeBtn.style.background = '#333';
-            closeBtn.style.color = 'white';
-            closeBtn.style.border = 'none';
-            closeBtn.style.padding = '10px 20px';
-            closeBtn.style.borderRadius = '6px';
-            closeBtn.style.cursor = 'pointer';
-            closeBtn.style.margin = '16px auto 0';
-            closeBtn.style.fontWeight = 'bold';
-            closeBtn.addEventListener('click', () => overlay.remove());
-            body.appendChild(closeBtn);
-
-            card.appendChild(header);
-            card.appendChild(body);
-            overlay.appendChild(card);
-            document.body.appendChild(overlay);
-
-            overlay.addEventListener('click', (e) => {
-                if (e.target === overlay) overlay.remove();
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center;
+                z-index: 1000; backdrop-filter: blur(5px);
+            `;
+            
+            modal.innerHTML = `
+                <div style="
+                    background: #1a1a1a; border: 1px solid #333; border-radius: 12px;
+                    width: 90%; max-width: 600px; max-height: 80vh; overflow-y: auto;
+                    padding: 0;
+                ">
+                    <div style="
+                        background: linear-gradient(135deg, #00d4ff, #0088cc);
+                        padding: 20px; color: white; border-radius: 12px 12px 0 0;
+                    ">
+                        <h2 style="margin: 0 0 8px 0;">${article.title}</h2>
+                        <p style="margin: 0; opacity: 0.9; font-size: 14px;">📅 ${article.date}</p>
+                    </div>
+                    
+                    <div style="padding: 20px;">
+                        <div style="
+                            color: #ccc; line-height: 1.6; margin-bottom: 16px;
+                            font-size: 15px;
+                        ">${article.content}</div>
+                        
+                        ${article.link ? `
+                            <a href="${article.link}" target="_blank" style="
+                                display: inline-block; background: linear-gradient(135deg, #00d4ff, #0088cc);
+                                color: white; padding: 10px 16px; border-radius: 6px; text-decoration: none;
+                                font-weight: bold; margin-top: 8px;
+                            ">${article.linkTitle} →</a>
+                        ` : ''}
+                        
+                        <button onclick="this.closest('.modal-overlay').remove()" style="
+                            display: block; background: #333; color: white; border: none;
+                            padding: 10px 20px; border-radius: 6px; cursor: pointer;
+                            margin: 16px auto 0; font-weight: bold;
+                        ">Close</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) modal.remove();
             });
         }
 
@@ -2749,20 +2978,24 @@
             
             newsArticles.forEach((article, index) => {
                 const item = document.createElement('div');
-                item.style.cssText = 'border: 1px solid #444; border-radius: 6px; padding: 12px; margin-bottom: 12px; background: #1a1a1a;';
-                let html = '';
-                html += '<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">';
-                html += '  <div style="flex: 1;">';
-                html += '    <div style="font-weight: bold; color: #00d4ff; margin-bottom: 4px;">' + (article.title || '') + '</div>';
-                html += '    <div style="font-size: 11px; color: #999;">' + (article.date || '') + '</div>';
-                html += '  </div>';
-                html += '  <button onclick="removeNewsArticle(' + article.id + ')" style="background: #dc2626; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 10px;">🗑️</button>';
-                html += '</div>';
-                html += '<div style="font-size: 12px; color: #ccc; margin-bottom: 8px;">' + ((article.content || '').substring(0, 100)) + '...</div>';
-                if (article.link) {
-                    html += '<div style="font-size: 11px; color: #00d4ff;">🔗 ' + (article.linkTitle || '') + '</div>';
-                }
-                item.innerHTML = html;
+                item.style.cssText = `
+                    border: 1px solid #444; border-radius: 6px; padding: 12px; margin-bottom: 12px;
+                    background: #1a1a1a;
+                `;
+                item.innerHTML = `
+                    <div style="display: flex; justify-content: between; align-items: flex-start; margin-bottom: 8px;">
+                        <div style="flex: 1;">
+                            <div style="font-weight: bold; color: #00d4ff; margin-bottom: 4px;">${article.title}</div>
+                            <div style="font-size: 11px; color: #999;">${article.date}</div>
+                        </div>
+                        <button onclick="removeNewsArticle(${article.id})" style="
+                            background: #dc2626; color: white; border: none; 
+                            padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 10px;
+                        ">🗑️</button>
+                    </div>
+                    <div style="font-size: 12px; color: #ccc; margin-bottom: 8px;">${article.content.substring(0, 100)}...</div>
+                    ${article.link ? `<div style="font-size: 11px; color: #00d4ff;">� ${article.linkTitle}</div>` : ''}
+                `;
                 container.appendChild(item);
             });
         }
@@ -2873,7 +3106,12 @@
         }
         
         // Form submissions
-        // Removed obsolete Netlify contact form handler (we use fetch via sendMessage and prevent navigation)
+        document.querySelector('form[name="contact"]').addEventListener('submit', function(e) {
+            // Let Netlify handle the form, but show feedback
+            setTimeout(() => {
+                alert('📧 Message sent successfully!\n\nThanks for reaching out. I\'ll get back to you soon!');
+            }, 100);
+        });
         
         document.querySelector('form[name="newsletter"]').addEventListener('submit', function(e) {
             e.preventDefault(); // Stop default form submission
@@ -2972,236 +3210,128 @@
             return loginAttempts < MAX_ATTEMPTS;
         }
         
-        // CAPTCHA integration (supports reCAPTCHA v2 checkbox and hCaptcha)
-        const CAPTCHA_PROVIDER = (window.CAPTCHA_PROVIDER || '').toLowerCase(); // 'recaptcha' | 'hcaptcha'
-        const CAPTCHA_SITE_KEY = window.CAPTCHA_SITE_KEY || '';
-        let captchaWidgetId = null;
-        let captchaToken = '';
-
-        function loadScriptOnce(src, onloadName, onload) {
-            if (document.querySelector(`script[data-src="${src}"]`)) {
-                if (typeof onload === 'function') setTimeout(onload, 0);
-                return;
-            }
-            const s = document.createElement('script');
-            s.src = src;
-            s.async = true;
-            s.defer = true;
-            s.setAttribute('data-src', src);
-            if (onloadName) {
-                try { window[onloadName] = onload; } catch {}
-            } else {
-                s.onload = onload;
-            }
-            document.head.appendChild(s);
-        }
-
-        function renderCaptcha() {
-            const container = document.getElementById('captcha-container');
-            if (!container) return;
-            if (!CAPTCHA_PROVIDER || !CAPTCHA_SITE_KEY) return; // Not configured yet
-
-            if (CAPTCHA_PROVIDER === 'recaptcha') {
-                loadScriptOnce('https://www.google.com/recaptcha/api.js?onload=onRecaptchaLoad&render=explicit', 'onRecaptchaLoad', function() {
-                    try {
-                        if (!window.grecaptcha) return;
-                        if (captchaWidgetId !== null && container.children.length) return; // Already rendered
-                        captchaWidgetId = window.grecaptcha.render(container, {
-                            sitekey: CAPTCHA_SITE_KEY,
-                            callback: function(token){ captchaToken = token || ''; },
-                            'expired-callback': function(){ captchaToken = ''; }
-                        });
-                    } catch (e) { console.error('[captcha] recaptcha render failed', e); }
-                });
-            } else if (CAPTCHA_PROVIDER === 'hcaptcha') {
-                loadScriptOnce('https://js.hcaptcha.com/1/api.js?onload=onHcaptchaLoad&render=explicit', 'onHcaptchaLoad', function() {
-                    try {
-                        if (!window.hcaptcha) return;
-                        if (captchaWidgetId !== null && container.children.length) return; // Already rendered
-                        captchaWidgetId = window.hcaptcha.render(container, {
-                            sitekey: CAPTCHA_SITE_KEY,
-                            callback: function(token){ captchaToken = token || ''; },
-                            'expired-callback': function(){ captchaToken = ''; }
-                        });
-                    } catch (e) { console.error('[captcha] hcaptcha render failed', e); }
-                });
-            }
-        }
-
-        function resetCaptcha() {
-            try {
-                if (CAPTCHA_PROVIDER === 'recaptcha' && window.grecaptcha && captchaWidgetId !== null) {
-                    window.grecaptcha.reset(captchaWidgetId);
-                }
-                if (CAPTCHA_PROVIDER === 'hcaptcha' && window.hcaptcha && captchaWidgetId !== null) {
-                    window.hcaptcha.reset(captchaWidgetId);
-                }
-            } catch {}
-            captchaToken = '';
-        }
-        
-        // Contact form handler - Formspree
-    async function sendMessage() {
+        // Contact form handler - SECURE VERSION
+        function sendMessage() {
             const submitBtn = document.getElementById('submit-btn');
             const formStatus = document.getElementById('form-status');
-            const form = document.getElementById('contact-form');
             const name = sanitizeInput(document.getElementById('name').value);
             const email = sanitizeInput(document.getElementById('email').value);
             const message = sanitizeInput(document.getElementById('message').value);
-            const gotcha = (document.getElementById('_gotcha')||{}).value || '';
-            const company = (document.getElementById('company')||{}).value || '';
-
-            // Anti-spam: honeypots
-            if (gotcha || company) {
-                console.warn('Spam honeypot triggered, aborting');
-                return false;
-            }
-
+            
+            // Enhanced validation
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            // Human-time gate: require a few seconds on page before sending
-            const MIN_DELAY_MS = 4000; // 4s
-            const elapsed = (typeof window.__contactLoadedAt === 'number') ? (Date.now() - window.__contactLoadedAt) : MIN_DELAY_MS;
-            if (elapsed < MIN_DELAY_MS) {
-                formStatus.style.display = 'block';
-                formStatus.style.color = '#ef4444';
-                formStatus.textContent = 'Even geduld… beveiligingscontrole. Probeer over enkele seconden opnieuw.';
-                return;
-            }
             if (!name || name.length < 2) {
-                formStatus.style.display = 'block';
-                formStatus.style.color = '#ef4444';
-                formStatus.textContent = 'Vul een geldige naam in (minimaal 2 tekens).';
+                alert('Please enter a valid name (minimum 2 characters)');
                 return;
             }
             if (!emailRegex.test(email)) {
-                formStatus.style.display = 'block';
-                formStatus.style.color = '#ef4444';
-                formStatus.textContent = 'Vul een geldig e-mailadres in.';
+                alert('Please enter a valid email address');
                 return;
             }
             if (!message || message.length < 10) {
-                formStatus.style.display = 'block';
-                formStatus.style.color = '#ef4444';
-                formStatus.textContent = 'Bericht te kort (minimaal 10 tekens).';
+                alert('Please enter a message (minimum 10 characters)');
                 return;
             }
-
-            // If CAPTCHA is configured, require a token
-            if (CAPTCHA_PROVIDER && CAPTCHA_SITE_KEY) {
-                if (!captchaToken) {
-                    formStatus.style.display = 'block';
-                    formStatus.style.color = '#ef4444';
-                    formStatus.textContent = 'Bevestig de CAPTCHA alstublieft.';
-                    return;
-                }
-            }
-
-            submitBtn.textContent = 'Verzenden...';
+            
+            // Disable button during submission
+            submitBtn.textContent = 'Sending...';
             submitBtn.disabled = true;
-
-            try {
-                const formData = new FormData();
-                formData.append('name', name);
-                formData.append('email', email);
-                // Improve deliverability: set Reply-To for Formspree
-                formData.append('replyto', email);
-                formData.append('_replyto', email);
-                formData.append('message', message);
-                // More specific subject helps inboxing
-                formData.append('_subject', `Nieuw bericht via mister.us.kg — ${name}`);
-                formData.append('_data_source', 'fetch');
-                formData.append('_website', window.location.href);
-                // Extra context (can help spam heuristics and triage)
-                try {
-                    formData.append('_t', new Date().toISOString());
-                    formData.append('user_agent', navigator.userAgent);
-                    if (window.__contactLoadedAt) {
-                        const seconds = Math.max(0, Math.round((Date.now() - window.__contactLoadedAt) / 1000));
-                        formData.append('page_time_s', String(seconds));
-                    }
-                } catch {}
-
-                // Attach CAPTCHA token if configured
-                if (CAPTCHA_PROVIDER === 'recaptcha' && captchaToken) {
-                    formData.append('g-recaptcha-response', captchaToken);
-                } else if (CAPTCHA_PROVIDER === 'hcaptcha' && captchaToken) {
-                    formData.append('h-captcha-response', captchaToken);
-                }
-
-                const res = await fetch('https://formspree.io/f/xgvpzgaz', {
-                    method: 'POST',
-                    headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-                    body: formData
-                });
-
-                if (res.ok) {
-                    formStatus.style.display = 'block';
-                    formStatus.style.color = '#4ade80';
-                    formStatus.innerHTML = '✅ Bericht verzonden! Bedankt voor je bericht, ' + name + '.';
-                    document.getElementById('contact-form').reset();
-                } else {
-                    const data = await res.json().catch(() => ({}));
-                    throw new Error((data && data.error) || 'Verzenden mislukt');
-                }
-            } catch (err) {
+            
+            // Simulate sending (for testing)
+            setTimeout(() => {
                 formStatus.style.display = 'block';
-                formStatus.style.color = '#ef4444';
-                formStatus.textContent = '❌ Er ging iets mis bij het verzenden. Probeer het later opnieuw.';
-                // Geen fallback naar native submit om redirect te voorkomen
-            } finally {
-                submitBtn.textContent = 'Verstuur';
+                formStatus.style.color = '#4ade80';
+                formStatus.innerHTML = '✅ Message sent successfully!<br>Thank you for reaching out, ' + name + '!';
+                
+                // Reset form
+                document.getElementById('name').value = '';
+                document.getElementById('email').value = '';
+                document.getElementById('message').value = '';
+                
+                submitBtn.textContent = 'Send Message';
                 submitBtn.disabled = false;
-                if (CAPTCHA_PROVIDER && CAPTCHA_SITE_KEY) { resetCaptcha(); }
-                return false;
-            }
-        }
-
-        // Inline handler for form submit to guarantee prevention of navigation
-        function handleContactSubmit(e) {
-            if (e) e.preventDefault();
-            try { sendMessage(); } catch (err) { console.error(err); }
-            return false;
-        }
-
-        // Software helper to open modal and select a category
-        function openSoftwareCategory(category) {
-            openSoftwareExplorer();
-            // wacht tot de explorer DOM klaar is (specifiek naar de modal-scoped current-folder)
-            const trySelect = () => {
-                const modalCurrent = document.querySelector('.modal-overlay .software-explorer #current-folder');
-                if (modalCurrent) {
-                    selectFolder(category);
-                } else {
-                    setTimeout(trySelect, 60);
-                }
-            };
-            trySelect();
+                
+                // Hide status after 5 seconds
+                setTimeout(() => {
+                    formStatus.style.display = 'none';
+                }, 5000);
+            }, 1000);
         }
         
         // Contact form handler
         document.addEventListener('DOMContentLoaded', function() {
-            // Mark contact loaded time (helps simple human timing checks)
-            try { window.__contactLoadedAt = Date.now(); } catch {}
-            // Try to render CAPTCHA if configured
-            try { renderCaptcha(); } catch (e) { console.warn('[captcha] not rendered', e); }
-            // Zorg dat het formulier nooit navigeert
-            const submitBtnEl = document.getElementById('submit-btn');
+        // Voeg popup HTML toe aan body
+        if (!document.getElementById('news-popup')) {
+            const popupHtml = `
+                <div id="news-popup" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); z-index:9999; align-items:center; justify-content:center;">
+                    <div id="news-popup-content" style="background:#181828; color:#e3e6f0; border-radius:12px; box-shadow:0 8px 32px rgba(0,0,0,0.2); min-width:320px; max-width:90vw; padding:32px; font-size:1em; display:flex; flex-direction:column; gap:12px; position:relative;">
+                        <button id="close-news-popup" style="position:absolute; top:12px; right:16px; background:none; border:none; color:#e3e6f0; font-size:1.5em; cursor:pointer;">&times;</button>
+                        <div id="news-popup-title" style="font-weight:600; font-size:1.2em;"></div>
+                        <div id="news-popup-content-text" style="font-size:1em;"></div>
+                        <div id="news-popup-link"></div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', popupHtml);
+        }
+        // Popup sluiten
+        document.getElementById('close-news-popup').onclick = function() {
+            document.getElementById('news-popup').style.display = 'none';
+        };
+        // Klik op nieuws-item: open popup
+        document.getElementById('news-list').onclick = function(e) {
+            let el = e.target;
+            // Zoek naar de news-item div
+            while (el && !el.classList.contains('news-item')) {
+                el = el.parentElement;
+            }
+            if (el && el.dataset.news) {
+                const item = JSON.parse(decodeURIComponent(el.dataset.news));
+                document.getElementById('news-popup-title').textContent = item.title || '';
+                document.getElementById('news-popup-content-text').textContent = item.content || '';
+                if (item.link) {
+                    document.getElementById('news-popup-link').innerHTML = `<a href='${item.link}' target='_blank' style='color:#4ade80; font-size:1em; text-decoration:underline;'>${item.link}</a>`;
+                } else {
+                    document.getElementById('news-popup-link').innerHTML = '';
+                }
+                document.getElementById('news-popup').style.display = 'flex';
+            }
+        };
             const contactForm = document.getElementById('contact-form');
-            if (contactForm) {
-                contactForm.setAttribute('action','javascript:void(0)');
-                contactForm.setAttribute('novalidate','novalidate');
-                contactForm.addEventListener('submit', function(e){ e.preventDefault(); return false; });
-            }
-            if (submitBtnEl && !submitBtnEl.hasAttribute('data-handler-attached')) {
-                submitBtnEl.addEventListener('click', function(e){ e.preventDefault(); sendMessage(); return false; });
-                submitBtnEl.setAttribute('data-handler-attached','true');
-            }
-            // Enter-to-send vanuit inputs
-            ['name','email','message'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.addEventListener('keydown', (e)=>{ if (e.key==='Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
+            
+            contactForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const submitBtn = document.getElementById('submit-btn');
+                const formStatus = document.getElementById('form-status');
+                const name = document.getElementById('name').value;
+                const email = document.getElementById('email').value;
+                const message = document.getElementById('message').value;
+                
+                // Disable button during submission
+                submitBtn.textContent = 'Sending...';
+                submitBtn.disabled = true;
+                
+                // Simulate sending (for testing)
+                setTimeout(() => {
+                    formStatus.style.display = 'block';
+                    formStatus.style.color = '#4ade80';
+                    formStatus.innerHTML = '✅ Message sent successfully!<br>Thank you for reaching out, ' + name + '!';
+                    
+                    // Reset form
+                    contactForm.reset();
+                    submitBtn.textContent = 'Send Message';
+                    submitBtn.disabled = false;
+                    
+                    // Hide status after 5 seconds
+                    setTimeout(() => {
+                        formStatus.style.display = 'none';
+                    }, 5000);
+                }, 1000);
+                
+                return false;
             });
-            // Removed legacy news popup DOM injection and handlers; we use openNewsArticle() modal instead.
         });
         
         // Tech Showcase Functions
@@ -3498,18 +3628,6 @@ ${matrixContent}
         // Explorer functions - moved to top to prevent temporal dead zone
         // Variables moved to initialize earlier
         
-        // Helper to scope explorer queries to the open Software Explorer modal when present
-        function getExplorerScope() {
-            const overlayExplorer = document.querySelector('.modal-overlay .software-explorer');
-            const scope = overlayExplorer ? overlayExplorer : document;
-            return {
-                scope: scope,
-                container: scope.querySelector('#explorer-content'),
-                currentFolderEl: scope.querySelector('#current-folder'),
-                itemsCountEl: scope.querySelector('#items-count')
-            };
-        }
-
         function selectFolder(folder) {
             console.log('📁 Selecting folder:', folder);
             // Ensure currentFolder is initialized
@@ -3520,8 +3638,7 @@ ${matrixContent}
             currentFolder = folder;
             
             // Update UI
-            const { scope } = getExplorerScope();
-            scope.querySelectorAll('.folder-item').forEach(item => {
+            document.querySelectorAll('.folder-item').forEach(item => {
                 item.classList.remove('active');
                 if (item.dataset.folder === folder) {
                     item.classList.add('active');
@@ -3539,9 +3656,9 @@ ${matrixContent}
                 'office': 'Office'
             };
             
-            const { currentFolderEl } = getExplorerScope();
-            if (currentFolderEl) {
-                currentFolderEl.textContent = folderNames[folder];
+            const currentFolderElement = document.getElementById('current-folder');
+            if (currentFolderElement) {
+                currentFolderElement.textContent = folderNames[folder];
             }
             
             // No loading message, just load content directly
@@ -3657,9 +3774,7 @@ ${matrixContent}
             viewMode = mode;
             
             // Update UI
-            // Update within active explorer scope first; if none, fall back to document
-            const { scope } = getExplorerScope();
-            (scope.querySelectorAll('.view-btn').length ? scope : document).querySelectorAll('.view-btn').forEach(btn => {
+            document.querySelectorAll('.view-btn').forEach(btn => {
                 btn.classList.remove('active');
                 if (btn.dataset.view === mode) {
                     btn.classList.add('active');
@@ -3670,7 +3785,7 @@ ${matrixContent}
         }
         
         function loadExplorerContent() {
-            const { container, itemsCountEl } = getExplorerScope();
+            const container = document.getElementById('explorer-content');
             if (!container) {
                 console.error('❌ Explorer content container not found');
                 return;
@@ -3692,33 +3807,23 @@ ${matrixContent}
             if (currentFolder !== 'all') {
                 filteredSoftware = uploadedSoftware.filter(software => software.category === currentFolder);
             }
-            if (itemsCountEl) {
-                itemsCountEl.textContent = filteredSoftware.length + ' item' + (filteredSoftware.length === 1 ? '' : 's');
-            }
             
             if (filteredSoftware.length === 0) {
-                // Show empty 3x3 placeholder grid so user sees the layout
-                const placeholderCount = 9;
-                const gridWrapper = document.createElement('div');
-                gridWrapper.className = 'software-grid';
-                for (let i = 0; i < placeholderCount; i++) {
-                    const ph = document.createElement('div');
-                    ph.className = 'software-item';
-                    ph.style.opacity = '0.6';
-                    ph.innerHTML = '<div class="software-icon">⬜</div><div class="software-name">Leeg</div><div class="software-size">—</div>';
-                    gridWrapper.appendChild(ph);
-                }
-                container.appendChild(gridWrapper);
-                const hint = document.createElement('div');
-                hint.style.cssText = 'color:#888;margin-top:12px;text-align:center;';
-                hint.innerHTML = 'Geen software gevonden in deze categorie. <button class="tech-btn" onclick="showUploadDialog()" style="margin-left:8px;">⬆️ Upload</button>';
-                container.appendChild(hint);
+                container.innerHTML = `
+                    <div style="text-align: center; color: #888; margin-top: 50px;">
+                        <div style="font-size: 48px; margin-bottom: 16px;">📂</div>
+                        <div>No software found in this category</div>
+                        <button class="tech-btn" onclick="showUploadDialog()" style="margin-top: 16px;">
+                            ⬆️ Upload Software
+                        </button>
+                    </div>
+                `;
                 return;
             }
             
             if (viewMode === 'grid') {
                 container.innerHTML = '<div class="software-grid" id="software-grid"></div>';
-                const grid = container.querySelector('#software-grid');
+                const grid = document.getElementById('software-grid');
                 
                 filteredSoftware.forEach(software => {
                     const item = document.createElement('div');
@@ -3733,7 +3838,7 @@ ${matrixContent}
                 });
             } else {
                 container.innerHTML = '<div class="software-list-view" id="software-list"></div>';
-                const list = container.querySelector('#software-list');
+                const list = document.getElementById('software-list');
                 
                 filteredSoftware.forEach(software => {
                     const item = document.createElement('div');
@@ -3845,11 +3950,6 @@ ${matrixContent}
             software.downloads++;
             localStorage.setItem('uploadedSoftware', JSON.stringify(uploadedSoftware));
             addActivityLog(`📥 Download: ${software.name}`);
-            if (software.name.toLowerCase().includes('cv')) {
-                // Open de CV popup in plaats van alleen een alert
-                openCVPopup();
-                return;
-            }
             alert(`📥 Downloading ${software.name}...\n\nFile: ${software.filename}\nSize: ${(software.size/1024/1024).toFixed(2)}MB`);
         }
         
@@ -3879,106 +3979,6 @@ ${matrixContent}
                 localStorage.setItem('newsletterSubscribers', JSON.stringify(newsletterSubscribers));
                 loadSubscriberList();
             }
-        }
-
-        // CV Popup
-        function openCVPopup() {
-            const existing = document.getElementById('cv-modal');
-            if (existing) existing.remove();
-            const overlay = document.createElement('div');
-            overlay.id = 'cv-modal';
-            overlay.className = 'modal-overlay';
-            overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:100000;';
-            const prefs = JSON.parse(localStorage.getItem('cvPrefs')||'{}');
-            const lang = prefs.lang || 'nl';
-            const theme = prefs.theme || 'dark';
-            overlay.innerHTML = `
-                <div style="width:94%;max-width:980px;max-height:90vh;overflow:auto;border-radius:14px;border:1px solid #333;background:${theme==='dark'?'#0b1020':'#ffffff'};color:${theme==='dark'?'#e5e7eb':'#111'};box-shadow:0 24px 64px rgba(0,0,0,.55)">
-                    <div style="position:sticky;top:0;z-index:2;display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:linear-gradient(135deg,#7c3aed,#2563eb);color:#fff;border-radius:14px 14px 0 0;">
-                        <div style="font-weight:800;display:flex;align-items:center;gap:8px">📄 Curriculum Vitae</div>
-                        <div style="display:flex;gap:8px;align-items:center;">
-                            <select id="cv-lang" style="padding:6px 10px;border-radius:8px;border:none;cursor:pointer;">
-                                <option value="nl" ${lang==='nl'?'selected':''}>NL</option>
-                                <option value="en" ${lang==='en'?'selected':''}>EN</option>
-                            </select>
-                            <button id="cv-theme" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;padding:6px 10px;border-radius:8px;cursor:pointer;">${theme==='dark'?'🌙 Donker':'☀️ Licht'}</button>
-                            <button id="cv-print" style="background:#22c55e;border:none;color:#111;padding:6px 12px;border-radius:8px;font-weight:800;cursor:pointer;">Print / PDF</button>
-                            <button id="cv-close" style="background:#111827;border:1px solid #334155;color:#fff;padding:6px 12px;border-radius:8px;cursor:pointer;">Sluiten</button>
-                        </div>
-                    </div>
-                    <div id="cv-content" style="padding:20px 22px;">${getCVHtml(lang, theme)}</div>
-                </div>`;
-            document.body.appendChild(overlay);
-            const savePrefs = () => {
-                localStorage.setItem('cvPrefs', JSON.stringify({
-                    lang: document.getElementById('cv-lang').value,
-                    theme: document.getElementById('cv-theme').textContent.includes('Donker')?'dark':'light'
-                }));
-            };
-            overlay.addEventListener('click', (e)=>{ if(e.target===overlay) overlay.remove(); });
-            overlay.querySelector('#cv-close').addEventListener('click', ()=>overlay.remove());
-            overlay.querySelector('#cv-print').addEventListener('click', ()=>{
-                // Open minimal print view
-                const cvHtml = getCVHtml(document.getElementById('cv-lang').value, overlay.querySelector('#cv-theme').textContent.includes('Donker')?'dark':'light');
-                const win = window.open('', '_blank');
-                win.document.write('<html><head><title>CV</title><style>body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding:24px;}@media print {.no-print{display:none}}</style></head><body>'+cvHtml+'<script>window.onload=()=>window.print()<\/script></body></html>');
-                win.document.close();
-            });
-            overlay.querySelector('#cv-lang').addEventListener('change', (e)=>{
-                overlay.querySelector('#cv-content').innerHTML = getCVHtml(e.target.value, overlay.querySelector('#cv-theme').textContent.includes('Donker')?'dark':'light');
-                savePrefs();
-            });
-            overlay.querySelector('#cv-theme').addEventListener('click', (e)=>{
-                const nowDark = !e.currentTarget.textContent.includes('Donker');
-                e.currentTarget.textContent = nowDark ? '🌙 Donker' : '☀️ Licht';
-                const langNow = overlay.querySelector('#cv-lang').value;
-                const themeNow = nowDark ? 'dark' : 'light';
-                // rebuild wrapper background colors quickly
-                const wrapper = overlay.querySelector('div');
-                wrapper.style.background = themeNow==='dark'?'#0b1020':'#ffffff';
-                wrapper.style.color = themeNow==='dark'?'#e5e7eb':'#111';
-                overlay.querySelector('#cv-content').innerHTML = getCVHtml(langNow, themeNow);
-                savePrefs();
-            });
-        }
-
-        function getCVHtml(lang, theme) {
-            const t = (nl,en)=> (lang==='en'?en:nl);
-            const fg = theme==='dark'?'#e5e7eb':'#111';
-            const sub = theme==='dark'?'#9ca3af':'#4b5563';
-            const chipBg = theme==='dark'?'#111827':'#f1f5f9';
-            const chipBd = theme==='dark'?'#374151':'#e2e8f0';
-            const section = (title,body)=>`<div style="margin:18px 0 8px 0"><div style="font-weight:800;color:${fg};font-size:18px">${title}</div><div style="margin-top:6px;color:${sub}">${body}</div></div>`;
-            const chips = (arr)=>`<div style=\"display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;\">${arr.map(x=>`<span style=\"padding:6px 10px;border-radius:9999px;background:${chipBg};border:1px solid ${chipBd};font-size:12px\">${x}</span>`).join('')}</div>`;
-            const header = `
-                <div style="display:flex;justify-content:space-between;gap:16px;align-items:center;border-bottom:1px solid ${chipBd};padding-bottom:10px">
-                    <div>
-                        <div style="font-size:26px;font-weight:900">Mister</div>
-                        <div style="color:${sub}">Cloud | Azure | 365 | Python/C/C++ | Automation | Cybersecurity analyse</div>
-                    </div>
-                    <div style="text-align:right;color:${sub};font-size:12px">
-                        <div>🌐 mister.us.kg</div>
-                        <div>📧 chattgbt@gmail.com</div>
-                        <div>🔗 github.com/chinfosieeuw9-prog</div>
-                    </div>
-                </div>`;
-            const skills = chips(['Azure','Microsoft 365','Active Directory','Intune','PowerShell','Python','C/C++','Automation','Security','Networking']);
-            const experience = `
-                <div style="display:grid;grid-template-columns:1fr;gap:12px">
-                    <div style="border:1px solid ${chipBd};border-radius:10px;padding:12px;background:${chipBg}">
-                        <div style="font-weight:700">${t('Senior Systeembeheerder','Senior Systems Administrator')}</div>
-                        <div style="color:${sub};font-size:12px">${t('Diverse klanten • 2010–heden','Various clients • 2010–present')}</div>
-                        <div style="margin-top:6px">${t('Beheer en migraties naar Microsoft 365 en Azure; automatisering met PowerShell en Python; security hardening.','Managing and migrating to Microsoft 365 and Azure; automation with PowerShell and Python; security hardening.')}</div>
-                    </div>
-                </div>`;
-            const edu = `
-                <ul style="margin:6px 0 0 18px">
-                    <li>${t('HBO/Certificeringen (Azure/365, Security)','Bachelor/Certifications (Azure/365, Security)')}</li>
-                </ul>`;
-            return header + section(t('Profiel','Profile'), t('Ervaren ICT professional met >25 jaar ervaring in beheer, cloud adoptie en automatisering.','Experienced IT professional with 25+ years in administration, cloud adoption and automation.'))
-                 + section(t('Vaardigheden','Skills'), skills)
-                 + section(t('Ervaring','Experience'), experience)
-                 + section(t('Opleiding & Certificering','Education & Certification'), edu);
         }
         
         function exportSubscribers() {
@@ -4143,15 +4143,15 @@ ${matrixContent}
             console.log('📰 Loaded news articles:', newsArticles.length, 'items');
             loadNewsDisplay();
             
-            // Setup admin login button click handler (popup modal login)
+            // Setup admin login button click handler
             const adminLoginBtn = document.getElementById('admin-login-btn');
             if (adminLoginBtn) {
                 adminLoginBtn.addEventListener('click', function(e) {
                     e.preventDefault();
                     console.log('🔐 Admin button clicked');
-                    openAdminLoginModal();
+                    toggleAdminAccess();
                 });
-                console.log('✅ Admin login modal handler attached');
+                console.log('✅ Admin login button handler attached');
             } else {
                 console.error('❌ Admin login button not found');
             }
@@ -4270,5 +4270,225 @@ ${matrixContent}
         });
     </script>
 </body>
-</html>
+    <!-- CV Popup Modal (verplaatst naar einde body) -->
+    <div id="cv-popup-modal" class="cv-popup-modal">
+        <div class="cv-popup-content">
+            <h2 class="cv-popup-title">CV downloaden of bekijken</h2>
+            <div class="cv-popup-info">Alleen PDF beschikbaar, code vereist voor downloaden.</div>
+            <input id="cv-popup-code" type="text" class="admin-input cv-popup-input" placeholder="Voer code in om te downloaden">
+            <div class="cv-popup-btn-row">
+                <button onclick="toggleCVPreview()" id="cv-preview-toggle-btn" class="cv-popup-btn">Bekijk CV (PDF)</button>
+                <button onclick="downloadCVPopup()" class="cv-popup-btn download">Download CV (PDF)</button>
+            </div>
+            <div id="cv-popup-preview" class="cv-popup-preview">
+                <embed id="cv-embed" src="cv/NEW CV 7-8.pdf" type="application/pdf" width="100%" height="220px" class="cv-popup-embed">
+            </div>
+            <button onclick="document.getElementById('cv-popup-modal').style.display='none'" class="cv-popup-btn close">Sluiten</button>
+            <div id="cv-popup-msg" class="cv-popup-msg"></div>
+        </div>
+    </div>
+    <script>
+    // Demo CV popup met code en preview
+    function showCVPopup() {
+        document.getElementById('cv-popup-modal').style.display = 'flex';
+        document.getElementById('cv-popup-code').value = '';
+        document.getElementById('cv-popup-msg').textContent = '';
+        document.getElementById('cv-popup-preview').style.display = 'none';
+        document.getElementById('cv-embed').height = '220px';
+        document.getElementById('cv-preview-toggle-btn').textContent = 'Bekijk CV (PDF)';
+    }
+
+    function toggleCVPreview() {
+        var preview = document.getElementById('cv-popup-preview');
+        var embed = document.getElementById('cv-embed');
+        var btn = document.getElementById('cv-preview-toggle-btn');
+        if (preview.style.display === 'block') {
+            preview.style.display = 'none';
+            embed.height = '220px';
+            btn.textContent = 'Bekijk CV (PDF)';
+        } else {
+            preview.style.display = 'block';
+            embed.height = '480px';
+            btn.textContent = 'Bekijk kleiner';
+        }
+    }
+
+    function downloadCVPopup() {
+        var code = document.getElementById('cv-popup-code').value.trim();
+        if (code === 'jouwcode') {
+            window.open('cv/NEW CV 7-8.pdf', '_blank');
+            document.getElementById('cv-popup-modal').style.display = 'none';
+        } else {
+            document.getElementById('cv-popup-msg').textContent = 'Ongeldige code!';
+        }
+    }
+    </script>
+    <!-- Supabase JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js"></script>
+    <script>
+        // Supabase config
+    const SUPABASE_URL = 'https://tesqycomyyifqcwdpetp.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlc3F5Y29teXlpZnFjd2RwZXRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzNjE0MTAsImV4cCI6MjA3MTkzNzQxMH0.aPtjfcDLL0F70OFDIuJdG13kUZQz2e7FYHNrCW77EnU';
+    const NEWS_TABLE = 'news';
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        async function loadNews() {
+            const newsList = document.getElementById('news-list');
+            newsList.innerHTML = '<div style="color:#888;">Nieuws laden...</div>';
+            try {
+                const { data, error } = await supabaseClient
+                    .from(NEWS_TABLE)
+                    .select('*')
+                    .order('id', { ascending: false })
+                    .limit(window.newsLimit || 4);
+                console.log('[Supabase] Response van loadNews:', { data, error });
+                if (data && Array.isArray(data)) {
+                    console.log('[Supabase] Opgehaalde nieuwsberichten:');
+                    data.forEach(item => {
+                        console.log(`- id: ${item.id}, title: ${item.title}`);
+                    });
+                }
+                if (error) {
+                    newsList.innerHTML = '<div style="color:#e57373;">Fout bij laden nieuws: ' + error.message + '</div>';
+                    console.error('[Supabase] Fout bij ophalen nieuws:', error);
+                    return;
+                }
+                if (!data || data.length === 0) {
+                    newsList.innerHTML = '<div style="color:#888;">Geen nieuws gevonden</div>';
+                    console.warn('[Supabase] Geen nieuws gevonden. Data:', data);
+                    return;
+                }
+                console.log(`[Supabase] Aantal nieuwsberichten opgehaald: ${data.length}`);
+                newsList.innerHTML = data.map(item => {
+                    // Escape attributen
+                    const esc = str => String(str||'').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+                    return `<div class='news-item' 
+                        data-title="${esc(item.title)}"
+                        data-content="${esc(item.content)}"
+                        data-link="${esc(item.link)}"
+                        style="padding:5px 0; border-bottom:1px solid #23234a; font-size:0.93em; cursor:pointer; color:#bfc3d9; font-family:'Segoe UI', Arial, sans-serif; letter-spacing:0.01em;">
+                        <span style='font-weight:400; display:inline-block; max-width:95%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; vertical-align:bottom;'>${esc(item.title) || '(geen titel)'}</span>
+                    </div>`;
+                }).join('');
+                // Klik event voor popup
+                document.querySelectorAll('.news-item').forEach(el => {
+                    el.onclick = function() {
+                        const item = {
+                            title: this.dataset.title,
+                            content: this.dataset.content,
+                            link: this.dataset.link
+                        };
+                        console.log('[Nieuws] Klik op item:', item);
+                        showNewsPopup(item);
+                    };
+                });
+            } catch (err) {
+                newsList.innerHTML = '<div style=\"color:#e57373;\">Technische fout: ' + err.message + '</div>';
+                console.error('[Supabase] Fetch error:', err);
+            }
+        }
+
+        // Popup functie voor nieuws
+        function showNewsPopup(item) {
+            // Verwijder bestaande popup
+            const oude = document.getElementById('news-popup');
+            if (oude) oude.remove();
+            // Popup HTML
+            const popup = document.createElement('div');
+            popup.id = 'news-popup';
+            popup.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:9999;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;';
+            popup.innerHTML = `
+                <div style="background:#181828;padding:32px 24px;border-radius:12px;max-width:420px;width:90vw;box-shadow:0 8px 32px #000;position:relative;">
+                    <button id="close-news-popup" style="position:absolute;top:12px;right:12px;background:#23234a;color:#fff;border:none;border-radius:4px;padding:4px 10px;cursor:pointer;font-size:1.2em;">&times;</button>
+                    <h2 style='color:#4ade80;margin-bottom:12px;'>${item.title || '(geen titel)'}</h2>
+                    <div style='color:#e3e6f0;font-size:1em;margin-bottom:12px;'>${item.content || ''}</div>
+                    ${item.link ? `<a href='${item.link}' target='_blank' style='color:#4ade80;text-decoration:underline;word-break:break-all;'>${item.link}</a>` : ''}
+                </div>
+            `;
+            document.body.appendChild(popup);
+            document.getElementById('close-news-popup').onclick = () => popup.remove();
+            popup.onclick = e => { if (e.target === popup) popup.remove(); };
+        }
+
+        // Nieuws toevoegen via Supabase
+        // Meer laden functionaliteit
+        window.newsLimit = 5;
+        document.getElementById('load-more-news').onclick = async function() {
+            window.newsLimit += 5;
+            await loadNews();
+        };
+        // Bij eerste load altijd limiet resetten
+        window.addEventListener('DOMContentLoaded', () => {
+            window.newsLimit = 5;
+            loadNews();
+        });
+        document.getElementById('news-admin-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const title = document.getElementById('news-title').value.trim();
+            const content = document.getElementById('news-content').value.trim();
+            const link = document.getElementById('news-link').value.trim();
+            const msg = document.getElementById('news-form-msg');
+            msg.textContent = '';
+            if (!title || !content) {
+                msg.textContent = 'Vul titel en bericht in.';
+                msg.style.color = '#e57373';
+                return;
+            }
+            msg.textContent = 'Toevoegen...';
+            msg.style.color = '#888';
+            try {
+                const insertObj = { title, content, timestamp: new Date().toISOString() };
+                if (link) insertObj.link = link;
+                console.log('[DEBUG] Insert object:', insertObj);
+                // Supabase verwacht een array voor insert
+                const { data, error } = await supabaseClient.from(NEWS_TABLE).insert([insertObj]);
+                console.log('Supabase insert result:', { data, error });
+                if (error) {
+                    msg.textContent = 'Fout bij toevoegen: ' + error.message;
+                    msg.style.color = '#e57373';
+                    return;
+                }
+                msg.textContent = 'Toegevoegd!';
+                msg.style.color = '#4ade80';
+                document.getElementById('news-title').value = '';
+                document.getElementById('news-content').value = '';
+                document.getElementById('news-link').value = '';
+                await loadNews();
+            } catch (err) {
+                msg.textContent = 'Technische fout: ' + err.message;
+                msg.style.color = '#e57373';
+                console.error('Insert error:', err);
+            }
+        });
+
+        // Testknop functionaliteit
+        document.getElementById('test-supabase-btn').onclick = async function() {
+            const msg = document.getElementById('news-form-msg');
+            msg.textContent = 'Testbericht wordt verzonden...';
+            msg.style.color = '#4ade80';
+            try {
+                const testObj = {
+                    title: 'Testbericht',
+                    content: 'Dit is een test vanuit de website op ' + new Date().toLocaleString(),
+                    timestamp: new Date().toISOString()
+                };
+                const { data, error } = await supabaseClient.from(NEWS_TABLE).insert(testObj);
+                console.log('Supabase insert response:', { data, error });
+                if (error) {
+                    msg.textContent = 'Fout bij Supabase: ' + error.message + '\nZie console voor details.';
+                    msg.style.color = '#e57373';
+                } else {
+                    msg.textContent = '✅ Testbericht succesvol toegevoegd!\nResponse: ' + JSON.stringify(data);
+                    msg.style.color = '#4ade80';
+                    await loadNews();
+                }
+            } catch (err) {
+                msg.textContent = 'Technische fout: ' + err.message;
+                msg.style.color = '#e57373';
+            }
+        };
+
+        // Initieel nieuws laden
+        document.addEventListener('DOMContentLoaded', loadNews);
+    </script>
 

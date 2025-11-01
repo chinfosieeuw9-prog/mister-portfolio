@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bestanden Explorer Demo</title>
+    <script type="module">
+    import { supabase } from './js/supabase-client.js';
+    window.supabase = supabase;
+    </script>
+    <style>
+        .hidden { display: none; }
+        body { background: #181828; color: #fff; font-family: 'Segoe UI', Arial, sans-serif; margin:0; padding:0; }
+        .card { background: #181828; border-radius: 18px; box-shadow: 0 2px 16px 0 #0002; margin: 36px auto; max-width: 720px; padding: 24px 28px; border: 1px solid #23234a; }
+        h3 { color:#fff; margin-bottom:18px; }
+        .explorer-container { display: flex; gap: 0; }
+        .explorer-sidebar { width: 180px; background: #23234a; border-radius: 12px 0 0 12px; padding: 18px 0; }
+        .explorer-sidebar h4 { color:#fff; text-align:center; margin-bottom:12px; }
+        .folder-tree { }
+        .folder-item { padding:8px 18px; cursor:pointer; border-radius:6px; margin-bottom:2px; }
+        .folder-item.active { color:#38bdf8; background:#23234a; }
+        .folder-item:not(.active) { color:#b3b3b3; }
+        .explorer-main { flex:1; background:#181828; border-radius:0 12px 12px 0; padding:24px; }
+        .explorer-toolbar { margin-bottom:18px; display:flex; gap:12px; }
+        .explorer-toolbar button { background:#22c55e; color:#fff; border:none; border-radius:6px; padding:8px 18px; font-weight:600; cursor:pointer; }
+        .explorer-toolbar button:nth-child(2) { background:#0ea5e9; }
+        .explorer-toolbar button:nth-child(3) { background:#fbbf24; color:#23234a; }
+        .explorer-content { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }
+        .explorer-content > div { background:#23234a; border-radius:8px; padding:18px; color:#fff; text-align:center; }
+        .explorer-content .file-size { font-size:12px; margin-top:4px; }
+        /* Grid Explorer */
+        .grid-toolbar { display:flex; justify-content:flex-end; margin-bottom:18px; }
+        .grid-toolbar button { background:#22c55e; color:#fff; border:none; border-radius:6px; padding:8px 18px; font-weight:600; cursor:pointer; }
+        .grid-content { display:grid; grid-template-columns:repeat(4,1fr); gap:18px; }
+        .grid-content > div { background:#23234a; border-radius:8px; padding:18px; color:#fff; text-align:center; }
+    </style>
+</head>
+<body>
+    <!-- Sidebar Explorer met upload/download -->
+    <div class="card">
+        <h3>📁 Bestanden Explorer (Sidebar)</h3>
+        <div class="explorer-container">
+            <div class="explorer-sidebar">
+                <h4>📂 Categorieën</h4>
+                <div class="folder-tree">
+                    <div class="folder-item active">🗂️ Alle bestanden</div>
+                    <div class="folder-item">🔧 Systeem Tools</div>
+                    <div class="folder-item">💻 Netwerk Utils</div>
+                    <div class="folder-item">🛡️ Security Pack</div>
+                    <div class="folder-item"> Archives</div>
+                    <div class="folder-item">🧑‍💻 Admin Tools</div>
+                    <div class="folder-item">🧑‍💻 Helpdesk Tools</div>
+                    <div class="folder-item">📁 Overig</div>
+                </div>
+            </div>
+            <div class="explorer-main">
+                <div class="explorer-toolbar">
+                    <input type="file" id="uploadInput" class="hidden" />
+                    <button onclick="document.getElementById('uploadInput').click()">⬆️ Upload</button>
+                    <button onclick="downloadSelectedFile()">⬇️ Download</button>
+                    <button onclick="alert('Nieuwe map nog niet geïmplementeerd')">📁 Nieuwe map</button>
+                </div>
+                <div class="explorer-content" id="fileList">
+                    <!-- Dynamische bestandslijst -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+    let files = [];
+    let selectedFileIndex = null;
+
+    async function fetchFiles() {
+        // Haal bestanden op uit Supabase bucket 'Bestanden' (root)
+        const { data, error } = await window.supabase.storage.from('Bestanden').list('', { limit: 100 });
+        if (error) {
+            alert('Fout bij ophalen bestanden: ' + error.message);
+            return;
+        }
+        files = (data || []).map(f => ({
+            name: f.name,
+            size: f.metadata && f.metadata.size ? (f.metadata.size/1024).toFixed(1) + ' KB' : '',
+            icon: '�'
+        }));
+        renderFileList();
+    }
+
+    function renderFileList() {
+        const fileList = document.getElementById('fileList');
+        fileList.innerHTML = '';
+        files.forEach((file, idx) => {
+            const div = document.createElement('div');
+            div.style.background = '#23234a';
+            div.style.borderRadius = '8px';
+            div.style.padding = '18px';
+            div.style.color = '#fff';
+            div.style.textAlign = 'center';
+            div.style.cursor = 'pointer';
+            div.style.border = selectedFileIndex === idx ? '2px solid #22c55e' : '2px solid transparent';
+            div.onclick = () => { selectedFileIndex = idx; renderFileList(); };
+            div.innerHTML = `
+                <div style="font-size:32px;">${file.icon}</div>
+                <div style="font-weight:600; margin-top:8px;">${file.name}</div>
+                <div class="file-size" style="color:#38bdf8;">${file.size}</div>
+                <div style="font-size:12px; color:#22c55e; margin-top:6px;">${selectedFileIndex === idx ? 'Geselecteerd' : ''}</div>
+            `;
+            fileList.appendChild(div);
+        });
+    }
+
+    async function downloadSelectedFile() {
+        if (selectedFileIndex === null) {
+            alert('Selecteer eerst een bestand om te downloaden.');
+            return;
+        }
+        const file = files[selectedFileIndex];
+        // Download via Supabase public URL
+        const publicUrlObj = window.supabase.storage.from('Bestanden').getPublicUrl(file.name);
+        let publicUrl = '';
+        if (publicUrlObj.publicUrl) {
+            publicUrl = publicUrlObj.publicUrl;
+        } else if (publicUrlObj.data && publicUrlObj.data.publicUrl) {
+            publicUrl = publicUrlObj.data.publicUrl;
+        }
+        console.log('Download publicUrl:', publicUrl, publicUrlObj);
+        if (publicUrl && publicUrl.startsWith('http')) {
+            window.open(publicUrl, '_blank');
+        } else {
+            alert('Download URL niet gevonden of bestand is niet publiek. Controleer bucket-instellingen in Supabase.');
+        }
+    }
+
+    document.getElementById('uploadInput').addEventListener('change', async function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        // Upload naar Supabase bucket 'Bestanden'
+        const { data, error } = await window.supabase.storage.from('Bestanden').upload(file.name, file, { upsert: true });
+        if (error) {
+            alert('Upload fout: ' + error.message);
+        } else {
+            alert('Upload gelukt: ' + file.name);
+            fetchFiles();
+        }
+        e.target.value = '';
+    });
+
+    fetchFiles();
+    </script>
+    <!-- DEMO: Grid Explorer -->
+    <div class="card">
+        <h3>📦 Bestanden Explorer (Grid)</h3>
+        <div class="grid-toolbar">
+            <button>⬆️ Upload bestand</button>
+        </div>
+        <div class="grid-content">
+            <div>
+                <div style="font-size:32px;">📄</div>
+                <div style="font-weight:600; margin-top:8px;">CV.pdf</div>
+                <div class="file-size" style="color:#38bdf8;">1.1 MB</div>
+            </div>
+            <div>
+                <div style="font-size:32px;">🗃️</div>
+                <div style="font-weight:600; margin-top:8px;">Backup.zip</div>
+                <div class="file-size" style="color:#10b981;">22 MB</div>
+            </div>
+            <div>
+                <div style="font-size:32px;">📝</div>
+                <div style="font-weight:600; margin-top:8px;">ToDo.txt</div>
+                <div class="file-size" style="color:#f59e42;">2 KB</div>
+            </div>
+            <div>
+                <div style="font-size:32px;">📦</div>
+                <div style="font-weight:600; margin-top:8px;">Software.exe</div>
+                <div class="file-size" style="color:#ef4444;">8.4 MB</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

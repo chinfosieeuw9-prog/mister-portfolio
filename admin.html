@@ -47,26 +47,110 @@
                     <!-- Bestanden tab -->
                     <div class="admin-tab-content-demo tab-files" id="tab-files" style="display:none;">
                         <div class="admin-widget">
-                            <h3 class="admin-widget-title">Bestand uploaden</h3>
-                            <form id="file-upload-form" class="file-upload-form">
-                                <label class="admin-label" for="file-upload-map">Map kiezen</label>
-                                <select id="file-upload-map" class="admin-input" required>
-                                    <option value="system-tools">System Tools</option>
-                                    <option value="netwerk-tools">Netwerk Tools</option>
-                                    <option value="security-tools">Security Tools</option>
+                            <h3 class="admin-widget-title">Bestandenbeheer (Supabase)</h3>
+                            <div style="margin-bottom:12px;">
+                                <label class="admin-label" for="file-upload-map">Categorie</label>
+                                <select id="file-upload-map" class="admin-input" style="max-width:220px;display:inline-block;">
+                                    <option value="">Alle bestanden (root)</option>
+                                    <option value="system-tools">Systeem Tools</option>
+                                    <option value="netwerk-tools">Netwerk Utils</option>
+                                    <option value="security-tools">Security Pack</option>
                                     <option value="archives">Archives</option>
-                                    <option value="software">Software</option>
+                                    <option value="admin-tools">Admin Tools</option>
+                                    <option value="helpdesk-tools">Helpdesk Tools</option>
+                                    <option value="overig">Overig</option>
                                 </select>
-                                <input type="file" class="admin-input" id="file-upload-input" required>
-                                <button type="submit" class="admin-btn">Uploaden</button>
-                            </form>
-                            <div id="file-upload-msg" class="admin-form-msg"></div>
+                                <input type="file" id="uploadInputAdmin" class="admin-input" style="max-width:220px;display:inline-block;" />
+                                <button id="uploadBtnAdmin" class="admin-btn" style="margin-left:8px;">⬆️ Upload</button>
+                            </div>
+                            <div id="fileListAdmin" class="explorer-content" style="display:grid;grid-template-columns:repeat(3,1fr);gap:18px;"></div>
                         </div>
-                        <div class="admin-widget">
-                            <h3 class="admin-widget-title">Bestanden beheren</h3>
-                            <ul id="file-list" class="admin-list"><!-- Dynamisch gevuld --></ul>
-                            <div id="file-list-msg" class="admin-form-msg"></div>
-                        </div>
+                        <script type="module">
+                        import { supabase } from './js/supabase-client.js';
+                        let filesAdmin = [];
+                        let selectedFileIndexAdmin = null;
+                        let currentFolderAdmin = '';
+
+                        async function fetchFilesAdmin() {
+                            const folder = document.getElementById('file-upload-map').value;
+                            currentFolderAdmin = folder;
+                            const { data, error } = await supabase.storage.from('Bestanden').list(folder, { limit: 100 });
+                            if (error) {
+                                alert('Fout bij ophalen bestanden: ' + error.message);
+                                return;
+                            }
+                            filesAdmin = (data || []).map(f => ({
+                                name: f.name,
+                                size: f.metadata && f.metadata.size ? (f.metadata.size/1024).toFixed(1) + ' KB' : '',
+                                icon: '📄',
+                                folder: folder
+                            }));
+                            renderFileListAdmin();
+                        }
+
+                        function renderFileListAdmin() {
+                            const fileList = document.getElementById('fileListAdmin');
+                            fileList.innerHTML = '';
+                            filesAdmin.forEach((file, idx) => {
+                                const div = document.createElement('div');
+                                div.style.background = '#23234a';
+                                div.style.borderRadius = '8px';
+                                div.style.padding = '18px';
+                                div.style.color = '#fff';
+                                div.style.textAlign = 'center';
+                                div.style.cursor = 'pointer';
+                                div.style.border = selectedFileIndexAdmin === idx ? '2px solid #22c55e' : '2px solid transparent';
+                                div.onclick = () => { selectedFileIndexAdmin = idx; renderFileListAdmin(); };
+                                div.innerHTML = `
+                                    <div style="font-size:32px;">${file.icon}</div>
+                                    <div style="font-weight:600; margin-top:8px;">${file.name}</div>
+                                    <div class="file-size" style="color:#38bdf8;">${file.size}</div>
+                                    <div style="font-size:12px; color:#22c55e; margin-top:6px;">${selectedFileIndexAdmin === idx ? 'Geselecteerd' : ''}</div>
+                                    <button style="margin-top:10px;" onclick="event.stopPropagation();downloadSelectedFileAdmin(${idx})">⬇️ Download</button>
+                                `;
+                                fileList.appendChild(div);
+                            });
+                        }
+
+                        window.downloadSelectedFileAdmin = async function(idx) {
+                            const file = filesAdmin[idx];
+                            const supabasePath = (file.folder ? file.folder + '/' : '') + file.name;
+                            const publicUrlObj = supabase.storage.from('Bestanden').getPublicUrl(supabasePath);
+                            let publicUrl = '';
+                            if (publicUrlObj.publicUrl) {
+                                publicUrl = publicUrlObj.publicUrl;
+                            } else if (publicUrlObj.data && publicUrlObj.data.publicUrl) {
+                                publicUrl = publicUrlObj.data.publicUrl;
+                            }
+                            if (publicUrl && publicUrl.startsWith('http')) {
+                                window.open(publicUrl, '_blank');
+                            } else {
+                                alert('Download URL niet gevonden of bestand is niet publiek. Controleer bucket-instellingen in Supabase.');
+                            }
+                        }
+
+                        document.getElementById('uploadBtnAdmin').onclick = async function() {
+                            const fileInput = document.getElementById('uploadInputAdmin');
+                            const folder = document.getElementById('file-upload-map').value;
+                            const file = fileInput.files[0];
+                            if (!file) { alert('Selecteer een bestand.'); return; }
+                            const path = folder ? folder + '/' + file.name : file.name;
+                            const { data, error } = await supabase.storage.from('Bestanden').upload(path, file, { upsert: true });
+                            if (error) {
+                                alert('Upload fout: ' + error.message);
+                            } else {
+                                alert('Upload gelukt: ' + file.name);
+                                fetchFilesAdmin();
+                            }
+                            fileInput.value = '';
+                        };
+
+                        document.getElementById('file-upload-map').onchange = function() {
+                            fetchFilesAdmin();
+                        };
+
+                        fetchFilesAdmin();
+                        </script>
                     </div>
                         <button class="admin-tab-demo" data-tab="sitebeheer">Sitebeheer</button>
                         <button class="admin-tab-demo" data-tab="logboek">Logboek</button>
