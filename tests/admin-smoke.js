@@ -12,14 +12,22 @@ const path = require('path');
   const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 } });
   const page = await ctx.newPage();
 
+  // Sanitize a string for use in cross-platform filenames
+  // Replaces forbidden and troublesome characters: <>:"/\|?* and CR/LF
+  const sanitize = (s) => (s || '')
+    .replace(/[\r\n]+/g, ' ')
+    .replace(/[<>:"/\\|?*]/g, '-')
+    .replace(/\s+/g, '_')
+    .slice(0, 120); // keep filenames short-ish for compatibility
+
   let stepIndex = 0;
   const snap = async (name) => {
-    const file = path.join(artifactsDir, `${String(stepIndex).padStart(2,'0')}-${name}.png`);
+    const file = path.join(artifactsDir, `${String(stepIndex).padStart(2,'0')}-${sanitize(name)}.png`);
     try { await page.screenshot({ path: file, fullPage: true }); } catch {}
   };
 
   const step = async (name, fn) => {
-    const safe = name.replace(/\s+/g,'_');
+    const safe = sanitize(name);
     const tracePath = path.join(artifactsDir, `trace-${String(stepIndex).padStart(2,'0')}-${safe}.zip`);
     try {
       // Start a fresh trace for this step
