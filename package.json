@@ -1,5 +1,12 @@
 {
   "name": "mister-portfolio",
   "version": "1.0.0",
-  "main": "index.js"
+  "main": "index.js",
+  "scripts": {
+    "test:admin": "node tests/admin-smoke.js",
+    "test": "npm run test:admin"
+  },
+  "devDependencies": {
+    "playwright": "^1.56.1"
+  }
 }
