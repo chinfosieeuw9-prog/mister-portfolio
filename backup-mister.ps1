@@ -6,12 +6,27 @@
 # - Vaste naam voor backup (optioneel als argument)
 
 param(
-    [string]$BackupName = ""
+    [string]$BackupName = "",
+    [switch]$NoLog,
+    [switch]$NoPopup
 )
 
 $source = "C:\Users\Jordan\Desktop\sites\mister.us.kg"
 $backupDir = "C:\Users\Jordan\Desktop\mister-backups"
 $logFile = "$backupDir\backup-log.txt"
+
+function Write-JsonLog {
+    param([hashtable]$Entry)
+    try { $root = $PSScriptRoot } catch { $root = $source }
+    $logDir = Join-Path $root "logs"
+    if (!(Test-Path $logDir)) { New-Item -ItemType Directory -Path $logDir | Out-Null }
+    $logPath = Join-Path $logDir "logs.json"
+    if (!(Test-Path $logPath)) { '{"entries":[]}' | Out-File -FilePath $logPath -Encoding utf8 }
+    $json = Get-Content $logPath -Raw | ConvertFrom-Json
+    if (-not $json.entries) { $json | Add-Member -NotePropertyName entries -NotePropertyValue @() }
+    $json.entries += [PSCustomObject]$Entry
+    ($json | ConvertTo-Json -Depth 10) | Set-Content $logPath -Encoding utf8
+}
 
 
 # Automatisch versienummer bepalen
@@ -87,5 +102,37 @@ Write-Host "Log bijgewerkt: $logFile"
 
 
 # Gegarandeerde pop-up na backup (MessageBox)
-Add-Type -AssemblyName PresentationFramework
-[System.Windows.MessageBox]::Show("Backup voltooid!\nBestand: $BackupName.zip\nLocatie: C:\Users\Jordan\Desktop\mister-backups","Backup-mister.ps1")
+if (-not $NoPopup) {
+    try {
+        Add-Type -AssemblyName PresentationFramework
+        [System.Windows.MessageBox]::Show("Backup voltooid!`nBestand: $BackupName.zip`nLocatie: C:\\Users\\Jordan\\Desktop\\mister-backups","Backup-mister.ps1") | Out-Null
+    } catch {}
+}
+
+# Schrijf artefact-info weg voor andere scripts (bijv. workflow)
+$artifactsDir = Join-Path $PSScriptRoot "artifacts"
+if (!(Test-Path $artifactsDir)) { New-Item -ItemType Directory -Path $artifactsDir | Out-Null }
+$lastBackupInfo = @{
+    timestamp = (Get-Date).ToString("o")
+    versionTag = $BackupName
+    zipPath   = $destination
+    filesCount= $files.Count
+}
+($lastBackupInfo | ConvertTo-Json -Depth 6) | Set-Content (Join-Path $artifactsDir "last-backup.json") -Encoding utf8
+
+# Optioneel: gestructureerd JSON loggen (uitgezet wanneer -NoLog is meegegeven)
+if (-not $NoLog) {
+    $gitSha = $null; $gitMsg = $null; $gitDirty = $null
+    try { $gitSha = (& git rev-parse --short HEAD) 2>$null } catch {}
+    try { $gitMsg = (& git log -1 --pretty=%s) 2>$null } catch {}
+    try { $gitDirty = -not [string]::IsNullOrWhiteSpace((& git status --porcelain)) } catch {}
+
+    $entry = @{
+        type       = "backup"
+        timestamp  = (Get-Date).ToString("o")
+        versionTag = $BackupName
+        artifacts  = @{ zip = $destination; filesCount = $files.Count }
+        git        = @{ sha = $gitSha; message = $gitMsg; dirty = $gitDirty }
+    }
+    Write-JsonLog -Entry $entry
+}

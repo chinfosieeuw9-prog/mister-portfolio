@@ -4,11 +4,18 @@ import axios from 'axios';
 import dotenv from 'dotenv';
 import fs from 'fs';
 import Ably from 'ably';
+import { exec } from 'child_process';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 dotenv.config();
 
 const app = express();
 const upload = multer({ dest: 'tmp/' });
+
+// ESM dirname helpers
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 
 const {
@@ -63,6 +70,12 @@ app.post('/upload', upload.single('file'), async (req, res) => {
   }
 });
 
+// Simple health endpoint for uptime checks
+app.get('/health', (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.json({ ok: true, ts: Date.now() });
+});
+
 // Ably token endpoint (TokenRequest for authUrl)
 app.get('/ably/token', async (req, res) => {
   try {
@@ -81,6 +94,22 @@ app.get('/ably/token', async (req, res) => {
   } catch (e) {
     console.error('Ably token error', e);
     res.status(500).json({ error: 'Kon geen Ably token aanmaken' });
+  }
+});
+
+// Run the full PowerShell backup workflow and return the output
+app.post('/workflow/run', async (req, res) => {
+  try {
+    const scriptPath = path.resolve(__dirname, '..', 'full-backup-workflow.ps1');
+    const cmd = `powershell.exe -NoProfile -ExecutionPolicy Bypass -File "${scriptPath}"`;
+    exec(cmd, { cwd: path.resolve(__dirname, '..') }, (error, stdout, stderr) => {
+      if (error) {
+        return res.status(500).json({ ok: false, error: error.message, stdout, stderr });
+      }
+      res.json({ ok: true, stdout, stderr });
+    });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
   }
 });
 

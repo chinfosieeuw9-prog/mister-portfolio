@@ -10,7 +10,7 @@
     
     <!-- Security Headers -->
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
-    <meta http-equiv="X-Frame-Options" content="DENY">
+    
     <meta http-equiv="X-XSS-Protection" content="1; mode=block">
     <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
     <meta http-equiv="Permissions-Policy" content="geolocation=(), microphone=(), camera=()">
@@ -45,7 +45,7 @@
     <!-- Supabase JS CDN -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTYiIGN5PSIxNiIgcj0iMTYiIGZpbGw9InVybCgjZ3JhZGllbnQwX2xpbmVhcl8xXzEpIi8+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9ImdyYWRpZW50MF9saW5lYXJfMV8xIiB4MT0iMCIgeTE9IjAiIHgyPSIzMiIgeTI9IjMyIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMyZDFiNjkiLz4KPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjNWIyMWI2Ii8+CjwvbGluZWFyR3JhZGllbnQ+CjwvZGVmcz4KPC9zdmc+">
     <!-- Chart.js for realtime charts -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" integrity="sha384-CmC3w9vXWZ9q0z3w1c2w0X0f0y3b8b80a9KcQ7Fqj3KQx1c7zM3rQH+1J8H7zZ5o" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <!-- Supabase JS v2 for Realtime Presence -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
     
@@ -1379,7 +1379,10 @@
                     <div class="card-icon">📈</div>
                     <h2>Realtime Dashboard</h2>
                 </div>
-                <span id="presence-provider-indicator" style="font-size:12px;color:#9ca3af">Presence: -</span>
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <span id="presence-provider-indicator" style="font-size:12px;color:#9ca3af">Presence: -</span>
+                    <span id="presence-conn-indicator" style="font-size:12px;color:#9ca3af">—</span>
+                </div>
             </div>
             <p>Live statistieken over bezoekers en prestaties. Deze demo toont paginaweergaven (vandaag) en netwerk-latency in realtime.</p>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;">
@@ -1982,10 +1985,23 @@
             });
         }
 
+        // Kleine status-indicator naast de Presence provider
+        function setPresenceStatus(state){
+            try {
+                const el = document.getElementById('presence-conn-indicator');
+                if (!el) return;
+                if (state === 'connecting') { el.textContent = 'connecting…'; el.style.color = '#f59e0b'; return; }
+                if (state === 'connected') { el.textContent = 'connected'; el.style.color = '#22c55e'; return; }
+                if (state === 'error') { el.textContent = 'error'; el.style.color = '#ef4444'; return; }
+                el.textContent = '—'; el.style.color = '#9ca3af';
+            } catch{}
+        }
+
         // Supabase Presence (Nu online)
         function initSupabasePresence(){
             try {
                 if (typeof window.supabase === 'undefined') return; // library not loaded
+                setPresenceStatus('connecting');
                 const url = localStorage.getItem('supabaseUrl');
                 const anon = localStorage.getItem('supabaseAnon');
                 const channelName = localStorage.getItem('supabaseChannel') || 'presence-global';
@@ -2005,11 +2021,15 @@
                     } catch(e){ console.warn('presence sync fail', e); }
                 };
                 channel.on('presence', { event:'sync' }, updateCount);
+                let sbConnected = false;
                 channel.subscribe((status)=>{
                     if (status === 'SUBSCRIBED'){
+                        sbConnected = true;
+                        setPresenceStatus('connected');
                         channel.track({ online_at: new Date().toISOString(), page: location.pathname });
                     }
                 });
+                setTimeout(()=>{ if (!sbConnected) setPresenceStatus('error'); }, 7000);
                 // Periodieke her-sync fallback
                 setInterval(updateCount, 15000);
             } catch(e){ console.warn('initSupabasePresence failed', e); }
@@ -2018,31 +2038,18 @@
         // Ably Presence (Nu online)
         function initAblyPresence(){
             try {
-                if (typeof Ably === 'undefined' || !Ably.Realtime) return; // not loaded
-                const key = localStorage.getItem('ablyKey');
+                if (typeof Ably === 'undefined' || !Ably.Realtime) return; // library not loaded
+                const key = localStorage.getItem('ablyKey') || '';
                 const authUrl = localStorage.getItem('ablyAuthUrl') || 'http://localhost:3001/ably/token';
-                    const key = document.getElementById('ably-key')?.value.trim();
-                    const authUrl = document.getElementById('ably-authurl')?.value.trim() || 'http://localhost:3001/ably/token';
+                const channelName = localStorage.getItem('ablyChannel') || 'presence-global';
+                const opts = authUrl ? { authUrl } : (key ? { key } : {});
                 const client = new Ably.Realtime({ ...opts, echoMessages:false });
-                    const opts = authUrl ? { authUrl } : { key };
-
-                    // 1) Als we een authUrl gebruiken, test eerst de endpoint voor duidelijke foutmeldingen
-                    if (authUrl){
-                        try {
-                            const r = await fetch(authUrl, { cache:'no-store' });
-                            if (!r.ok){
-                                const txt = await r.text();
-                                throw new Error(`Auth URL fout (${r.status}): ${txt?.slice(0,200)}`);
-                            }
-                        } catch(e){
-                            if (status){ status.style.color='#ef4444'; status.textContent='❌ '+(e.message||e); }
-                            return;
-                        }
-                    }
-
-                    const client = new Ably.Realtime(opts);
-                    client.connection.on('failed', (ev)=>{ if (status){ status.style.color='#ef4444'; status.textContent='❌ Verbinding mislukt: '+(ev?.reason?.message||'failed'); } });
-                    client.connection.on('disconnected', (ev)=>{ /* surface only if not already OK */ });
+                setPresenceStatus('connecting');
+                client.connection.on('connected', ()=> setPresenceStatus('connected'));
+                client.connection.on('failed', ()=> setPresenceStatus('error'));
+                client.connection.on('disconnected', ()=> setPresenceStatus('error'));
+                const channel = client.channels.get(channelName);
+                const presEl = document.getElementById('presence-now');
                 const updateFromMembers = ()=>{
                     try { channel.presence.get((err, members)=>{ if (!err && presEl){ presEl.textContent = String(members?.length||0); } }); } catch{}
                 };
@@ -2104,6 +2111,7 @@
                     try {
                         const ind = document.getElementById('presence-provider-indicator');
                         if (ind) ind.textContent = 'Presence: ' + (p==='ably' ? 'Ably' : 'Supabase');
+                        setPresenceStatus('-');
                     } catch{}
                 };
                 if (document.getElementById('presence-provider')){
@@ -2222,8 +2230,8 @@
 
         // Loader voor Ably UMD
         function loadAblyLib(cb){
-            if (typeof Ably !== 'undefined' && Ably.Realtime){ cb && cb(); return; }
             try {
+                if (typeof Ably !== 'undefined' && Ably.Realtime){ cb && cb(); return; }
                 const s = document.createElement('script');
                 s.src = 'https://cdn.jsdelivr.net/npm/ably@1.2.44/build/ably.min.js';
                 s.async = true;
@@ -2233,14 +2241,14 @@
             } catch(e){ console.warn('loadAblyLib failed', e); }
         }
 
-                function resetIntegrations(){
+        function resetIntegrations(){
             if (!confirm('Weet je zeker dat je alle integratie-instellingen wilt verwijderen?')) return;
             try {
-                                ['supabaseUrl','supabaseAnon','supabaseChannel','presenceProvider','ablyKey','ablyChannel','ablyAuthUrl','uptimeBadgeUrl','uptimeBadgeLink','presenceId']
-                  .forEach(k=>localStorage.removeItem(k));
+                ['supabaseUrl','supabaseAnon','supabaseChannel','presenceProvider','ablyKey','ablyChannel','ablyAuthUrl','uptimeBadgeUrl','uptimeBadgeLink','presenceId']
+                    .forEach(k=>{ try { localStorage.removeItem(k); } catch{} });
                 alert('Integraties gereset. De pagina wordt herladen.');
                 setTimeout(()=>location.reload(), 150);
-            } catch(e){ alert('❌ Reset mislukt: '+e.message); }
+            } catch(e){ console.warn('resetIntegrations failed', e); }
         }
         function setAdminSession(minutes=60) {
             try { localStorage.setItem('adminSession', JSON.stringify({ ts: Date.now(), exp: Date.now() + minutes*60*1000 })); } catch {}
@@ -2249,9 +2257,9 @@
             try {
                 const s = JSON.parse(localStorage.getItem('adminSession')||'null');
                 return s && typeof s.exp==='number' && Date.now() < s.exp;
-            } catch { return false; }
+            } catch{}
         }
-        function clearAdminSession() { try { localStorage.removeItem('adminSession'); } catch {} }
+    function clearAdminSession() { try { localStorage.removeItem('adminSession'); } catch {} }
         
         // Simple admin login function
         function showAdminLogin() {
@@ -2419,7 +2427,9 @@
             }
 
             loginBtn.addEventListener('click', doLogin);
-            pwInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') doLogin(); });
+            pwInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === 'NumpadEnter') doLogin();
+            });
             setTimeout(() => pwInput.focus(), 50);
         }
         
@@ -5418,15 +5428,94 @@ ${matrixContent}
         }
         
         function loadActivityLogs() {
-            const container = document.getElementById('activity-logs');
-            container.innerHTML = '';
-            
-            activityLogs.forEach(log => {
-                const entry = document.createElement('div');
-                entry.className = 'news-item';
-                entry.innerHTML = `${new Date(log.timestamp).toLocaleString()} - ${log.message}`;
-                container.appendChild(entry);
-            });
+            try {
+                const container = document.getElementById('activity-logs');
+                if (!container) return;
+                container.innerHTML = '<div style="color:#9ca3af">Logboek laden…</div>';
+                fetch('logs/logs.json?ts=' + Date.now(), { cache: 'no-store' })
+                    .then(r => r.json())
+                    .then(json => {
+                        const entries = Array.isArray(json.entries) ? json.entries.slice() : [];
+                        entries.sort((a,b)=> new Date(b.timestamp) - new Date(a.timestamp));
+                        const items = entries.slice(0, 12);
+                        if (items.length === 0) { container.innerHTML = '<div style="color:#9ca3af">Geen log entries gevonden.</div>'; return; }
+                        const rows = items.map((e, i) => {
+                            const ts = e.timestamp ? new Date(e.timestamp).toLocaleString('nl-NL') : '-';
+                            const ver = e.versionTag || '-';
+                            const type = e.type || '-';
+                            const msg = (e.message || e.note || (e.git && e.git.message) || '');
+                            const sha = (e.git && e.git.sha) ? e.git.sha : '';
+                            const site = e.site || {};
+                            const online = (typeof site.online === 'boolean') ? (site.online ? '🟢 online' : (site.status ? '🔴 ' + site.status : '🔴 offline')) : '—';
+                            const frm = e.apis && e.apis.formspree ? e.apis.formspree.status : null;
+                            const ably = e.apis && e.apis.ablyAuth ? e.apis.ablyAuth.status : null;
+                            const cloud = e.cloudSync && typeof e.cloudSync.ok === 'boolean' ? (e.cloudSync.ok ? '☁️ sync OK' : '☁️ sync NOK') : '';
+                            const zip  = e.artifacts && e.artifacts.zip ? e.artifacts.zip : '';
+                            const idx  = e.artifacts && e.artifacts.indexBackup ? e.artifacts.indexBackup : '';
+                            const did = 'logd-'+i;
+                            return `
+                                <div style=\"border:1px solid #333;border-radius:10px;padding:14px;margin:10px 0;background:#111;\">
+                                    <div style=\"display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center;\">
+                                        <div><strong>${ver}</strong> <span style="color:#9ca3af">(${type})</span></div>
+                                        <div style="color:#9ca3af">${ts}</div>
+                                    </div>
+                                    <div style=\"margin-top:8px;color:#e5e7eb;white-space:pre-wrap;font-size:14px;line-height:1.5\">${msg || '—'}</div>
+                                    <div style=\"margin-top:8px;display:flex;gap:10px;flex-wrap:wrap;color:#9ca3af\">
+                                        ${sha ? `<span>git: ${sha}</span>` : ''}
+                                        ${online ? `<span>${online}</span>` : ''}
+                                        ${frm!=null ? `<span>Formspree: ${frm}</span>` : ''}
+                                        ${ably!=null ? `<span>Ably: ${ably}</span>` : ''}
+                                        ${cloud ? `<span>${cloud}</span>` : ''}
+                                        ${zip ? `<span>zip: ${zip}</span>` : ''}
+                                        ${idx ? `<span>index: ${idx}</span>` : ''}
+                                    </div>
+                                    <div style=\"margin-top:8px\">
+                                        <button onclick=\"const d=document.getElementById('${did}'); d.style.display=d.style.display==='block'?'none':'block'\" style=\"background:#1f1f1f;border:1px solid #333;color:#fff;padding:4px 8px;border-radius:6px;cursor:pointer\">Details</button>
+                                    </div>
+                                    <pre id=\"${did}\" style=\"display:none;background:#0b0b0b;border:1px solid #222;border-radius:8px;padding:10px;color:#d1d5db;overflow:auto;font-size:12px;margin-top:8px\">${JSON.stringify(e, null, 2)}</pre>
+                                </div>
+                            `;
+                        }).join('');
+                        container.innerHTML = `
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px;flex-wrap:wrap;">
+                                <div style="font-weight:600">Laatste wijzigingen</div>
+                                <div style="display:flex;gap:8px;">
+                                    <button style="background:#1f1f1f;border:1px solid #333;color:#fff;padding:6px 10px;border-radius:6px;cursor:pointer" onclick="loadActivityLogs()">Vernieuwen</button>
+                                    <button id="run-workflow-btn" style="background:#1f1f1f;border:1px solid #333;color:#fff;padding:6px 10px;border-radius:6px;cursor:pointer" onclick="runWorkflow()">Run workflow</button>
+                                </div>
+                            </div>
+                            ${rows}
+                            <div style="margin-top:8px;">
+                                <a href="logs.html" target="_blank" style="color:#00d4ff;text-decoration:none">Volledig logboek openen →</a>
+                            </div>
+                        `;
+                    })
+                    .catch(err => {
+                        console.warn('loadActivityLogs error', err);
+                        container.innerHTML = '<div style="color:#ef4444">Kon logboek niet laden.</div>';
+                    });
+            } catch(e) { console.warn('loadActivityLogs failed', e); }
+        }
+
+        async function runWorkflow(){
+            const btn = document.getElementById('run-workflow-btn');
+            if (btn){ btn.disabled = true; btn.textContent = 'Running…'; }
+            try{
+                const r = await fetch('http://localhost:3001/workflow/run', { method:'POST' });
+                const j = await r.json().catch(()=>({}));
+                if (!r.ok || !j.ok){
+                    alert('Workflow mislukt:\n'+(j.error||r.status));
+                } else {
+                    // korte weergave van output; daarna log herladen
+                    console.log('[workflow stdout]', j.stdout);
+                    alert('Workflow voltooid. Log wordt vernieuwd.');
+                    setTimeout(loadActivityLogs, 800);
+                }
+            } catch(e){
+                alert('Kon workflow niet starten: '+e.message);
+            } finally {
+                if (btn){ btn.disabled = false; btn.textContent = 'Run workflow'; }
+            }
         }
         
         function loadAdminData() {

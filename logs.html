@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Backup Logboek • mister.us.kg</title>
+  <meta name="robots" content="noindex" />
+  <style>
+    :root{--bg:#0a0a0a;--card:#141414;--muted:#9ca3af;--fg:#fff;--accent:#5b21b6;--ok:#22c55e;--warn:#f59e0b;--err:#ef4444}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--fg);font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif}
+    .container{max-width:1000px;margin:0 auto;padding:24px}
+    h1{font-size:20px;margin:0 0 12px}
+    .sub{color:var(--muted);font-size:13px;margin-bottom:20px}
+    .toolbar{display:flex;gap:8px;align-items:center;margin-bottom:14px}
+    input,select{background:#1f1f1f;border:1px solid #333;color:var(--fg);padding:8px 10px;border-radius:6px}
+    .card{background:var(--card);border:1px solid #2a2a2a;border-radius:12px;padding:14px 16px;margin:10px 0}
+    .row{display:flex;justify-content:space-between;gap:10px;align-items:center}
+    .tag{display:inline-block;padding:2px 8px;border-radius:999px;border:1px solid #333;font-size:12px;color:var(--muted)}
+    .tag.ok{color:var(--ok);border-color:#195b37}
+    .tag.err{color:var(--err);border-color:#5b1d1d}
+    .tag.warn{color:var(--warn);border-color:#5b4a1d}
+    .ver{font-weight:600}
+    .muted{color:var(--muted)}
+    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:10px}
+    .kv{background:#1b1b1b;border:1px solid #2a2a2a;border-radius:8px;padding:10px;font-size:13px}
+    .kv .k{color:var(--muted);display:block;margin-bottom:4px}
+    .details{margin-top:10px;display:none}
+    .btn{background:#1f1f1f;border:1px solid #333;color:var(--fg);padding:6px 10px;border-radius:6px;cursor:pointer}
+    .btn:hover{border-color:#666}
+    .small{font-size:12px}
+    .footer{margin-top:20px;color:var(--muted);font-size:12px}
+    @media (max-width: 700px){.grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Backup logboek</h1>
+    <div class="sub">Automatisch bijgehouden bij backups en workflows. Deze pagina leest <code>logs/logs.json</code>.</div>
+    <div class="toolbar">
+  <input id="search" placeholder="Zoek op versie, type, API..." aria-label="Zoeken in logboek" />
+  <select id="type" aria-label="Filter op type">
+        <option value="">Alle types</option>
+        <option>workflow</option>
+        <option>backup</option>
+        <option>indexBackup</option>
+      </select>
+    </div>
+    <div id="list"></div>
+    <div class="footer">Tip: draai <code>full-backup-workflow.ps1</code> voor een volledige workflow entry met API- en cloudstatus.</div>
+  </div>
+  <script>
+    const elList = document.getElementById('list');
+    const elSearch = document.getElementById('search');
+    const elType = document.getElementById('type');
+    let entries = [];
+
+    function fmt(ts){try{return new Date(ts).toLocaleString()}catch{return ts}}
+    function tag(txt, cls=''){return `<span class="tag ${cls}">${txt}</span>`}
+
+    function render(){
+      const q = (elSearch.value||'').toLowerCase();
+      const t = elType.value;
+      let data = entries.slice().sort((a,b)=> new Date(b.timestamp)-new Date(a.timestamp));
+      if (t) data = data.filter(e=>e.type===t);
+      if (q) data = data.filter(e=>JSON.stringify(e).toLowerCase().includes(q));
+      elList.innerHTML = data.map(e=>{
+        const site = e.site||{}; const apis = e.apis||{}; const git = e.git||{}; const art=e.artifacts||{};
+        const okTag = site.online ? tag('online','ok') : tag('offline','err');
+        const typeTag = tag(e.type||'-');
+        const ver = `<span class="ver">${e.versionTag||'-'}</span>`;
+        const head = `
+          <div class="row">
+            <div>${ver} ${typeTag} <span class="muted">${fmt(e.timestamp)}</span></div>
+            <div>${okTag}</div>
+          </div>`;
+        const grid = `
+          <div class="grid">
+            <div class="kv"><span class="k">ZIP</span>${art.zip||'-'}</div>
+            <div class="kv"><span class="k">Index backup</span>${art.indexBackup||'-'}</div>
+            <div class="kv"><span class="k">Site status</span>${site.status||'-'} @ ${site.url||'-'}</div>
+            <div class="kv"><span class="k">Formspree</span>${(apis.formspree&&apis.formspree.status)||'-'} ${apis.formspree&&apis.formspree.url?`<span class="muted small">(${apis.formspree.url})</span>`:''}</div>
+            <div class="kv"><span class="k">Ably Auth</span>${(apis.ablyAuth&&apis.ablyAuth.status)||'-'} ${apis.ablyAuth&&apis.ablyAuth.url?`<span class="muted small">(${apis.ablyAuth.url})</span>`:''}</div>
+            <div class="kv"><span class="k">Git</span>${git.sha||'-'} <span class="muted small">${git.message||''}</span></div>
+          </div>`;
+        return `<div class="card">
+          ${head}
+          ${grid}
+        </div>`
+      }).join('');
+    }
+
+    async function load(){
+      try{
+        const res = await fetch('logs/logs.json?ts='+Date.now());
+        const json = await res.json();
+        entries = Array.isArray(json.entries)? json.entries : [];
+      }catch(e){
+        entries = [];
+      }
+      render();
+    }
+
+    elSearch.addEventListener('input', render);
+    elType.addEventListener('change', render);
+    load();
+  </script>
+</body>
+</html>
