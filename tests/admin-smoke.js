@@ -6,6 +6,8 @@ const path = require('path');
 (async () => {
   const baseUrl = 'http://localhost:8000/';
   const artifactsDir = path.resolve(process.cwd(), 'artifacts', 'admin-smoke');
+  // Clean artifacts dir on each run to avoid mixing runs or leaving stray files
+  try { await fsp.rm(artifactsDir, { recursive: true, force: true }); } catch {}
   await fsp.mkdir(artifactsDir, { recursive: true }).catch(() => {});
 
   const browser = await chromium.launch({ headless: true });
