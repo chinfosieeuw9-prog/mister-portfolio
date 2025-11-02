@@ -10,8 +10,6 @@ const path = require('path');
 
   const browser = await chromium.launch({ headless: true });
   const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 } });
-  // Enable Playwright tracing (screenshots, DOM snapshots)
-  try { await ctx.tracing.start({ screenshots: true, snapshots: true, sources: true }); } catch {}
   const page = await ctx.newPage();
 
   let stepIndex = 0;
@@ -21,15 +19,21 @@ const path = require('path');
   };
 
   const step = async (name, fn) => {
+    const safe = name.replace(/\s+/g,'_');
+    const tracePath = path.join(artifactsDir, `trace-${String(stepIndex).padStart(2,'0')}-${safe}.zip`);
     try {
+      // Start a fresh trace for this step
+      try { await ctx.tracing.start({ screenshots: true, snapshots: true, sources: true }); } catch {}
       await fn();
       stepIndex += 1;
-      await snap(name.replace(/\s+/g,'_'));
+      await snap(safe);
+      // Stop and save trace for this successful step
+      try { await ctx.tracing.stop({ path: tracePath }); } catch {}
       console.log(`PASS | ${name}`);
     } catch (err) {
       // Capture failure screenshot and stop tracing
-      try { await snap(`FAIL-${name.replace(/\s+/g,'_')}`); } catch {}
-      try { await ctx.tracing.stop({ path: path.join(artifactsDir, 'trace.zip') }); } catch {}
+      try { await snap(`FAIL-${safe}`); } catch {}
+      try { await ctx.tracing.stop({ path: tracePath }); } catch {}
       console.error(`FAIL | ${name}:`, err && err.message ? err.message : err);
       await browser.close();
       process.exit(1);
@@ -54,11 +58,11 @@ const path = require('path');
 
   await step('Attempt wrong password shows error/locks attempt', async () => {
     await page.fill('#admin-modal-password', 'wrong');
+    // Prepare to dismiss any alert before clicking
+    page.once('dialog', async (dialog) => { await dialog.dismiss().catch(() => {}); });
     await page.click('#admin-modal-login');
     // Expect either error box visible or input to be cleared eventually
     await page.waitForTimeout(800); // allow artificial delay
-    // The script shows an error div or alert; alerts are not auto-dismissed, so guard
-    page.once('dialog', async (dialog) => { await dialog.dismiss().catch(() => {}); });
     // If error box exists, it may display text; don't require strictly, just ensure modal remains
     await page.waitForSelector('#admin-login-modal', { state: 'visible', timeout: 5000 });
   });
@@ -99,8 +103,6 @@ const path = require('path');
     if (hasAdminOnly) throw new Error('admin-only class still present after logout');
   });
 
-  // Save final trace on success and close
-  try { await ctx.tracing.stop({ path: path.join(artifactsDir, 'trace.zip') }); } catch {}
   await browser.close();
   console.log('ALL STEPS PASSED');
   process.exit(0);
