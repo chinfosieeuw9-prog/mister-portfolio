@@ -4100,6 +4100,10 @@ ${matrixContent}
         
         function updatePublicSoftwareList() {
             const publicExplorer = document.getElementById('software-explorer');
+            if (!publicExplorer) {
+                // Element is not present on the current view; avoid errors
+                return;
+            }
             publicExplorer.innerHTML = '';
             
             const categories = {};
