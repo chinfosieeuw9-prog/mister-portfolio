@@ -1195,6 +1195,25 @@
             window.CAPTCHA_PROVIDER = window.CAPTCHA_PROVIDER || 'hcaptcha';
             // Public site key from your hCaptcha site
             window.CAPTCHA_SITE_KEY = window.CAPTCHA_SITE_KEY || '4f1a4efe-fe14-4f3a-8420-2fcec5e27df4';
+
+            // Formspree endpoints
+            // Production endpoint (live site)
+            window.FORMSPREE_ENDPOINT = window.FORMSPREE_ENDPOINT || 'https://formspree.io/f/xgvpzgaz';
+            // Optional: Dev endpoint (used on localhost if provided)
+            window.FORMSPREE_DEV_ENDPOINT = window.FORMSPREE_DEV_ENDPOINT || '';
+            // Helper to resolve which endpoint to use
+            window.getFormspreeEndpoint = function() {
+                try {
+                    const host = (location.hostname || '').toLowerCase();
+                    const isLocal = host === 'localhost' || host === '127.0.0.1';
+                    if (isLocal) {
+                        const ls = (localStorage.getItem('devFormspreeEndpoint')||'').trim();
+                        if (ls) return ls;
+                        if (window.FORMSPREE_DEV_ENDPOINT) return window.FORMSPREE_DEV_ENDPOINT;
+                    }
+                } catch {}
+                return window.FORMSPREE_ENDPOINT;
+            };
         </script>
     
     <!-- Upload Dialog -->
@@ -3276,9 +3295,15 @@
                 formData.append('replyto', email);
                 formData.append('_replyto', email);
                 formData.append('message', message);
-                // More specific subject helps inboxing; prefix [LOCAL TEST] when on localhost
-                const subjectBase = `Nieuw bericht via mister.us.kg — ${name}`;
-                formData.append('_subject', (isLocal ? '[LOCAL TEST] ' : '') + subjectBase);
+                // Email subject: recognizable and informative for inbox rules and triage
+                // e.g., "[MISTER] Contact • Name • first 60 chars of message" (+ [LOCAL TEST] on localhost)
+                const snippet = (message || '').slice(0, 60).replace(/\s+/g,' ').trim();
+                const subjectBase = `[MISTER] Contact • ${name}${snippet?` • ${snippet}`:''}`;
+                const subjectFinal = (isLocal ? '[LOCAL TEST] ' : '') + subjectBase;
+                formData.append('_subject', subjectFinal);
+                // Add common aliases for broader compatibility (Formspree uses _subject, but keep extras harmless)
+                formData.append('subject', subjectFinal);
+                formData.append('_email.subject', subjectFinal);
                 formData.append('_data_source', 'fetch');
                 formData.append('_website', window.location.href);
                 formData.append('_env', isLocal ? 'local' : 'prod');
@@ -3299,7 +3324,9 @@
                     formData.append('h-captcha-response', captchaToken);
                 }
 
-                const endpoint = window.FORMSPREE_ENDPOINT || 'https://formspree.io/f/xgvpzgaz';
+                const endpoint = (typeof getFormspreeEndpoint === 'function')
+                    ? getFormspreeEndpoint()
+                    : (window.FORMSPREE_ENDPOINT || 'https://formspree.io/f/xgvpzgaz');
                 const res = await fetch(endpoint, {
                     method: 'POST',
                     headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
