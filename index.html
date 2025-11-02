@@ -1267,7 +1267,7 @@
             <a href="#cv" class="social-link" onclick="openCVPopup(); return false;">
                 <span>📄</span>CV
             </a>
-            <a href="#admin-access" class="social-link admin-login-btn" id="admin-login-btn" onclick="return handleAdminClick(event);">
+            <a href="admin.html" class="social-link admin-login-btn" id="admin-login-btn">
                 <span>🔐</span>Admin
             </a>
         </div>
@@ -1488,11 +1488,15 @@
         <div class="admin-access hidden" id="admin-access">
             <div class="card">
                 <h2>🔐 Admin Login</h2>
-                <form id="admin-login" class="admin-form">
+                <!-- Prevent default form navigation and route all logins via the modal for reliability -->
+                <form id="admin-login" class="admin-form" action="javascript:void(0)" onsubmit="openAdminLoginModal();return false;" novalidate>
                     <div class="form-group">
-                        <input type="password" id="admin-password" class="form-input" placeholder="Admin Password" required>
+                        <input type="password" id="admin-password" class="form-input" placeholder="Admin Password" autocomplete="current-password" required>
                     </div>
-                    <button type="submit" class="submit-btn">Login</button>
+                    <button type="button" class="submit-btn" onclick="openAdminLoginModal()">Login</button>
+                    <div style="margin-top:8px;color:#9ca3af;font-size:12px;">
+                        Lukt het niet? <a href="?login=1" class="text-link">Open de veilige login</a> of ga direct naar <a href="?admin=1" class="text-link">Admin</a> (vraagt om sessie).
+                    </div>
                 </form>
             </div>
         </div>
@@ -1874,6 +1878,50 @@
     </div>
     
     <script>
+        // Early emergency login opener: ensures ?login=1 or ?admin=1 always prompts even if later JS fails
+        (function(){
+            try {
+                var params = new URLSearchParams(window.location.search);
+                var wantLogin = params.get('login') === '1';
+                var wantAdmin = params.get('admin') === '1';
+                if (wantLogin) {
+                    document.addEventListener('DOMContentLoaded', function(){
+                        setTimeout(function(){
+                            try {
+                                if (typeof window.openAdminLoginModal === 'function') { window.openAdminLoginModal(); return; }
+                                // Fallback prompt if modal isn’t available yet
+                                var pw = window.prompt('🔐 Admin Password:');
+                                if (pw === 'mister2025') {
+                                    try { localStorage.setItem('adminSession', JSON.stringify({ ts: Date.now(), exp: Date.now() + 60*60*1000 })); } catch{}
+                                    var base = window.location.pathname.replace(/\?.*$/,'');
+                                    window.location.href = base + '?admin=1&clean=1';
+                                }
+                            } catch(e) { /* no-op */ }
+                        }, 150);
+                    });
+                }
+                if (wantAdmin) {
+                    document.addEventListener('DOMContentLoaded', function(){
+                        setTimeout(function(){
+                            try {
+                                var hasSession = false;
+                                try { var s = JSON.parse(localStorage.getItem('adminSession')||'null'); hasSession = !!(s && s.exp && Date.now() < s.exp); } catch{}
+                                if (hasSession) return;
+                                if (typeof window.openAdminLoginModal === 'function') { window.openAdminLoginModal(); return; }
+                                // Fallback prompt if modal isn’t available yet
+                                var pw = window.prompt('🔐 Admin Password:');
+                                if (pw === 'mister2025') {
+                                    try { localStorage.setItem('adminSession', JSON.stringify({ ts: Date.now(), exp: Date.now() + 60*60*1000 })); } catch{}
+                                    var base = window.location.pathname.replace(/\?.*$/,'');
+                                    window.location.href = base + '?admin=1&clean=1';
+                                }
+                            } catch(e) { /* no-op */ }
+                        }, 200);
+                    });
+                }
+            } catch(e) { /* ignore */ }
+        })();
+
         // Global variables - initialize early to prevent temporal dead zone errors
     let currentFolder = 'all';
     let viewMode = 'grid';
@@ -3357,7 +3405,7 @@
                 return;
             }
             
-            container.innerHTML = '';
+                        container.innerHTML = `
             
             if (newsArticles.length === 0) {
                 container.innerHTML = '<div style="color: #666; font-style: italic; padding: 8px;">Geen nieuws berichten gevonden</div>';
@@ -3755,6 +3803,18 @@
             }
             return loginAttempts < MAX_ATTEMPTS;
         }
+
+        // Development bypass: allow direct Admin access on localhost (or via URL/localStorage flags)
+        function isDevBypass(){
+            try {
+                const host = (location.hostname||'').toLowerCase();
+                if (host === 'localhost' || host === '127.0.0.1') return true;
+                const p = new URLSearchParams(location.search);
+                if (p.get('dev') === '1' || p.get('bypass') === '1' || p.get('login') === 'dev') return true;
+                if ((localStorage.getItem('adminBypass')||'') === '1') return true;
+            } catch {}
+            return false;
+        }
         
         // CAPTCHA integration (supports reCAPTCHA v2 checkbox and hCaptcha)
         const CAPTCHA_PROVIDER = (window.CAPTCHA_PROVIDER || '').toLowerCase(); // 'recaptcha' | 'hcaptcha'
@@ -3895,7 +3955,7 @@
                 // Email subject: recognizable and informative for inbox rules and triage
                 // e.g., "[MISTER] Contact • Name • first 60 chars of message" (+ [LOCAL TEST] on localhost)
                 const snippet = (message || '').slice(0, 60).replace(/\s+/g,' ').trim();
-                const subjectBase = `[MISTER] Contact • ${name}${snippet?` • ${snippet}`:''}`;
+                const subjectBase = `[MISTER] Contact • ${name}${snippet ? ' • ' + snippet : ''}`;
                 const subjectFinal = (isLocal ? '[LOCAL TEST] ' : '') + subjectBase;
                 formData.append('_subject', subjectFinal);
                 // Add common aliases for broader compatibility (Formspree uses _subject, but keep extras harmless)
@@ -3994,21 +4054,20 @@
         // Tech Showcase Functions
         function showSystemInfo() {
             const output = document.getElementById('tech-output');
-            const info = `
-🖥️ SYSTEM INFORMATION
-═══════════════════════
-🌐 Browser: ${navigator.userAgent.split(' ')[0]} ${navigator.appVersion.split(' ')[0]}
-📱 Platform: ${navigator.platform}
-🔤 Language: ${navigator.language}
-📺 Resolution: ${screen.width}x${screen.height}
-🎨 Color Depth: ${screen.colorDepth}-bit
-⏰ Timezone: ${Intl.DateTimeFormat().resolvedOptions().timeZone}
-🧠 CPU Cores: ${navigator.hardwareConcurrency || 'Unknown'}
-🔌 Online: ${navigator.onLine ? '✅ Connected' : '❌ Offline'}
-🔋 Battery: ${navigator.getBattery ? 'Supported' : 'Not Available'}
-            `.trim();
-            
-            output.innerHTML = info;
+            const info = [
+                'SYSTEM INFORMATION',
+                '------------------',
+                'Browser: ' + navigator.userAgent.split(' ')[0] + ' ' + navigator.appVersion.split(' ')[0],
+                'Platform: ' + navigator.platform,
+                'Language: ' + navigator.language,
+                'Resolution: ' + screen.width + 'x' + screen.height,
+                'Color Depth: ' + screen.colorDepth + '-bit',
+                'Timezone: ' + (Intl.DateTimeFormat().resolvedOptions().timeZone),
+                'CPU Cores: ' + (navigator.hardwareConcurrency || 'Unknown'),
+                'Online: ' + (navigator.onLine ? 'Connected' : 'Offline'),
+                'Battery: ' + (navigator.getBattery ? 'Supported' : 'Not Available')
+            ].join('\n');
+            output.textContent = info;
             output.classList.add('active');
         }
         
@@ -4024,22 +4083,22 @@
                 const duration = endTime - startTime;
                 const speed = (1024 / duration * 1000).toFixed(2); // Rough estimate
                 
-                output.innerHTML = `
-⚡ CONNECTION SPEED TEST
-═════════════════════════
-📊 Load Time: ${duration.toFixed(2)}ms
-🚀 Estimated Speed: ~${speed} KB/s
-📈 Performance: ${duration < 100 ? '🟢 Excellent' : duration < 300 ? '🟡 Good' : '🟠 Average'}
-🌐 DNS Resolution: ${(Math.random() * 50 + 10).toFixed(1)}ms
-🔄 Ping Estimate: ${(Math.random() * 100 + 20).toFixed(0)}ms
-                `.trim();
+                output.textContent = [
+                    'CONNECTION SPEED TEST',
+                    '----------------------',
+                    'Load Time: ' + duration.toFixed(2) + 'ms',
+                    'Estimated Speed: ~' + speed + ' KB/s',
+                    'Performance: ' + (duration < 100 ? 'Excellent' : duration < 300 ? 'Good' : 'Average'),
+                    'DNS Resolution: ' + (Math.random() * 50 + 10).toFixed(1) + 'ms',
+                    'Ping Estimate: ' + (Math.random() * 100 + 20).toFixed(0) + 'ms'
+                ].join('\n');
             };
             testImage.src = 'background1.jpg?t=' + Date.now();
         }
         
         function startMatrixRain() {
             const output = document.getElementById('tech-output');
-            output.innerHTML = '🔢 MATRIX RAIN INITIALIZED...\nGenerating digital rain effect...';
+            output.textContent = 'MATRIX RAIN INITIALIZED...\nGenerating digital rain effect...';
             output.classList.add('active');
             
             let matrixContent = '';
@@ -4054,36 +4113,36 @@
             }
             
             setTimeout(() => {
-                output.innerHTML = `
-🔢 MATRIX DIGITAL RAIN
-═══════════════════════
-${matrixContent}
-💚 Connection to Matrix: ESTABLISHED
-🔐 Encryption Level: 256-bit
-🚀 Data Stream: ACTIVE
-                `.trim();
+                output.textContent = [
+                    'MATRIX DIGITAL RAIN',
+                    '--------------------',
+                    matrixContent,
+                    'Connection to Matrix: ESTABLISHED',
+                    'Encryption Level: 256-bit',
+                    'Data Stream: ACTIVE'
+                ].join('\n');
             }, 1000);
         }
         
         function showDeviceStats() {
             const output = document.getElementById('tech-output');
-            output.innerHTML = '📱 SCANNING DEVICE...\nGathering hardware information...';
+            output.textContent = 'SCANNING DEVICE...\nGathering hardware information...';
             output.classList.add('active');
             
             setTimeout(() => {
                 const memoryInfo = navigator.memory || {};
-                output.innerHTML = `
-📱 DEVICE STATISTICS
-═══════════════════════
-🖥️ User Agent: ${navigator.userAgent.split(' ').slice(-2).join(' ')}
-🔧 Platform: ${navigator.platform}
-📏 Viewport: ${window.innerWidth}x${window.innerHeight}px
-🔍 Device Pixel Ratio: ${window.devicePixelRatio || 1}x
-⚡ JavaScript Heap: ${memoryInfo.usedJSHeapSize ? (memoryInfo.usedJSHeapSize/1048576).toFixed(1) + 'MB' : 'Unknown'}
-🧠 Available Memory: ${memoryInfo.totalJSHeapSize ? (memoryInfo.totalJSHeapSize/1048576).toFixed(1) + 'MB' : 'Restricted'}
-🔌 Connection: ${navigator.connection ? navigator.connection.effectiveType || 'Unknown' : 'API Not Available'}
-📡 Touch Support: ${navigator.maxTouchPoints ? '✅ ' + navigator.maxTouchPoints + ' points' : '❌ Not Available'}
-                `.trim();
+                output.textContent = [
+                    'DEVICE STATISTICS',
+                    '------------------',
+                    'User Agent: ' + navigator.userAgent.split(' ').slice(-2).join(' '),
+                    'Platform: ' + navigator.platform,
+                    'Viewport: ' + window.innerWidth + 'x' + window.innerHeight + 'px',
+                    'Device Pixel Ratio: ' + (window.devicePixelRatio || 1) + 'x',
+                    'JavaScript Heap: ' + (memoryInfo.usedJSHeapSize ? (memoryInfo.usedJSHeapSize/1048576).toFixed(1) + 'MB' : 'Unknown'),
+                    'Available Memory: ' + (memoryInfo.totalJSHeapSize ? (memoryInfo.totalJSHeapSize/1048576).toFixed(1) + 'MB' : 'Restricted'),
+                    'Connection: ' + (navigator.connection ? (navigator.connection.effectiveType || 'Unknown') : 'API Not Available'),
+                    'Touch Support: ' + (navigator.maxTouchPoints ? (navigator.maxTouchPoints + ' points') : 'Not Available')
+                ].join('\n');
             }, 800);
         }
         
@@ -4099,7 +4158,7 @@ ${matrixContent}
         }
         
         function downloadSoftware(software) {
-            alert(`📥 Downloading ${software}...\n\nThis would normally start a download of the selected software package.`);
+            alert('Downloading ' + software + '...\n\nThis would normally start a download of the selected software package.');
         }
         
         function showAdminUpload() {
@@ -5477,22 +5536,41 @@ ${matrixContent}
                             `;
                         }).join('');
                         container.innerHTML = `
-                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px;flex-wrap:wrap;">
-                                <div style="font-weight:600">Laatste wijzigingen</div>
+                                                        <div style=\"display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px;flex-wrap:wrap;\">
+                                <div style=\"font-weight:600\">Laatste wijzigingen</div>
                                 <div style="display:flex;gap:8px;">
                                     <button style="background:#1f1f1f;border:1px solid #333;color:#fff;padding:6px 10px;border-radius:6px;cursor:pointer" onclick="loadActivityLogs()">Vernieuwen</button>
                                     <button id="run-workflow-btn" style="background:#1f1f1f;border:1px solid #333;color:#fff;padding:6px 10px;border-radius:6px;cursor:pointer" onclick="runWorkflow()">Run workflow</button>
+                                    <button id=\"add-note-btn\" style=\"background:#1f1f1f;border:1px solid #333;color:#fff;padding:6px 10px;border-radius:6px;cursor:pointer\" onclick=\"addLogNote()\">Notitie toevoegen</button>
                                 </div>
                             </div>
+                                                        <div style=\"display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:-2px 0 8px 0;color:#9ca3af\">
+                                                            <span id=\"backend-status-chip\" style=\"border:1px solid #333;border-radius:999px;padding:2px 8px\">backend: —</span>
+                                                        </div>
+                            ${(()=>{ try {
+                                const last = items[0]||{}; const a = last.artifacts||{}; const s = last.site||{};
+                                const fmtB = (n)=>{ if(!n&&n!==0)return '-'; const u=['B','KB','MB','GB']; let i=0; let x=Number(n); while(x>=1024&&i<u.length-1){x/=1024;i++;} return x.toFixed(1)+' '+u[i]; };
+                                const dur = last.durationMs? Math.round(last.durationMs/1000)+'s' : '-';
+                                const https = (s && s.status!=null) ? String(s.status) : '-';
+                                const cnt = (a && a.filesCount!=null) ? String(a.filesCount) : '-';
+                                const size = (a && a.zipBytes!=null) ? fmtB(a.zipBytes) : '-';
+                                return `<div style=\"display:flex;gap:12px;flex-wrap:wrap;margin:-2px 0 8px 0;color:#9ca3af\">`
+                                     + `<span style=\"border:1px solid #333;border-radius:999px;padding:2px 8px\">runtime: ${dur}</span>`
+                                     + `<span style=\"border:1px solid #333;border-radius:999px;padding:2px 8px\">https: ${https}</span>`
+                                     + `<span style=\"border:1px solid #333;border-radius:999px;padding:2px 8px\">files: ${cnt}</span>`
+                                     + `<span style=\"border:1px solid #333;border-radius:999px;padding:2px 8px\">written: ${size}</span>`
+                                     + `</div>`; } catch(e){ return '' } })()}
                             ${rows}
                             <div style="margin-top:8px;">
                                 <a href="logs.html" target="_blank" style="color:#00d4ff;text-decoration:none">Volledig logboek openen →</a>
                             </div>
                         `;
+                        try { checkBackendStatus(); } catch {}
                     })
                     .catch(err => {
                         console.warn('loadActivityLogs error', err);
                         container.innerHTML = '<div style="color:#ef4444">Kon logboek niet laden.</div>';
+                        try { checkBackendStatus(); } catch {}
                     });
             } catch(e) { console.warn('loadActivityLogs failed', e); }
         }
@@ -5501,10 +5579,12 @@ ${matrixContent}
             const btn = document.getElementById('run-workflow-btn');
             if (btn){ btn.disabled = true; btn.textContent = 'Running…'; }
             try{
-                const r = await fetch('http://localhost:3001/workflow/run', { method:'POST' });
+                const controller = new AbortController();
+                const to = setTimeout(()=>controller.abort(), 120000);
+                const r = await fetch('http://localhost:3001/workflow/run', { method:'POST', signal: controller.signal });
                 const j = await r.json().catch(()=>({}));
                 if (!r.ok || !j.ok){
-                    alert('Workflow mislukt:\n'+(j.error||r.status));
+                    alert('Workflow mislukt:\n'+(j.error||r.status||'onbekend')+"\n\nControleer of de backend draait op http://localhost:3001 (health endpoint)." );
                 } else {
                     // korte weergave van output; daarna log herladen
                     console.log('[workflow stdout]', j.stdout);
@@ -5512,9 +5592,36 @@ ${matrixContent}
                     setTimeout(loadActivityLogs, 800);
                 }
             } catch(e){
-                alert('Kon workflow niet starten: '+e.message);
+                alert('Kon workflow niet starten: '+e.message+'\n\nWaarschijnlijk draait de backend niet. Start de upload-backend en probeer opnieuw.');
             } finally {
                 if (btn){ btn.disabled = false; btn.textContent = 'Run workflow'; }
+            }
+        }
+
+        async function addLogNote(){
+            const txt = prompt('Voer notitie in voor logboek:');
+            if (!txt || !txt.trim()) return;
+            try{
+                const r = await fetch('http://localhost:3001/logs/append', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ message: txt.trim(), type:'note', versionTag:'note' }) });
+                const j = await r.json().catch(()=>({}));
+                if (!r.ok || !j.ok){ alert('Kon notitie niet opslaan'); return; }
+                loadActivityLogs();
+            } catch(e){ alert('Fout bij opslaan notitie: '+e.message); }
+        }
+
+        async function checkBackendStatus(){
+            const el = document.getElementById('backend-status-chip');
+            if (!el) return;
+            try{
+                const r = await fetch('http://localhost:3001/health', { cache:'no-store' });
+                if (!r.ok) throw new Error('HTTP '+r.status);
+                el.textContent = 'backend: online';
+                el.style.color = '#22c55e';
+                el.style.borderColor = '#195b37';
+            } catch(e){
+                el.textContent = 'backend: offline';
+                el.style.color = '#ef4444';
+                el.style.borderColor = '#5b1d1d';
             }
         }
         
@@ -5612,8 +5719,11 @@ ${matrixContent}
             try {
                 const params = new URLSearchParams(window.location.search);
                 const isAdminRoute = params.get('admin') === '1';
+                const forceLogin = params.get('login') === '1';
                 if (isAdminRoute) {
-                    if (hasAdminSession && typeof hasAdminSession === 'function' && hasAdminSession()) {
+                    if ((hasAdminSession && typeof hasAdminSession === 'function' && hasAdminSession()) || isDevBypass()) {
+                        // Ensure session exists when bypassing
+                        try { if (!hasAdminSession()) setAdminSession(120); } catch{}
                         // Enable admin-only layout
                         document.body.classList.add('admin-only');
                         const panel = document.getElementById('admin-panel');
@@ -5639,6 +5749,9 @@ ${matrixContent}
                             }, 50);
                         }, 50);
                     }
+                } else if (forceLogin) {
+                    // Explicitly open the modal if ?login=1 is present
+                    setTimeout(() => { try { openAdminLoginModal(); } catch(e) { console.warn('openAdminLoginModal failed', e); } }, 50);
                 }
             } catch (e) { console.warn('Router init error', e); }
             
@@ -5728,6 +5841,13 @@ ${matrixContent}
                 adminLoginBtn.addEventListener('click', function(e) {
                     e.preventDefault();
                     console.log('🔐 Admin button clicked');
+                    // Dev bypass: go straight to admin panel locally
+                    if (isDevBypass()) {
+                        try { setAdminSession(120); } catch{}
+                        const base = window.location.pathname.replace(/\?.*$/,'');
+                        window.location.href = base + '?admin=1&clean=1';
+                        return;
+                    }
                     // If session is active, go directly to admin-only view
                     if (hasAdminSession()) {
                         const base = window.location.pathname.replace(/\?.*$/,'');

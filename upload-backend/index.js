@@ -16,6 +16,7 @@ const upload = multer({ dest: 'tmp/' });
 // ESM dirname helpers
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const repoRoot = path.resolve(__dirname, '..');
 
 
 const {
@@ -25,13 +26,15 @@ const {
   GITHUB_UPLOAD_PATH = 'uploads/'
 } = process.env;
 
+let UPLOAD_DISABLED = false;
+if (!GITHUB_TOKEN || !GITHUB_REPO) {
+  console.warn('⚠️  GITHUB upload is uitgeschakeld: zet GITHUB_TOKEN en GITHUB_REPO in .env om uploads te activeren.');
+  UPLOAD_DISABLED = true;
+}
+
 const PORT = process.env.PORT || 3001;
 const { ABLY_API_KEY } = process.env;
 
-if (!GITHUB_TOKEN || !GITHUB_REPO) {
-  console.error('❌ GITHUB_TOKEN en GITHUB_REPO zijn verplicht in .env');
-  process.exit(1);
-}
 
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -40,8 +43,12 @@ app.use((req, res, next) => {
   if (req.method === 'OPTIONS') return res.sendStatus(200);
   next();
 });
+app.use(express.json());
 
 app.post('/upload', upload.single('file'), async (req, res) => {
+  if (UPLOAD_DISABLED) {
+    return res.status(503).json({ error: 'Upload functionaliteit is niet geconfigureerd (GITHUB_TOKEN/GITHUB_REPO ontbreekt)' });
+  }
   try {
     const { originalname, path: tempPath } = req.file;
     const { name, category, description } = req.body;
@@ -100,14 +107,36 @@ app.get('/ably/token', async (req, res) => {
 // Run the full PowerShell backup workflow and return the output
 app.post('/workflow/run', async (req, res) => {
   try {
-    const scriptPath = path.resolve(__dirname, '..', 'full-backup-workflow.ps1');
+    const scriptPath = path.resolve(repoRoot, 'full-backup-workflow.ps1');
     const cmd = `powershell.exe -NoProfile -ExecutionPolicy Bypass -File "${scriptPath}"`;
-    exec(cmd, { cwd: path.resolve(__dirname, '..') }, (error, stdout, stderr) => {
+    exec(cmd, { cwd: repoRoot, timeout: 180000, maxBuffer: 10 * 1024 * 1024 }, (error, stdout, stderr) => {
       if (error) {
-        return res.status(500).json({ ok: false, error: error.message, stdout, stderr });
+        const code = error.killed && error.signal === 'SIGTERM' ? 'TIMEOUT' : (error.code || 'ERR');
+        return res.status(500).json({ ok: false, error: error.message, code, stdout, stderr });
       }
       res.json({ ok: true, stdout, stderr });
     });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+// Append a note entry to logs/logs.json
+app.post('/logs/append', (req, res) => {
+  try {
+    const { message = '', versionTag = 'note', type = 'note' } = req.body || {};
+    const logsPath = path.resolve(repoRoot, 'logs', 'logs.json');
+    if (!fs.existsSync(logsPath)) {
+      fs.mkdirSync(path.dirname(logsPath), { recursive: true });
+      fs.writeFileSync(logsPath, JSON.stringify({ entries: [] }, null, 2));
+    }
+    const json = JSON.parse(fs.readFileSync(logsPath, 'utf8') || '{"entries":[]}');
+    const entry = { type, timestamp: new Date().toISOString(), versionTag, message };
+    json.entries = Array.isArray(json.entries) ? json.entries : [];
+    json.entries.push(entry);
+    fs.writeFileSync(logsPath, JSON.stringify(json, null, 2));
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.json({ ok: true, entry });
   } catch (e) {
     res.status(500).json({ ok: false, error: e.message });
   }

@@ -112,11 +112,15 @@ if (-not $NoPopup) {
 # Schrijf artefact-info weg voor andere scripts (bijv. workflow)
 $artifactsDir = Join-Path $PSScriptRoot "artifacts"
 if (!(Test-Path $artifactsDir)) { New-Item -ItemType Directory -Path $artifactsDir | Out-Null }
+$zipBytes = 0
+try { $zipBytes = (Get-Item $destination).Length } catch {}
+
 $lastBackupInfo = @{
     timestamp = (Get-Date).ToString("o")
     versionTag = $BackupName
     zipPath   = $destination
     filesCount= $files.Count
+    zipBytes  = $zipBytes
 }
 ($lastBackupInfo | ConvertTo-Json -Depth 6) | Set-Content (Join-Path $artifactsDir "last-backup.json") -Encoding utf8
 
@@ -131,7 +135,7 @@ if (-not $NoLog) {
         type       = "backup"
         timestamp  = (Get-Date).ToString("o")
         versionTag = $BackupName
-        artifacts  = @{ zip = $destination; filesCount = $files.Count }
+        artifacts  = @{ zip = $destination; filesCount = $files.Count; zipBytes = $zipBytes }
         git        = @{ sha = $gitSha; message = $gitMsg; dirty = $gitDirty }
     }
     Write-JsonLog -Entry $entry

@@ -37,6 +37,40 @@
                 <div class="admin-card">
                     <button id="admin-logout-btn" class="admin-btn admin-logout-btn">Uitloggen</button>
                     <div class="admin-title">Admin Paneel (Tabs)</div>
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 6px;align-items:center;">
+                        <button id="run-workflow-btn" class="admin-btn">▶️ Run backup workflow</button>
+                        <a href="logs.html" class="admin-btn" style="text-decoration:none;display:inline-block;">📊 Open logboek</a>
+                        <span id="workflow-status" style="font-size:12px;color:#9ca3af;margin-left:6px;"></span>
+                    </div>
+                    <script>
+                    (function(){
+                        const btn = document.getElementById('run-workflow-btn');
+                        const out = document.getElementById('workflow-status');
+                        if (!btn) return;
+                        btn.addEventListener('click', async ()=>{
+                            out.style.color = '#9ca3af';
+                            out.textContent = 'Workflow starten…';
+                            try {
+                                const ctrl = new AbortController();
+                                const t = setTimeout(()=>ctrl.abort(), 120000);
+                                const res = await fetch('http://localhost:3001/workflow/run', {
+                                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ quick:true }), signal: ctrl.signal
+                                });
+                                clearTimeout(t);
+                                if (!res.ok) throw new Error('HTTP '+res.status);
+                                const j = await res.json();
+                                out.style.color = '#22c55e';
+                                out.textContent = 'Klaar. Exit: '+(j.exitCode ?? '0');
+                                console.log('Workflow result', j);
+                                alert('Workflow klaar. Zie logs.html voor details.');
+                            } catch(e){
+                                out.style.color = '#ef4444';
+                                out.textContent = 'Fout: '+(e.message || e);
+                            }
+                        });
+                    })();
+                    </script>
         <!-- JS code moved to <script> below -->
                     <div class="admin-tabs-demo">
                         <button class="admin-tab-demo active" data-tab="news">Nieuws</button>

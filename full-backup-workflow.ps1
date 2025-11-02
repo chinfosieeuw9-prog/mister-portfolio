@@ -21,13 +21,14 @@ Write-Host "==> Backup maken..."
 
 # Lees laatst aangemaakte backup-informatie
 $lastBackupPath = Join-Path $PSScriptRoot "artifacts/last-backup.json"
-$versionTag = "unknown"; $zipPath = $null; $filesCount = $null
+$versionTag = "unknown"; $zipPath = $null; $filesCount = $null; $zipBytes = $null
 if (Test-Path $lastBackupPath) {
 	try {
 		$lb = Get-Content $lastBackupPath -Raw | ConvertFrom-Json
 		$versionTag = $lb.versionTag
 		$zipPath = $lb.zipPath
 		$filesCount = $lb.filesCount
+		$zipBytes = $lb.zipBytes
 	} catch {}
 }
 
@@ -100,7 +101,7 @@ $entry = @{
 	timestamp  = (Get-Date).ToString("o")
 	durationMs = [int]((Get-Date) - $startTs).TotalMilliseconds
 	versionTag = $versionTag
-	artifacts  = @{ zip = $zipPath; filesCount = $filesCount }
+	artifacts  = @{ zip = $zipPath; filesCount = $filesCount; zipBytes = $zipBytes }
 	site       = @{ url = $siteUrl; online = $siteOnline; status = $siteStatus }
 	apis       = @{ 
 		formspree = @{ url = $formspreeUrl; status = $formspreeStatus }
