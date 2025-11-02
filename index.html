@@ -3268,6 +3268,7 @@
             submitBtn.disabled = true;
 
             try {
+                const isLocal = ['localhost','127.0.0.1'].includes(location.hostname);
                 const formData = new FormData();
                 formData.append('name', name);
                 formData.append('email', email);
@@ -3275,10 +3276,12 @@
                 formData.append('replyto', email);
                 formData.append('_replyto', email);
                 formData.append('message', message);
-                // More specific subject helps inboxing
-                formData.append('_subject', `Nieuw bericht via mister.us.kg — ${name}`);
+                // More specific subject helps inboxing; prefix [LOCAL TEST] when on localhost
+                const subjectBase = `Nieuw bericht via mister.us.kg — ${name}`;
+                formData.append('_subject', (isLocal ? '[LOCAL TEST] ' : '') + subjectBase);
                 formData.append('_data_source', 'fetch');
                 formData.append('_website', window.location.href);
+                formData.append('_env', isLocal ? 'local' : 'prod');
                 // Extra context (can help spam heuristics and triage)
                 try {
                     formData.append('_t', new Date().toISOString());
@@ -3296,7 +3299,8 @@
                     formData.append('h-captcha-response', captchaToken);
                 }
 
-                const res = await fetch('https://formspree.io/f/xgvpzgaz', {
+                const endpoint = window.FORMSPREE_ENDPOINT || 'https://formspree.io/f/xgvpzgaz';
+                const res = await fetch(endpoint, {
                     method: 'POST',
                     headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
                     body: formData
