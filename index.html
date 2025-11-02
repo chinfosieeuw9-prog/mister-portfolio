@@ -3229,14 +3229,15 @@
         
         // Contact form handler - Formspree
     async function sendMessage() {
-            const submitBtn = document.getElementById('submit-btn');
-            const formStatus = document.getElementById('form-status');
-            const form = document.getElementById('contact-form');
-            const name = sanitizeInput(document.getElementById('name').value);
-            const email = sanitizeInput(document.getElementById('email').value);
-            const message = sanitizeInput(document.getElementById('message').value);
-            const gotcha = (document.getElementById('_gotcha')||{}).value || '';
-            const company = (document.getElementById('company')||{}).value || '';
+        const submitBtn = document.getElementById('submit-btn');
+        const formStatus = document.getElementById('form-status');
+        const form = document.getElementById('contact-form');
+        const name = sanitizeInput(document.getElementById('name').value);
+        const email = sanitizeInput(document.getElementById('email').value);
+        const message = sanitizeInput(document.getElementById('message').value);
+        const gotcha = (document.getElementById('_gotcha')||{}).value || '';
+        const company = (document.getElementById('company')||{}).value || '';
+        const isLocal = ['localhost','127.0.0.1'].includes(location.hostname);
 
             // Anti-spam: honeypots
             if (gotcha || company) {
@@ -3273,8 +3274,8 @@
                 return;
             }
 
-            // If CAPTCHA is configured, require a token
-            if (CAPTCHA_PROVIDER && CAPTCHA_SITE_KEY) {
+            // If CAPTCHA is configured, require een token (niet op localhost om dev te versnellen)
+            if (CAPTCHA_PROVIDER && CAPTCHA_SITE_KEY && !isLocal) {
                 if (!captchaToken) {
                     formStatus.style.display = 'block';
                     formStatus.style.color = '#ef4444';
@@ -3287,7 +3288,6 @@
             submitBtn.disabled = true;
 
             try {
-                const isLocal = ['localhost','127.0.0.1'].includes(location.hostname);
                 const formData = new FormData();
                 formData.append('name', name);
                 formData.append('email', email);
