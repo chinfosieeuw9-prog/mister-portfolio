@@ -1307,6 +1307,29 @@
                 <button class="tech-btn cat-tools" onclick="openSoftwareCategory('utilities')">🧰 Tools</button>
                 <button class="tech-btn cat-scripts" onclick="openSoftwareCategory('development')">📜 Scripts</button>
             </div>
+            <!-- Publieke lijstweergave: live filter, sorteren en uit-/inklappen -->
+            <div id="public-software-tools" style="margin-top:14px;padding:10px;border:1px solid #333;border-radius:8px;background:#0f0f0f;">
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:space-between;">
+                    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                        <input id="public-sw-search" type="search" placeholder="Zoek in alle categorieën..." aria-label="Zoeken in software" oninput="setPublicSearch(this.value)" style="padding:8px 10px;border-radius:8px;border:1px solid #374151;background:#0f172a;color:#e5e7eb;outline:none;min-width:200px">
+                        <select id="public-sw-sort" onchange="setPublicSort(this.value)" aria-label="Sorteren" style="padding:8px 10px;border-radius:8px;border:1px solid #374151;background:#0f172a;color:#e5e7eb;outline:none;">
+                            <option value="name_asc">Naam A→Z</option>
+                            <option value="name_desc">Naam Z→A</option>
+                            <option value="date_desc">Nieuwste eerst</option>
+                            <option value="date_asc">Oudste eerst</option>
+                            <option value="size_desc">Grootte ↓</option>
+                            <option value="size_asc">Grootte ↑</option>
+                            <option value="dl_desc">Downloads ↓</option>
+                            <option value="dl_asc">Downloads ↑</option>
+                        </select>
+                    </div>
+                    <div style="display:flex;gap:6px;">
+                        <button class="tech-btn" onclick="expandAllPublic()" title="Alles uitklappen">➕ Open all</button>
+                        <button class="tech-btn" onclick="collapseAllPublic()" title="Alles inklappen">➖ Close all</button>
+                    </div>
+                </div>
+                <div id="software-explorer" style="margin-top:10px;"></div>
+            </div>
         </div>
         <!-- Links (uniform card-stijl) -->
         <div class="card">
@@ -1422,6 +1445,7 @@
                 <div class="admin-tabs">
                     <button class="admin-tab active" onclick="showAdminTab('content')">📝 Content</button>
                     <button class="admin-tab" onclick="showAdminTab('software')">💾 Software</button>
+                    <button class="admin-tab" onclick="showAdminTab('cv')">📄 CV</button>
                     <button class="admin-tab" onclick="showAdminTab('newsletter')">📧 Newsletter</button>
                     <button class="admin-tab" onclick="showAdminTab('logs')">📊 Logs</button>
                 </div>
@@ -1519,6 +1543,39 @@
                                 <button class="tech-btn cancel-btn" onclick="closeUploadDialog()">❌ Cancel</button>
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                <div id="admin-cv" class="admin-content">
+                    <h3>📄 CV-instellingen</h3>
+                    <div style="display:grid;gap:12px;max-width:720px;">
+                        <div style="display:flex;gap:12px;align-items:end;flex-wrap:wrap;">
+                            <div style="flex:1;min-width:220px;">
+                                <label style="display:block;color:#9ca3af;font-size:12px;margin-bottom:4px;">Huidige toegangscode</label>
+                                <input id="cv-code" type="text" class="form-input" placeholder="(nog geen code)" readonly>
+                            </div>
+                            <div style="display:flex;gap:8px;">
+                                <button class="tech-btn" onclick="generateCvCode()">🔐 Genereer nieuwe code</button>
+                                <button class="tech-btn" onclick="copyCvCode()">📋 Kopieer</button>
+                                <button class="tech-btn" onclick="invalidateCvCode()">🗑️ Ongeldig maken</button>
+                            </div>
+                        </div>
+                        <div style="display:flex;gap:12px;align-items:center;">
+                            <input id="cv-require-code" type="checkbox" style="width:18px;height:18px;">
+                            <label for="cv-require-code">Code verplicht voor downloaden</label>
+                        </div>
+                        <div style="display:grid;gap:8px;">
+                            <label style="color:#9ca3af;font-size:12px;">PDF URL</label>
+                            <input id="cv-pdf-url" type="url" class="form-input" placeholder="https://.../cv.pdf">
+                        </div>
+                        <div style="display:grid;gap:8px;">
+                            <label style="color:#9ca3af;font-size:12px;">Word URL (.docx of .doc)</label>
+                            <input id="cv-word-url" type="url" class="form-input" placeholder="https://.../cv.docx">
+                        </div>
+                        <div>
+                            <button class="tech-btn" onclick="saveCvSettings()">💾 Opslaan</button>
+                        </div>
+                        <div style="color:#9ca3af;font-size:12px;">Tip: Als je geen PDF/Word URL invult, gebruiken we een nette HTML-preview en kun je Word downloaden als .doc (compatibel) en PDF via afdrukken.</div>
                     </div>
                 </div>
                 
@@ -3543,6 +3600,7 @@ ${matrixContent}
             if (tabName === 'software') loadSoftwareList();
             if (tabName === 'newsletter') loadSubscriberList();
             if (tabName === 'logs') loadActivityLogs();
+            if (tabName === 'cv') loadCvSettings();
         }
         
         function uploadSoftware() {
@@ -3874,6 +3932,10 @@ ${matrixContent}
         function exportSoftwareJSON() {
             try {
                 const data = JSON.stringify(uploadedSoftware || [], null, 2);
+                const total = (uploadedSoftware||[]).length;
+                if (!confirm(`📤 Export maken van ${total} item(s)?`)) {
+                    return;
+                }
                 const blob = new Blob([data], { type: 'application/json' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -3895,6 +3957,9 @@ ${matrixContent}
                 try {
                     const arr = JSON.parse(reader.result);
                     if (!Array.isArray(arr)) throw new Error('Ongeldig JSON-formaat (verwacht een array)');
+                    if (!confirm(`📥 ${arr.length} item(s) importeren en samenvoegen?\n\nDubbele ID's worden overgeslagen.`)) {
+                        return;
+                    }
                     let added = 0, skipped = 0;
                     const byId = new Map((uploadedSoftware||[]).map(s=>[String(s.id), s]));
                     arr.forEach(item => {
@@ -4098,6 +4163,37 @@ ${matrixContent}
             }
         }
         
+    // Publieke explorer: state voor zoeken/sorteren en collapse
+        let publicSearchQuery = '';
+        let publicSortKey = 'name_asc';
+        let publicCollapseState = {};
+        try { publicCollapseState = JSON.parse(localStorage.getItem('publicCollapseState')||'{}')||{}; } catch {}
+    // Navigatiegeschiedenis voor focus-weergave per categorie
+    let publicNavHistory = []; // array van categorienamen
+    let publicNavIndex = -1;
+    let publicCurrentCategory = null; // huidige gefocuste categorie of null
+
+        function setPublicSearch(val){
+            publicSearchQuery = (val||'').trim();
+            updatePublicSoftwareList();
+        }
+        function setPublicSort(val){
+            publicSortKey = val||'name_asc';
+            updatePublicSoftwareList();
+        }
+        function expandAllPublic(){
+            const cats = Array.from(new Set((uploadedSoftware||[]).map(s=>s.category||'other')));
+            cats.forEach(c=>publicCollapseState[c]=false);
+            try { localStorage.setItem('publicCollapseState', JSON.stringify(publicCollapseState)); } catch {}
+            updatePublicSoftwareList();
+        }
+        function collapseAllPublic(){
+            const cats = Array.from(new Set((uploadedSoftware||[]).map(s=>s.category||'other')));
+            cats.forEach(c=>publicCollapseState[c]=true);
+            try { localStorage.setItem('publicCollapseState', JSON.stringify(publicCollapseState)); } catch {}
+            updatePublicSoftwareList();
+        }
+
         function updatePublicSoftwareList() {
             const publicExplorer = document.getElementById('software-explorer');
             if (!publicExplorer) {
@@ -4105,33 +4201,285 @@ ${matrixContent}
                 return;
             }
             publicExplorer.innerHTML = '';
-            
-            const categories = {};
-            uploadedSoftware.forEach(software => {
-                if (!categories[software.category]) categories[software.category] = [];
-                categories[software.category].push(software);
+
+            // Toolbar ook in overzicht tonen
+            const canBack = publicNavIndex > 0;
+            const canFwd = publicNavIndex < publicNavHistory.length - 1;
+            const backExtra = canBack ? '' : 'opacity:.5;pointer-events:none;';
+            const fwdExtra = canFwd ? '' : 'opacity:.5;pointer-events:none;';
+            const toolbar = document.createElement('div');
+            toolbar.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:10px;justify-content:space-between;';
+            const left = document.createElement('div');
+            left.style.cssText = 'display:flex;gap:8px;align-items:center;';
+            left.innerHTML = `
+                <button class=\"tech-btn\" style=\"background:#1d4ed8;color:#fff;${backExtra}\" onclick=\"publicNavBack()\" ${canBack?'':'disabled'}>⬅ Back</button>
+                <button class=\"tech-btn\" style=\"background:#0ea5e9;color:#fff;${fwdExtra}\" onclick=\"publicNavForward()\" ${canFwd?'':'disabled'}>➡ Forward</button>
+                <button class=\"tech-btn\" style=\"background:#ef4444;color:#fff;opacity:.5;pointer-events:none;\" disabled>✖ Close</button>
+            `;
+            const right = document.createElement('div');
+            right.innerHTML = `<button class=\"tech-btn\" style=\"background:#22c55e;color:#111;\" onclick=\"publicExportFiltered()\">⬇ Download lijst</button>`;
+            toolbar.appendChild(left);
+            toolbar.appendChild(right);
+            publicExplorer.appendChild(toolbar);
+
+            // Prepare data
+            const byCat = {};
+            const all = (uploadedSoftware||[]).slice();
+
+            // Filter
+            const q = (publicSearchQuery||'').toLowerCase();
+            const filtered = q ? all.filter(s =>
+                (s.name||'').toLowerCase().includes(q) ||
+                (s.filename||'').toLowerCase().includes(q) ||
+                (s.description||'').toLowerCase().includes(q)
+            ) : all;
+
+            // Sort helper
+            const byName = (a,b)=> (a.name||'').localeCompare(b.name||'');
+            const bySize = (a,b)=> (a.size||0) - (b.size||0);
+            const byDate = (a,b)=> new Date(a.uploadDate||0) - new Date(b.uploadDate||0);
+            const byDl = (a,b)=> (a.downloads||0) - (b.downloads||0);
+            const sorter = (arr)=>{
+                switch(publicSortKey){
+                    case 'name_asc': return arr.sort(byName);
+                    case 'name_desc': return arr.sort((a,b)=>-byName(a,b));
+                    case 'size_asc': return arr.sort(bySize);
+                    case 'size_desc': return arr.sort((a,b)=>-bySize(a,b));
+                    case 'date_asc': return arr.sort(byDate);
+                    case 'date_desc': return arr.sort((a,b)=>-byDate(a,b));
+                    case 'dl_asc': return arr.sort(byDl);
+                    case 'dl_desc': return arr.sort((a,b)=>-byDl(a,b));
+                    default: return arr;
+                }
+            };
+
+            filtered.forEach(s => {
+                const cat = s.category || 'other';
+                if (!byCat[cat]) byCat[cat] = [];
+                byCat[cat].push(s);
             });
-            
-            Object.keys(categories).forEach(category => {
-                const categoryDiv = document.createElement('div');
-                categoryDiv.className = 'software-item';
-                categoryDiv.innerHTML = `📁 ${category} (${categories[category].length} items)`;
-                categoryDiv.onclick = () => showCategoryFiles(category, categories[category]);
-                publicExplorer.appendChild(categoryDiv);
+
+            const cats = Object.keys(byCat).sort();
+
+            if (filtered.length === 0) {
+                const empty = document.createElement('div');
+                empty.style.cssText = 'color:#888;padding:8px;text-align:center;border:1px dashed #333;border-radius:8px;';
+                empty.textContent = 'Geen resultaten';
+                publicExplorer.appendChild(empty);
+                return;
+            }
+
+            // Build collapsible sections
+            cats.forEach(cat => {
+                const items = sorter(byCat[cat]);
+                const collapsed = !!publicCollapseState[cat];
+
+                const section = document.createElement('div');
+                section.style.marginBottom = '8px';
+
+                const header = document.createElement('div');
+                header.style.cssText = 'display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px;border:1px solid #333;border-radius:8px;background:#111827;color:#e5e7eb;';
+                const caret = document.createElement('span');
+                caret.textContent = collapsed ? '▶' : '▼';
+                caret.style.minWidth = '14px';
+                const title = document.createElement('div');
+                title.style.flex = '1';
+                title.innerHTML = `📁 ${cat} <span style="color:#9ca3af">(${items.length})</span>`;
+                const actions = document.createElement('div');
+                actions.innerHTML = `<button class="tech-btn" title="Open categorie" onclick="focusPublicCategory('${cat.replace(/'/g,"\\'")}')">↗ Open</button>`;
+                header.appendChild(caret);
+                header.appendChild(title);
+                header.appendChild(actions);
+
+                const list = document.createElement('div');
+                list.style.cssText = 'margin-top:6px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;';
+                if (collapsed) list.style.display = 'none';
+
+                items.forEach(file => {
+                    const el = document.createElement('div');
+                    el.className = 'software-item';
+                    el.style.cursor = 'pointer';
+                    el.title = `${file.filename} • ${new Date(file.uploadDate||Date.now()).toLocaleDateString()}`;
+                    el.innerHTML = `${file.icon||'📄'} ${file.name} <span style="color:#9ca3af">(${(file.size/1024/1024).toFixed(2)}MB)</span>`;
+                    el.onclick = () => downloadSoftwareFile(file);
+                    list.appendChild(el);
+                });
+
+                header.onclick = () => {
+                    const nowCollapsed = list.style.display !== 'none' ? true : false;
+                    list.style.display = nowCollapsed ? 'none' : '';
+                    caret.textContent = nowCollapsed ? '▶' : '▼';
+                    publicCollapseState[cat] = nowCollapsed;
+                    try { localStorage.setItem('publicCollapseState', JSON.stringify(publicCollapseState)); } catch {}
+                };
+
+                section.appendChild(header);
+                section.appendChild(list);
+                publicExplorer.appendChild(section);
             });
         }
+
+        function publicExportFiltered(){
+            // export alle gefilterde items (over alle categorieën)
+            const all = (uploadedSoftware||[]).slice();
+            const q = (publicSearchQuery||'').toLowerCase();
+            let arr = q ? all.filter(s => (s.name||'').toLowerCase().includes(q) || (s.filename||'').toLowerCase().includes(q) || (s.description||'').toLowerCase().includes(q)) : all;
+            const byName = (a,b)=> (a.name||'').localeCompare(b.name||'');
+            const bySize = (a,b)=> (a.size||0) - (b.size||0);
+            const byDate = (a,b)=> new Date(a.uploadDate||0) - new Date(b.uploadDate||0);
+            const byDl = (a,b)=> (a.downloads||0) - (b.downloads||0);
+            switch(publicSortKey){
+                case 'name_asc': arr.sort(byName); break;
+                case 'name_desc': arr.sort((a,b)=>-byName(a,b)); break;
+                case 'size_asc': arr.sort(bySize); break;
+                case 'size_desc': arr.sort((a,b)=>-bySize(a,b)); break;
+                case 'date_asc': arr.sort(byDate); break;
+                case 'date_desc': arr.sort((a,b)=>-byDate(a,b)); break;
+                case 'dl_asc': arr.sort(byDl); break;
+                case 'dl_desc': arr.sort((a,b)=>-byDl(a,b)); break;
+            }
+            try {
+                const blob = new Blob([JSON.stringify(arr, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                const ts = new Date().toISOString().replace(/[:]/g,'-').slice(0,19);
+                a.download = `software-filtered-${ts}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+            } catch {}
+        }
+
+        function focusPublicCategory(category){
+            // snij eventuele 'forward' geschiedenis af
+            if (publicNavIndex < publicNavHistory.length - 1) {
+                publicNavHistory = publicNavHistory.slice(0, publicNavIndex + 1);
+            }
+            publicNavHistory.push(category);
+            publicNavIndex = publicNavHistory.length - 1;
+            showCategoryFiles(category);
+        }
+
+        function publicNavBack(){
+            if (publicNavIndex > 0){
+                publicNavIndex--;
+                const cat = publicNavHistory[publicNavIndex];
+                showCategoryFiles(cat);
+            }
+        }
+        function publicNavForward(){
+            if (publicNavIndex < publicNavHistory.length - 1){
+                publicNavIndex++;
+                const cat = publicNavHistory[publicNavIndex];
+                showCategoryFiles(cat);
+            }
+        }
+        function publicCloseView(){
+            publicCurrentCategory = null;
+            updatePublicSoftwareList();
+        }
+        function publicExportCurrent(){
+            if (!publicCurrentCategory){ return; }
+            const all = (uploadedSoftware||[]).filter(s => (s.category||'other') === publicCurrentCategory);
+            const q = (publicSearchQuery||'').toLowerCase();
+            let arr = q ? all.filter(s => (s.name||'').toLowerCase().includes(q) || (s.filename||'').toLowerCase().includes(q) || (s.description||'').toLowerCase().includes(q)) : all;
+            // sort as in public view
+            const byName = (a,b)=> (a.name||'').localeCompare(b.name||'');
+            const bySize = (a,b)=> (a.size||0) - (b.size||0);
+            const byDate = (a,b)=> new Date(a.uploadDate||0) - new Date(b.uploadDate||0);
+            const byDl = (a,b)=> (a.downloads||0) - (b.downloads||0);
+            switch(publicSortKey){
+                case 'name_asc': arr.sort(byName); break;
+                case 'name_desc': arr.sort((a,b)=>-byName(a,b)); break;
+                case 'size_asc': arr.sort(bySize); break;
+                case 'size_desc': arr.sort((a,b)=>-bySize(a,b)); break;
+                case 'date_asc': arr.sort(byDate); break;
+                case 'date_desc': arr.sort((a,b)=>-byDate(a,b)); break;
+                case 'dl_asc': arr.sort(byDl); break;
+                case 'dl_desc': arr.sort((a,b)=>-byDl(a,b)); break;
+            }
+            try {
+                const blob = new Blob([JSON.stringify(arr, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                const ts = new Date().toISOString().replace(/[:]/g,'-').slice(0,19);
+                a.download = `software-${publicCurrentCategory}-filtered-${ts}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+            } catch {}
+        }
         
-        function showCategoryFiles(category, files) {
+        function showCategoryFiles(category) {
             const explorer = document.getElementById('software-explorer');
-            explorer.innerHTML = `<div class="software-item" onclick="updatePublicSoftwareList()" style="color: #00d4ff;">← Back to Categories</div>`;
-            
-            files.forEach(file => {
+            if (!explorer) return;
+            publicCurrentCategory = category;
+            // filter items by current category + search
+            const all = (uploadedSoftware||[]).filter(s => (s.category||'other') === category);
+            const q = (publicSearchQuery||'').toLowerCase();
+            let items = q ? all.filter(s => (s.name||'').toLowerCase().includes(q) || (s.filename||'').toLowerCase().includes(q) || (s.description||'').toLowerCase().includes(q)) : all;
+            const byName = (a,b)=> (a.name||'').localeCompare(b.name||'');
+            const bySize = (a,b)=> (a.size||0) - (b.size||0);
+            const byDate = (a,b)=> new Date(a.uploadDate||0) - new Date(b.uploadDate||0);
+            const byDl = (a,b)=> (a.downloads||0) - (b.downloads||0);
+            switch(publicSortKey){
+                case 'name_asc': items.sort(byName); break;
+                case 'name_desc': items.sort((a,b)=>-byName(a,b)); break;
+                case 'size_asc': items.sort(bySize); break;
+                case 'size_desc': items.sort((a,b)=>-bySize(a,b)); break;
+                case 'date_asc': items.sort(byDate); break;
+                case 'date_desc': items.sort((a,b)=>-byDate(a,b)); break;
+                case 'dl_asc': items.sort(byDl); break;
+                case 'dl_desc': items.sort((a,b)=>-byDl(a,b)); break;
+            }
+
+            const canBack = publicNavIndex > 0;
+            const canFwd = publicNavIndex < publicNavHistory.length - 1;
+            const backExtra = canBack ? '' : 'opacity:.5;pointer-events:none;';
+            const fwdExtra = canFwd ? '' : 'opacity:.5;pointer-events:none;';
+
+            // toolbar
+            const toolbar = document.createElement('div');
+            toolbar.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:10px;justify-content:space-between;';
+            const left = document.createElement('div');
+            left.style.cssText = 'display:flex;gap:8px;align-items:center;';
+            left.innerHTML = `
+                <button class="tech-btn" style="background:#1d4ed8;color:#fff;${backExtra}" onclick="publicNavBack()" ${canBack?'':'disabled'}>⬅ Back</button>
+                <button class="tech-btn" style="background:#0ea5e9;color:#fff;${fwdExtra}" onclick="publicNavForward()" ${canFwd?'':'disabled'}>➡ Forward</button>
+                <button class="tech-btn" style="background:#ef4444;color:#fff;" onclick="publicCloseView()">✖ Close</button>
+            `;
+            const right = document.createElement('div');
+            right.innerHTML = `<button class="tech-btn" style="background:#22c55e;color:#111;" onclick="publicExportCurrent()">⬇ Download lijst</button>`;
+            toolbar.appendChild(left);
+            toolbar.appendChild(right);
+
+            const header = document.createElement('div');
+            header.style.cssText = 'color:#e5e7eb;background:#0b1220;border:1px solid #333;border-radius:8px;padding:10px 12px;margin-bottom:8px;font-weight:700;display:flex;align-items:center;gap:8px;';
+            header.innerHTML = `📁 ${category} <span style="color:#9ca3af;font-weight:500">(${items.length})</span>`;
+
+            explorer.innerHTML = '';
+            explorer.appendChild(toolbar);
+            explorer.appendChild(header);
+
+            if (items.length === 0){
+                const empty = document.createElement('div');
+                empty.style.cssText = 'color:#888;padding:8px;text-align:center;border:1px dashed #333;border-radius:8px;';
+                empty.textContent = 'Geen resultaten';
+                explorer.appendChild(empty);
+                return;
+            }
+
+            const grid = document.createElement('div');
+            grid.style.cssText = 'display:grid;grid-template-columns:repeat(3,1fr);gap:8px;';
+            items.forEach(file => {
                 const fileDiv = document.createElement('div');
                 fileDiv.className = 'software-item';
-                fileDiv.innerHTML = `💾 ${file.name} (${(file.size/1024/1024).toFixed(2)}MB)`;
+                fileDiv.title = `${file.filename} • ${new Date(file.uploadDate||Date.now()).toLocaleDateString()}`;
+                fileDiv.innerHTML = `${file.icon||'💾'} ${file.name} <span style="color:#9ca3af">(${(file.size/1024/1024).toFixed(2)}MB)</span>`;
                 fileDiv.onclick = () => downloadSoftwareFile(file);
-                explorer.appendChild(fileDiv);
+                grid.appendChild(fileDiv);
             });
+            explorer.appendChild(grid);
         }
         
         function downloadSoftwareFile(software) {
@@ -4185,21 +4533,48 @@ ${matrixContent}
             const prefs = JSON.parse(localStorage.getItem('cvPrefs')||'{}');
             const lang = prefs.lang || 'nl';
             const theme = prefs.theme || 'dark';
-            overlay.innerHTML = `
-                <div style="width:94%;max-width:980px;max-height:90vh;overflow:auto;border-radius:14px;border:1px solid #333;background:${theme==='dark'?'#0b1020':'#ffffff'};color:${theme==='dark'?'#e5e7eb':'#111'};box-shadow:0 24px 64px rgba(0,0,0,.55)">
-                    <div style="position:sticky;top:0;z-index:2;display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:linear-gradient(135deg,#7c3aed,#2563eb);color:#fff;border-radius:14px 14px 0 0;">
-                        <div style="font-weight:800;display:flex;align-items:center;gap:8px">📄 Curriculum Vitae</div>
-                        <div style="display:flex;gap:8px;align-items:center;">
-                            <select id="cv-lang" style="padding:6px 10px;border-radius:8px;border:none;cursor:pointer;">
-                                <option value="nl" ${lang==='nl'?'selected':''}>NL</option>
-                                <option value="en" ${lang==='en'?'selected':''}>EN</option>
-                            </select>
-                            <button id="cv-theme" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;padding:6px 10px;border-radius:8px;cursor:pointer;">${theme==='dark'?'🌙 Donker':'☀️ Licht'}</button>
-                            <button id="cv-print" style="background:#22c55e;border:none;color:#111;padding:6px 12px;border-radius:8px;font-weight:800;cursor:pointer;">Print / PDF</button>
-                            <button id="cv-close" style="background:#111827;border:1px solid #334155;color:#fff;padding:6px 12px;border-radius:8px;cursor:pointer;">Sluiten</button>
-                        </div>
+            const requireCode = (localStorage.getItem('cvRequireCode')||'true') === 'true';
+            const unlocked = sessionStorage.getItem('cvUnlocked') === '1';
+            const pdfUrl = localStorage.getItem('cvPdfUrl')||'';
+            const wordUrl = localStorage.getItem('cvWordUrl')||'';
+
+            const header = `
+                <div style="position:sticky;top:0;z-index:2;display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:linear-gradient(135deg,#7c3aed,#2563eb);color:#fff;border-radius:14px 14px 0 0;">
+                    <div style="font-weight:800;display:flex;align-items:center;gap:8px">📄 Curriculum Vitae</div>
+                    <div style="display:flex;gap:8px;align-items:center;">
+                        <select id=\"cv-lang\" style=\"padding:6px 10px;border-radius:8px;border:none;cursor:pointer;\">
+                            <option value=\"nl\" ${lang==='nl'?'selected':''}>NL</option>
+                            <option value=\"en\" ${lang==='en'?'selected':''}>EN</option>
+                        </select>
+                        <button id=\"cv-theme\" style=\"background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;padding:6px 10px;border-radius:8px;cursor:pointer;\">${theme==='dark'?'🌙 Donker':'☀️ Licht'}</button>
+                        <button id=\"cv-print\" style=\"background:#22c55e;border:none;color:#111;padding:6px 12px;border-radius:8px;font-weight:800;cursor:pointer;\">Print / PDF</button>
+                        <button id=\"cv-close\" style=\"background:#111827;border:1px solid #334155;color:#fff;padding:6px 12px;border-radius:8px;cursor:pointer;\">Sluiten</button>
                     </div>
-                    <div id="cv-content" style="padding:20px 22px;">${getCVHtml(lang, theme)}</div>
+                </div>`;
+
+            const gate = `
+                <div style=\"padding:20px 22px;display:flex;flex-direction:column;gap:12px;\">
+                    <div style=\"color:#e5e7eb\">Voer toegangscode in om de CV te bekijken en downloaden.</div>
+                    <div style=\"display:flex;gap:8px;\">
+                        <input id=\"cv-code-input\" type=\"text\" placeholder=\"Toegangscode\" class=\"form-input\" style=\"flex:1\">
+                        <button id=\"cv-unlock\" class=\"tech-btn\">🔓 Ontgrendel</button>
+                    </div>
+                    <div id=\"cv-gate-error\" style=\"color:#ef4444;display:none\"></div>
+                </div>`;
+
+            const content = `
+                <div style=\"padding:16px 18px;display:grid;gap:12px;\">
+                    ${pdfUrl ? `<div style='height:60vh;border:1px solid #333;border-radius:8px;overflow:hidden'><iframe src='${pdfUrl}#toolbar=0' style='width:100%;height:100%;border:0' title='CV PDF Preview'></iframe></div>` : `<div id='cv-content' style='padding:4px 0'>${getCVHtml(lang, theme)}</div>`}
+                    <div style=\"display:flex;gap:8px;justify-content:flex-end;\">
+                        <button id=\"cv-dl-doc\" class=\"tech-btn\">⬇ Download Word</button>
+                        <button id=\"cv-dl-pdf\" class=\"tech-btn\">⬇ Download PDF</button>
+                    </div>
+                </div>`;
+
+            overlay.innerHTML = `
+                <div style=\"width:94%;max-width:980px;max-height:90vh;overflow:auto;border-radius:14px;border:1px solid #333;background:${theme==='dark'?'#0b1020':'#ffffff'};color:${theme==='dark'?'#e5e7eb':'#111'};box-shadow:0 24px 64px rgba(0,0,0,.55)\">
+                    ${header}
+                    ${requireCode && !unlocked ? gate : content}
                 </div>`;
             document.body.appendChild(overlay);
             const savePrefs = () => {
@@ -4218,7 +4593,8 @@ ${matrixContent}
                 win.document.close();
             });
             overlay.querySelector('#cv-lang').addEventListener('change', (e)=>{
-                overlay.querySelector('#cv-content').innerHTML = getCVHtml(e.target.value, overlay.querySelector('#cv-theme').textContent.includes('Donker')?'dark':'light');
+                const cc = overlay.querySelector('#cv-content');
+                if (cc) cc.innerHTML = getCVHtml(e.target.value, overlay.querySelector('#cv-theme').textContent.includes('Donker')?'dark':'light');
                 savePrefs();
             });
             overlay.querySelector('#cv-theme').addEventListener('click', (e)=>{
@@ -4230,9 +4606,83 @@ ${matrixContent}
                 const wrapper = overlay.querySelector('div');
                 wrapper.style.background = themeNow==='dark'?'#0b1020':'#ffffff';
                 wrapper.style.color = themeNow==='dark'?'#e5e7eb':'#111';
-                overlay.querySelector('#cv-content').innerHTML = getCVHtml(langNow, themeNow);
+                const cc = overlay.querySelector('#cv-content');
+                if (cc) cc.innerHTML = getCVHtml(langNow, themeNow);
                 savePrefs();
             });
+
+            // Gate handling
+            if (requireCode && !unlocked){
+                const unlockBtn = overlay.querySelector('#cv-unlock');
+                const input = overlay.querySelector('#cv-code-input');
+                const err = overlay.querySelector('#cv-gate-error');
+                unlockBtn.addEventListener('click', ()=>{
+                    const code = (localStorage.getItem('cvAuthCode')||'').trim();
+                    const val = (input.value||'').trim();
+                    if (!code){ err.textContent = 'Er is nog geen toegangscode ingesteld.'; err.style.display='block'; return; }
+                    if (val && val === code){
+                        sessionStorage.setItem('cvUnlocked','1');
+                        // rebuild with content
+                        const container = unlockBtn.closest('div').parentElement.parentElement; // inner content wrapper
+                        const wrapper = overlay.querySelector('div');
+                        const requireCodeNow = false;
+                        const pdf = localStorage.getItem('cvPdfUrl')||'';
+                        const htmlContent = `${pdf ? `<div style='height:60vh;border:1px solid #333;border-radius:8px;overflow:hidden'><iframe src='${pdf}#toolbar=0' style='width:100%;height:100%;border:0' title='CV PDF Preview'></iframe></div>` : `<div id='cv-content' style='padding:4px 0'>${getCVHtml(lang, theme)}</div>`}
+                            <div style=\"display:flex;gap:8px;justify-content:flex-end;\"> 
+                                <button id=\"cv-dl-doc\" class=\"tech-btn\">⬇ Download Word</button>
+                                <button id=\"cv-dl-pdf\" class=\"tech-btn\">⬇ Download PDF</button>
+                            </div>`;
+                        // replace gate section with content
+                        const headerEl = wrapper.querySelector('div');
+                        // remove everything after header and append new content
+                        while(headerEl.nextSibling) headerEl.nextSibling.remove();
+                        const contentEl = document.createElement('div');
+                        contentEl.style.padding = '16px 18px';
+                        contentEl.innerHTML = htmlContent;
+                        wrapper.appendChild(contentEl);
+                        attachCvDownloadHandlers(overlay);
+                    } else {
+                        err.textContent = 'Onjuiste code';
+                        err.style.display='block';
+                    }
+                });
+            } else {
+                attachCvDownloadHandlers(overlay);
+            }
+        }
+
+        function attachCvDownloadHandlers(overlay){
+            const wordBtn = overlay.querySelector('#cv-dl-doc');
+            const pdfBtn = overlay.querySelector('#cv-dl-pdf');
+            if (wordBtn){
+                wordBtn.addEventListener('click', ()=>{
+                    const url = localStorage.getItem('cvWordUrl')||'';
+                    if (url){ window.open(url, '_blank'); return; }
+                    // fallback: generate .doc from HTML
+                    const lang = overlay.querySelector('#cv-lang').value;
+                    const themeDark = overlay.querySelector('#cv-theme').textContent.includes('Donker');
+                    const html = getCVHtml(lang, themeDark?'dark':'light');
+                    const blob = new Blob([`<!DOCTYPE html><html><head><meta charset='utf-8'><title>CV</title></head><body>${html}</body></html>`], { type: 'application/msword' });
+                    const a = document.createElement('a');
+                    a.href = URL.createObjectURL(blob);
+                    a.download = 'CV.doc';
+                    a.click();
+                    URL.revokeObjectURL(a.href);
+                });
+            }
+            if (pdfBtn){
+                pdfBtn.addEventListener('click', ()=>{
+                    const url = localStorage.getItem('cvPdfUrl')||'';
+                    if (url){ window.open(url, '_blank'); return; }
+                    // fallback: print to PDF
+                    const lang = overlay.querySelector('#cv-lang').value;
+                    const themeDark = overlay.querySelector('#cv-theme').textContent.includes('Donker');
+                    const cvHtml = getCVHtml(lang, themeDark?'dark':'light');
+                    const win = window.open('', '_blank');
+                    win.document.write('<html><head><title>CV</title><style>body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding:24px;}@media print {.no-print{display:none}}</style></head><body>'+cvHtml+'<script>window.onload=()=>window.print()<\/script></body></html>');
+                    win.document.close();
+                });
+            }
         }
 
         function getCVHtml(lang, theme) {
@@ -4291,6 +4741,54 @@ ${matrixContent}
             });
             if (activityLogs.length > 100) activityLogs = activityLogs.slice(0, 100);
             localStorage.setItem('activityLogs', JSON.stringify(activityLogs));
+        }
+
+        // Admin CV helpers
+        function loadCvSettings(){
+            try {
+                const code = localStorage.getItem('cvAuthCode') || '';
+                const requireCode = (localStorage.getItem('cvRequireCode')||'true') === 'true';
+                const pdfUrl = localStorage.getItem('cvPdfUrl') || '';
+                const wordUrl = localStorage.getItem('cvWordUrl') || '';
+                const codeEl = document.getElementById('cv-code'); if (codeEl) codeEl.value = code;
+                const reqEl = document.getElementById('cv-require-code'); if (reqEl) reqEl.checked = requireCode;
+                const pdfEl = document.getElementById('cv-pdf-url'); if (pdfEl) pdfEl.value = pdfUrl;
+                const wEl = document.getElementById('cv-word-url'); if (wEl) wEl.value = wordUrl;
+            } catch(e) { console.warn('loadCvSettings failed', e); }
+        }
+        function saveCvSettings(){
+            try {
+                const requireCode = !!(document.getElementById('cv-require-code')?.checked);
+                const pdfUrl = document.getElementById('cv-pdf-url')?.value.trim()||'';
+                const wordUrl = document.getElementById('cv-word-url')?.value.trim()||'';
+                localStorage.setItem('cvRequireCode', String(requireCode));
+                localStorage.setItem('cvPdfUrl', pdfUrl);
+                localStorage.setItem('cvWordUrl', wordUrl);
+                addActivityLog('📝 CV settings saved');
+                alert('✅ CV-instellingen opgeslagen');
+            } catch(e) { alert('❌ Opslaan mislukt: '+e.message); }
+        }
+        function generateCvCode(){
+            const code = Math.random().toString(36).slice(2,8).toUpperCase();
+            localStorage.setItem('cvAuthCode', code);
+            sessionStorage.removeItem('cvUnlocked');
+            const el = document.getElementById('cv-code'); if (el) el.value = code;
+            addActivityLog('🔐 Nieuwe CV-code gegenereerd');
+        }
+        function copyCvCode(){
+            const code = localStorage.getItem('cvAuthCode')||'';
+            if (!code){ alert('Geen code ingesteld.'); return; }
+            navigator.clipboard.writeText(code).then(()=>{
+                alert('📋 Code gekopieerd');
+            }).catch(()=>{
+                alert('Kopiëren mislukt.');
+            });
+        }
+        function invalidateCvCode(){
+            localStorage.removeItem('cvAuthCode');
+            sessionStorage.removeItem('cvUnlocked');
+            const el = document.getElementById('cv-code'); if (el) el.value='';
+            addActivityLog('🗑️ CV-code ongeldig gemaakt');
         }
         
         function loadActivityLogs() {
