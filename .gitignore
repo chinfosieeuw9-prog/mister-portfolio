@@ -3,8 +3,20 @@ upload-backend/node_modules/
 upload-backend/.env
 upload-backend/tmp/
 
+# Root dependencies
+node_modules/
+
+# Test artifacts
+artifacts/
+playwright-report/
+test-results/
+coverage/
+
 # VSCode
 .vscode/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.sample.json
 
 # OS
 .DS_Store

@@ -38,10 +38,20 @@ jobs:
       - name: Run admin smoke test
         run: npm run test:admin
 
+      - name: Package artifacts (zip)
+        if: always()
+        run: |
+          if [ -d artifacts ]; then
+            tar -czf playwright-artifacts.tar.gz -C artifacts .
+          else
+            echo "No artifacts directory found; skipping tar"
+          fi
+
       - name: Upload screenshots and traces
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-artifacts
-          path: artifacts/**
+          path: |
+            playwright-artifacts.tar.gz
           if-no-files-found: warn
