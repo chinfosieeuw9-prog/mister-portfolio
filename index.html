@@ -44,6 +44,10 @@
     <!-- Favicon -->
     <!-- Supabase JS CDN -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTYiIGN5PSIxNiIgcj0iMTYiIGZpbGw9InVybCgjZ3JhZGllbnQwX2xpbmVhcl8xXzEpIi8+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9ImdyYWRpZW50MF9saW5lYXJfMV8xIiB4MT0iMCIgeTE9IjAiIHgyPSIzMiIgeTI9IjMyIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMyZDFiNjkiLz4KPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjNWIyMWI2Ii8+CjwvbGluZWFyR3JhZGllbnQ+CjwvZGVmcz4KPC9zdmc+">
+    <!-- Chart.js for realtime charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" integrity="sha384-CmC3w9vXWZ9q0z3w1c2w0X0f0y3b8b80a9KcQ7Fqj3KQx1c7zM3rQH+1J8H7zZ5o" crossorigin="anonymous"></script>
+    <!-- Supabase JS v2 for Realtime Presence -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
     
     <style>
         /* Reset and base */
@@ -1310,7 +1314,7 @@
             <!-- Publieke lijstweergave: live filter, sorteren en uit-/inklappen -->
             <div id="public-software-tools" style="margin-top:14px;padding:10px;border:1px solid #333;border-radius:8px;background:#0f0f0f;">
                 <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:space-between;">
-                    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                    <div id="public-sw-controls" style="display:none;gap:8px;align-items:center;flex-wrap:wrap;">
                         <input id="public-sw-search" type="search" placeholder="Zoek in alle categorieën..." aria-label="Zoeken in software" oninput="setPublicSearch(this.value)" style="padding:8px 10px;border-radius:8px;border:1px solid #374151;background:#0f172a;color:#e5e7eb;outline:none;min-width:200px">
                         <select id="public-sw-sort" onchange="setPublicSort(this.value)" aria-label="Sorteren" style="padding:8px 10px;border-radius:8px;border:1px solid #374151;background:#0f172a;color:#e5e7eb;outline:none;">
                             <option value="name_asc">Naam A→Z</option>
@@ -1366,6 +1370,58 @@
                 <input id="openai-chat-input" type="text" placeholder="Stel je vraag..." class="chat-input" style="flex:1;background:#23234a;color:#fff;border:none;border-radius:8px 0 0 8px;padding:12px 14px;font-size:1em;">
                 <button type="submit" class="chat-send" style="background:#22c55e;color:#fff;border:none;border-radius:0 8px 8px 0;padding:0 22px;font-size:1em;font-weight:600;cursor:pointer;">Send</button>
             </form>
+        </div>
+
+        <!-- Realtime Dashboard -->
+        <div class="card">
+            <div class="card-header" style="justify-content:space-between;align-items:center;gap:8px;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <div class="card-icon">📈</div>
+                    <h2>Realtime Dashboard</h2>
+                </div>
+                <span id="presence-provider-indicator" style="font-size:12px;color:#9ca3af">Presence: -</span>
+            </div>
+            <p>Live statistieken over bezoekers en prestaties. Deze demo toont paginaweergaven (vandaag) en netwerk-latency in realtime.</p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;">
+                <div style="background:#0f0f0f;border:1px solid #333;border-radius:8px;padding:10px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <strong>Live bezoekers (vandaag)</strong>
+                        <span id="live-visitors" style="font-weight:800;color:#22c55e">-</span>
+                    </div>
+                    <canvas id="visitorsChart" height="120" style="margin-top:8px"></canvas>
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;">
+                        <span>Nu online</span>
+                        <span id="presence-now" style="font-weight:800;color:#fbbf24">-</span>
+                    </div>
+                </div>
+                <div style="background:#0f0f0f;border:1px solid #333;border-radius:8px;padding:10px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <strong>Latency (ms)</strong>
+                        <span id="latency-now" style="font-weight:800;color:#60a5fa">-</span>
+                    </div>
+                    <canvas id="latencyChart" height="120" style="margin-top:8px"></canvas>
+                </div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap;">
+                <span>Uptime:</span>
+                <a id="uptime-badge" href="https://uptimerobot.com/" target="_blank" rel="noopener noreferrer" title="Configureer je eigen UptimeRobot-badge">
+                    <img src="https://img.shields.io/badge/UptimeRobot-configureer--badge-in--admin-555" alt="Uptime badge" style="height:20px;">
+                </a>
+            </div>
+        </div>
+
+        <!-- Biometrische login demo -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon">🔒</div>
+                <h2>Biometrische login (demo)</h2>
+            </div>
+            <p>Ondersteuning via WebAuthn/Passkeys. Op compatibele apparaten gebruikt dit FaceID/TouchID of Windows Hello. Voor een volledige demo is een server nodig (registratie en verificatie).</p>
+            <div style="display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap;">
+                <button id="webauthn-check" class="tech-btn">✅ Controleer ondersteuning</button>
+                <span id="webauthn-status" style="color:#9ca3af"></span>
+            </div>
+            <div style="margin-top:8px;color:#9ca3af;font-size:12px;">Tip: WebAuthn vereist een server voor <em>register</em>/<em>login</em> (public/private keys). Deze demo test alleen apparaat-ondersteuning.</div>
         </div>
         
         <!-- Get in touch - Contact Form -->
@@ -1447,6 +1503,7 @@
                     <button class="admin-tab" onclick="showAdminTab('software')">💾 Software</button>
                     <button class="admin-tab" onclick="showAdminTab('cv')">📄 CV</button>
                     <button class="admin-tab" onclick="showAdminTab('newsletter')">📧 Newsletter</button>
+                    <button class="admin-tab" onclick="showAdminTab('integrations')">⚙️ Integraties</button>
                     <button class="admin-tab" onclick="showAdminTab('logs')">📊 Logs</button>
                 </div>
                 
@@ -1557,12 +1614,24 @@
                             <div style="display:flex;gap:8px;">
                                 <button class="tech-btn" onclick="generateCvCode()">🔐 Genereer nieuwe code</button>
                                 <button class="tech-btn" onclick="copyCvCode()">📋 Kopieer</button>
+                                <button class="tech-btn" onclick="copyCvLink()">🔗 Kopieer link</button>
+                                <button class="tech-btn" onclick="copyCvMailto()">✉️ Mailto</button>
                                 <button class="tech-btn" onclick="invalidateCvCode()">🗑️ Ongeldig maken</button>
                             </div>
                         </div>
                         <div style="display:flex;gap:12px;align-items:center;">
                             <input id="cv-require-code" type="checkbox" style="width:18px;height:18px;">
                             <label for="cv-require-code">Code verplicht voor downloaden</label>
+                        </div>
+                        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+                            <label style="color:#9ca3af;font-size:12px;">Geldigheid</label>
+                            <select id="cv-ttl" class="form-input" style="max-width:200px;">
+                                <option value="0.5">30 minuten</option>
+                                <option value="3" selected>3 uur</option>
+                                <option value="24">24 uur</option>
+                                <option value="168">7 dagen</option>
+                            </select>
+                            <span id="cv-ttl-left" style="color:#9ca3af;font-size:12px;"></span>
                         </div>
                         <div style="display:grid;gap:8px;">
                             <label style="color:#9ca3af;font-size:12px;">PDF URL</label>
@@ -1579,6 +1648,91 @@
                     </div>
                 </div>
                 
+                <div id="admin-integrations" class="admin-content">
+                    <h3>⚙️ Integraties</h3>
+                    <div style="display:grid;gap:14px;max-width:820px;">
+                        <div style="padding:12px;border:1px solid #333;border-radius:10px;background:#0f0f0f;display:grid;gap:10px;">
+                            <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+                                <div style="font-weight:700;">Presence provider</div>
+                                <select id="presence-provider" class="form-input" style="max-width:220px;">
+                                    <option value="supabase">Supabase Realtime</option>
+                                    <option value="ably">Ably Realtime</option>
+                                </select>
+                                <span style="color:#9ca3af;font-size:12px;">Kies welke provider gebruikt wordt voor "Nu online".</span>
+                            </div>
+                        </div>
+
+                        <div id="section-supabase" style="padding:12px;border:1px solid #333;border-radius:10px;background:#0f0f0f;display:grid;gap:10px;">
+                            <div style="font-weight:700;">Supabase Realtime (Presence)</div>
+                            <div style="display:grid;gap:8px;grid-template-columns:1fr;">
+                                <label style="color:#9ca3af;font-size:12px;">Project URL</label>
+                                <input id="sb-url" type="url" class="form-input" placeholder="https://xxxxx.supabase.co">
+                            </div>
+                            <div style="display:grid;gap:8px;grid-template-columns:1fr;">
+                                <label style="color:#9ca3af;font-size:12px;">Anon public key</label>
+                                <input id="sb-anon" type="password" class="form-input" placeholder="eyJhbGciOiJI...">
+                                <div><label style="font-size:12px;color:#9ca3af"><input type="checkbox" id="sb-anon-show" style="vertical-align:middle;margin-right:6px;">Toon sleutel</label></div>
+                            </div>
+                            <div style="display:grid;gap:8px;grid-template-columns:1fr;">
+                                <label style="color:#9ca3af;font-size:12px;">Kanaalnaam</label>
+                                <input id="sb-channel" type="text" class="form-input" placeholder="presence-global">
+                            </div>
+                            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                                <button class="tech-btn" onclick="saveIntegrationsSettings()">💾 Opslaan</button>
+                                <button class="tech-btn" onclick="testSupabasePresence()">🧪 Test verbinding</button>
+                                <span id="sb-test-status" style="color:#9ca3af"></span>
+                            </div>
+                            <div style="font-size:12px;color:#9ca3af">Let op: alleen de <em>Anon</em> key hoort in de browser. Gebruik nooit je Service Role key in de client.</div>
+                        </div>
+
+                        <div id="section-ably" style="padding:12px;border:1px solid #333;border-radius:10px;background:#0f0f0f;display:grid;gap:10px;">
+                            <div style="font-weight:700;">Ably Realtime (Presence)</div>
+                            <div style="display:grid;gap:8px;grid-template-columns:1fr;">
+                                <label style="color:#9ca3af;font-size:12px;">API key</label>
+                                <input id="ably-key" type="password" class="form-input" placeholder="xxxx:yyyy...">
+                                <div><label style="font-size:12px;color:#9ca3af"><input type="checkbox" id="ably-key-show" style="vertical-align:middle;margin-right:6px;">Toon sleutel</label></div>
+                            </div>
+                            <div style="display:grid;gap:8px;grid-template-columns:1fr;">
+                                <label style="color:#9ca3af;font-size:12px;">Auth URL (aanbevolen)</label>
+                                <input id="ably-authurl" type="url" class="form-input" placeholder="http://localhost:3001/ably/token">
+                                <div style="font-size:12px;color:#9ca3af">Gebruik bij voorkeur een server endpoint dat Ably tokens uitgeeft; veiliger dan een API key in de client.</div>
+                            </div>
+                            <div style="display:grid;gap:8px;grid-template-columns:1fr;">
+                                <label style="color:#9ca3af;font-size:12px;">Kanaalnaam</label>
+                                <input id="ably-channel" type="text" class="form-input" placeholder="presence-global">
+                            </div>
+                            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                                <button class="tech-btn" onclick="saveAblySettings()">💾 Opslaan</button>
+                                <button class="tech-btn" onclick="testAblyPresence()">🧪 Test verbinding</button>
+                                <span id="ably-test-status" style="color:#9ca3af"></span>
+                            </div>
+                            <div style="font-size:12px;color:#9ca3af">Gratis tier beschikbaar. Zie <a href="https://ably.com/" target="_blank" rel="noopener noreferrer" class="text-link">ably.com</a>. Gebruik nooit secrets server-side in de client.</div>
+                        </div>
+
+                        <div style="padding:12px;border:1px solid #333;border-radius:10px;background:#0f0f0f;display:grid;gap:10px;">
+                            <div style="font-weight:700;">Uptime badge (UptimeRobot of andere)</div>
+                            <div style="display:grid;gap:8px;grid-template-columns:1fr;">
+                                <label style="color:#9ca3af;font-size:12px;">Badge afbeelding URL</label>
+                                <input id="uptime-badge-url" type="url" class="form-input" placeholder="https://img.shields.io/...svg">
+                            </div>
+                            <div style="display:grid;gap:8px;grid-template-columns:1fr;">
+                                <label style="color:#9ca3af;font-size:12px;">Link naar statuspagina</label>
+                                <input id="uptime-badge-link" type="url" class="form-input" placeholder="https://stats.uptimerobot.com/...">
+                            </div>
+                            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                                <button class="tech-btn" onclick="saveUptimeBadge()">💾 Opslaan badge</button>
+                                <button class="tech-btn" onclick="previewUptimeBadge()">🔍 Preview</button>
+                                <span id="uptime-save-status" style="color:#9ca3af"></span>
+                            </div>
+                        </div>
+
+                        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                            <button class="tech-btn" onclick="resetIntegrations()" style="background:#ef4444;border-color:#ef4444">♻️ Reset integraties</button>
+                            <span style="color:#9ca3af">Leegt alle integratie-instellingen en herlaadt de pagina.</span>
+                        </div>
+                    </div>
+                </div>
+
                 <div id="admin-newsletter" class="admin-content">
                     <h3>Newsletter Subscribers</h3>
                     <div id="subscriber-list"></div>
@@ -1695,10 +1849,24 @@
         
         <!-- Footer -->
         <div class="footer">
-            <p class="footer-text">
-                Made with ❤️ by mister@2025 • Version <span id="site-version-footer">v2025.11.01-15</span> • 
-                <a href="#" class="text-link">chattgbt@gmail.com</a>
-            </p>
+            <div style="display:flex;flex-direction:column;gap:8px;align-items:center;">
+                <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center;">
+                    <span style="opacity:.8">Powered by</span>
+                    <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/openai.svg" alt="OpenAI" title="OpenAI" style="width:18px;height:18px;background:#fff;border-radius:4px;padding:2px;border:1px solid #e3e6f0;">
+                    <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/googlecloud.svg" alt="Google Cloud" title="Google Cloud" style="width:18px;height:18px;background:#fff;border-radius:4px;padding:2px;border:1px solid #e3e6f0;">
+                    <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/vercel.svg" alt="Vercel" title="Vercel" style="width:18px;height:18px;background:#fff;border-radius:4px;padding:2px;border:1px solid #e3e6f0;">
+                    <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/supabase.svg" alt="Supabase" title="Supabase" style="width:18px;height:18px;background:#fff;border-radius:4px;padding:2px;border:1px solid #e3e6f0;">
+                </div>
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center;">
+                    <a id="footer-uptime" href="https://uptimerobot.com/" target="_blank" rel="noopener noreferrer" title="UptimeRobot status">
+                        <img src="https://img.shields.io/badge/UptimeRobot-configureer--badge-555" alt="Uptime badge" style="height:18px;vertical-align:middle;">
+                    </a>
+                </div>
+                <p class="footer-text" style="margin-top:4px;">
+                    Made with ❤️ by mister@2025 • Version <span id="site-version-footer">v2025.11.01-15</span> •
+                    <a href="#" class="text-link">chattgbt@gmail.com</a>
+                </p>
+            </div>
         </div>
     </div>
     
@@ -1712,6 +1880,368 @@
     let explorerMode = 'admin'; // 'admin' for full controls, 'public' for read-only modal
         let activityLogs = JSON.parse(localStorage.getItem('activityLogs') || '[]');
         // Admin session helpers (client-side only)
+
+        // Realtime Dashboard
+        function initRealtimeDashboard(){
+            try {
+                const vEl = document.getElementById('live-visitors');
+                const lEl = document.getElementById('latency-now');
+                const vCtx = document.getElementById('visitorsChart');
+                const lCtx = document.getElementById('latencyChart');
+                // Uptime badge overrides from localStorage (optional)
+                try {
+                    const badgeImg = document.querySelector('#uptime-badge img');
+                    const badgeA = document.getElementById('uptime-badge');
+                    const src = localStorage.getItem('uptimeBadgeUrl');
+                    const href = localStorage.getItem('uptimeBadgeLink');
+                    if (badgeImg && src) badgeImg.src = src;
+                    if (badgeA && href) badgeA.href = href;
+                } catch{}
+                if (!vEl || !lEl || !vCtx || !lCtx || typeof Chart === 'undefined') return;
+                const ns = 'mister.us.kg';
+                const todayKey = 'visits-' + new Date().toISOString().slice(0,10).replace(/-/g,'');
+                const api = (mode) => `https://api.countapi.xyz/${mode}/${encodeURIComponent(ns)}/${encodeURIComponent(todayKey)}`;
+                const fetchCount = async (hit=false) => {
+                    try {
+                        const res = await fetch(api(hit?'hit':'get'));
+                        const j = await res.json();
+                        return (j && typeof j.value === 'number') ? j.value : null;
+                    } catch { return null; }
+                };
+                // Charts
+                const visitorsChart = new Chart(vCtx, {
+                    type: 'line',
+                    data: { labels: [], datasets: [{ label: 'Views', data: [], borderColor: '#22c55e', backgroundColor: 'rgba(34,197,94,.2)', tension:.3, fill:true, pointRadius:0 }] },
+                    options: { responsive:true, animation:false, scales:{ x:{ display:false }, y:{ beginAtZero:true, grid:{color:'#222'} } }, plugins:{ legend:{ display:false } } }
+                });
+                const latencyChart = new Chart(lCtx, {
+                    type: 'line',
+                    data: { labels: [], datasets: [{ label: 'Latency ms', data: [], borderColor: '#60a5fa', backgroundColor: 'rgba(96,165,250,.2)', tension:.3, fill:true, pointRadius:0 }] },
+                    options: { responsive:true, animation:false, scales:{ x:{ display:false }, y:{ beginAtZero:true, grid:{color:'#222'} } }, plugins:{ legend:{ display:false } } }
+                });
+                const pushPoint = (chart, y) => {
+                    const ts = new Date();
+                    chart.data.labels.push(ts.toLocaleTimeString());
+                    chart.data.datasets[0].data.push(y);
+                    if (chart.data.labels.length>30){ chart.data.labels.shift(); chart.data.datasets[0].data.shift(); }
+                    chart.update();
+                };
+                // Update visitors count
+                (async()=>{
+                    const v = await fetchCount(true); // hit on load
+                    if (v!==null){ vEl.textContent = String(v); pushPoint(visitorsChart, v); }
+                })();
+                setInterval(async()=>{
+                    const v = await fetchCount(false);
+                    if (v!==null){ vEl.textContent = String(v); pushPoint(visitorsChart, v); }
+                }, 10000);
+                // Latency
+                async function measureLatency(){
+                    try {
+                        const url = 'news.json?cb=' + Date.now();
+                        const t0 = performance.now();
+                        await fetch(url, { cache: 'no-store' });
+                        const dt = Math.max(0, Math.round(performance.now() - t0));
+                        lEl.textContent = dt + ' ms';
+                        pushPoint(latencyChart, dt);
+                    } catch {
+                        // on error, push null or a big value
+                        lEl.textContent = '—';
+                        pushPoint(latencyChart, 0);
+                    }
+                }
+                measureLatency();
+                setInterval(measureLatency, 5000);
+            } catch (e) { console.warn('initRealtimeDashboard failed', e); }
+        }
+
+        // WebAuthn demo (capability check)
+        function initWebAuthnDemo(){
+            const btn = document.getElementById('webauthn-check');
+            const out = document.getElementById('webauthn-status');
+            if (!btn || !out) return;
+            btn.addEventListener('click', async ()=>{
+                if (!('PublicKeyCredential' in window)){
+                    out.style.color = '#ef4444';
+                    out.textContent = 'Niet ondersteund in deze browser.';
+                    return;
+                }
+                try {
+                    const available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+                    if (available){
+                        out.style.color = '#22c55e';
+                        out.textContent = 'Ondersteund: platform authenticator aanwezig (FaceID/TouchID/Windows Hello).';
+                    } else {
+                        out.style.color = '#f59e0b';
+                        out.textContent = 'WebAuthn beschikbaar, maar geen platform authenticator gedetecteerd.';
+                    }
+                } catch (e) {
+                    out.style.color = '#ef4444';
+                    out.textContent = 'Fout bij detectie: ' + e.message;
+                }
+            });
+        }
+
+        // Supabase Presence (Nu online)
+        function initSupabasePresence(){
+            try {
+                if (typeof window.supabase === 'undefined') return; // library not loaded
+                const url = localStorage.getItem('supabaseUrl');
+                const anon = localStorage.getItem('supabaseAnon');
+                const channelName = localStorage.getItem('supabaseChannel') || 'presence-global';
+                if (!url || !anon) { console.warn('[presence] Supabase URL/Anon key niet ingesteld'); return; }
+                const client = window.supabase.createClient(url, anon);
+                // session-gebonden unieke sleutel
+                let pid = sessionStorage.getItem('presenceId');
+                if (!pid){ pid = 'p_' + Math.random().toString(36).slice(2) + Date.now().toString(36); sessionStorage.setItem('presenceId', pid); }
+                const channel = client.channel(channelName, { config: { presence: { key: pid }}});
+                const presEl = document.getElementById('presence-now');
+                const updateCount = ()=>{
+                    try {
+                        const state = channel.presenceState();
+                        // state: { key: [metas...] }
+                        const total = Object.values(state).reduce((acc, arr)=>acc + (Array.isArray(arr)?arr.length:0), 0);
+                        if (presEl) presEl.textContent = String(total);
+                    } catch(e){ console.warn('presence sync fail', e); }
+                };
+                channel.on('presence', { event:'sync' }, updateCount);
+                channel.subscribe((status)=>{
+                    if (status === 'SUBSCRIBED'){
+                        channel.track({ online_at: new Date().toISOString(), page: location.pathname });
+                    }
+                });
+                // Periodieke her-sync fallback
+                setInterval(updateCount, 15000);
+            } catch(e){ console.warn('initSupabasePresence failed', e); }
+        }
+
+        // Ably Presence (Nu online)
+        function initAblyPresence(){
+            try {
+                if (typeof Ably === 'undefined' || !Ably.Realtime) return; // not loaded
+                const key = localStorage.getItem('ablyKey');
+                const authUrl = localStorage.getItem('ablyAuthUrl') || 'http://localhost:3001/ably/token';
+                    const key = document.getElementById('ably-key')?.value.trim();
+                    const authUrl = document.getElementById('ably-authurl')?.value.trim() || 'http://localhost:3001/ably/token';
+                const client = new Ably.Realtime({ ...opts, echoMessages:false });
+                    const opts = authUrl ? { authUrl } : { key };
+
+                    // 1) Als we een authUrl gebruiken, test eerst de endpoint voor duidelijke foutmeldingen
+                    if (authUrl){
+                        try {
+                            const r = await fetch(authUrl, { cache:'no-store' });
+                            if (!r.ok){
+                                const txt = await r.text();
+                                throw new Error(`Auth URL fout (${r.status}): ${txt?.slice(0,200)}`);
+                            }
+                        } catch(e){
+                            if (status){ status.style.color='#ef4444'; status.textContent='❌ '+(e.message||e); }
+                            return;
+                        }
+                    }
+
+                    const client = new Ably.Realtime(opts);
+                    client.connection.on('failed', (ev)=>{ if (status){ status.style.color='#ef4444'; status.textContent='❌ Verbinding mislukt: '+(ev?.reason?.message||'failed'); } });
+                    client.connection.on('disconnected', (ev)=>{ /* surface only if not already OK */ });
+                const updateFromMembers = ()=>{
+                    try { channel.presence.get((err, members)=>{ if (!err && presEl){ presEl.textContent = String(members?.length||0); } }); } catch{}
+                };
+                channel.attach(()=>{
+                    channel.presence.enter({ online_at: new Date().toISOString(), page: location.pathname }, ()=>{
+                        updateFromMembers();
+                        channel.presence.subscribe(['enter','leave','update','present'], updateFromMembers);
+                    });
+                });
+                setInterval(updateFromMembers, 15000);
+            } catch(e){ console.warn('initAblyPresence failed', e); }
+        }
+
+        // Ensure Supabase library is available (fallback loader)
+        function loadSupabaseLib(callback){
+            if (typeof window.supabase !== 'undefined'){ callback && callback(); return; }
+            try {
+                const s = document.createElement('script');
+                s.src = 'https://unpkg.com/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js';
+                s.async = true;
+                s.onload = ()=>{ try { callback && callback(); } catch(e) { console.warn(e); } };
+                s.onerror = ()=>{ console.warn('Supabase fallback load failed'); };
+                document.head.appendChild(s);
+            } catch(e){ console.warn('loadSupabaseLib failed', e); }
+        }
+
+        // Admin Integrations helpers
+        function loadIntegrationsSettings(){
+            try {
+                const url = localStorage.getItem('supabaseUrl')||'';
+                const anon = localStorage.getItem('supabaseAnon')||'';
+                const ch = localStorage.getItem('supabaseChannel')||'presence-global';
+                const provider = localStorage.getItem('presenceProvider')||'supabase';
+                const ablyKey = localStorage.getItem('ablyKey')||'';
+                const ablyCh = localStorage.getItem('ablyChannel')||'presence-global';
+                const bUrl = localStorage.getItem('uptimeBadgeUrl')||'';
+                const bHref = localStorage.getItem('uptimeBadgeLink')||'';
+                const u = document.getElementById('sb-url'); if (u) u.value = url;
+                const a = document.getElementById('sb-anon'); if (a) a.value = anon;
+                const c = document.getElementById('sb-channel'); if (c) c.value = ch;
+                const prov = document.getElementById('presence-provider'); if (prov) prov.value = provider;
+                const ak = document.getElementById('ably-key'); if (ak) ak.value = ablyKey;
+                const ac = document.getElementById('ably-channel'); if (ac) ac.value = ablyCh;
+                const au = document.getElementById('ably-authurl'); if (au) au.value = (localStorage.getItem('ablyAuthUrl')||'http://localhost:3001/ably/token');
+                const bu = document.getElementById('uptime-badge-url'); if (bu) bu.value = bUrl;
+                const bl = document.getElementById('uptime-badge-link'); if (bl) bl.value = bHref;
+                const show = document.getElementById('sb-anon-show');
+                if (show && a){ show.addEventListener('change', ()=>{ a.type = show.checked ? 'text' : 'password'; }); }
+                const ashow = document.getElementById('ably-key-show'); const ai = document.getElementById('ably-key');
+                if (ashow && ai){ ashow.addEventListener('change', ()=>{ ai.type = ashow.checked ? 'text' : 'password'; }); }
+                // toggle sections per provider
+                const secSb = document.getElementById('section-supabase');
+                const secAb = document.getElementById('section-ably');
+                const applyVis = ()=>{
+                    const p = (document.getElementById('presence-provider')?.value)||'supabase';
+                    if (secSb) secSb.style.display = p==='supabase' ? 'grid' : 'none';
+                    if (secAb) secAb.style.display = p==='ably' ? 'grid' : 'none';
+                    localStorage.setItem('presenceProvider', p);
+                    try {
+                        const ind = document.getElementById('presence-provider-indicator');
+                        if (ind) ind.textContent = 'Presence: ' + (p==='ably' ? 'Ably' : 'Supabase');
+                    } catch{}
+                };
+                if (document.getElementById('presence-provider')){
+                    document.getElementById('presence-provider').addEventListener('change', applyVis);
+                    applyVis();
+                }
+            } catch(e){ console.warn('loadIntegrationsSettings failed', e); }
+        }
+        function saveIntegrationsSettings(){
+            try {
+                const url = document.getElementById('sb-url')?.value.trim()||'';
+                const anon = document.getElementById('sb-anon')?.value.trim()||'';
+                const ch = document.getElementById('sb-channel')?.value.trim()||'presence-global';
+                const provider = document.getElementById('presence-provider')?.value || 'supabase';
+                localStorage.setItem('supabaseUrl', url);
+                localStorage.setItem('supabaseAnon', anon);
+                localStorage.setItem('supabaseChannel', ch);
+                localStorage.setItem('presenceProvider', provider);
+                addActivityLog('🔧 Integraties: Supabase settings opgeslagen');
+                alert('✅ Supabase-instellingen opgeslagen. Pagina wordt herladen om presence te initialiseren.');
+                setTimeout(()=>location.reload(), 200);
+            } catch(e){ alert('❌ Opslaan mislukt: '+e.message); }
+        }
+        function saveAblySettings(){
+            try {
+                const key = document.getElementById('ably-key')?.value.trim()||'';
+                const ch = document.getElementById('ably-channel')?.value.trim()||'presence-global';
+                const provider = document.getElementById('presence-provider')?.value || 'ably';
+                const authUrl = document.getElementById('ably-authurl')?.value.trim()||'http://localhost:3001/ably/token';
+                localStorage.setItem('ablyKey', key);
+                localStorage.setItem('ablyChannel', ch);
+                localStorage.setItem('ablyAuthUrl', authUrl);
+                localStorage.setItem('presenceProvider', provider);
+                addActivityLog('🔧 Integraties: Ably settings opgeslagen');
+                alert('✅ Ably-instellingen opgeslagen. Pagina wordt herladen om presence te initialiseren.');
+                setTimeout(()=>location.reload(), 200);
+            } catch(e){ alert('❌ Opslaan mislukt: '+e.message); }
+        }
+        async function testSupabasePresence(){
+            const status = document.getElementById('sb-test-status'); if (status) { status.style.color='#9ca3af'; status.textContent='Bezig met testen…'; }
+            const run = async ()=>{
+              try {
+                const url = document.getElementById('sb-url')?.value.trim();
+                const anon = document.getElementById('sb-anon')?.value.trim();
+                const chName = (document.getElementById('sb-channel')?.value.trim()||'presence-global') + '-test';
+                if (!url || !anon) throw new Error('Vul URL en Anon key in');
+                const client = window.supabase.createClient(url, anon);
+                const pid = 't_' + Math.random().toString(36).slice(2);
+                const ch = client.channel(chName, { config:{ presence:{ key: pid } } });
+                await new Promise((resolve, reject)=>{
+                    ch.on('presence', {event:'sync'}, ()=>resolve(true));
+                    ch.subscribe((s)=>{ if (s==='SUBSCRIBED'){ ch.track({ online_at:new Date().toISOString() }); } });
+                    setTimeout(()=>reject(new Error('Timeout')), 4000);
+                });
+                if (status){ status.style.color='#22c55e'; status.textContent='✅ Verbinding OK'; }
+                setTimeout(()=>{ try{ ch.unsubscribe(); } catch{} }, 1000);
+              } catch(e){ if (status){ status.style.color='#ef4444'; status.textContent='❌ '+e.message; } }
+            };
+            if (typeof window.supabase === 'undefined'){
+                if (status){ status.style.color='#f59e0b'; status.textContent='Supabase lib niet geladen — fallback wordt geladen…'; }
+                return loadSupabaseLib(()=>{ initSupabasePresence(); run(); });
+            }
+            return run();
+        }
+        async function testAblyPresence(){
+            const status = document.getElementById('ably-test-status'); if (status){ status.style.color='#9ca3af'; status.textContent='Bezig met testen…'; }
+            const run = async ()=>{
+                try {
+                    const key = document.getElementById('ably-key')?.value.trim();
+                    const authUrl = document.getElementById('ably-authurl')?.value.trim() || 'http://localhost:3001/ably/token';
+                    const chName = (document.getElementById('ably-channel')?.value.trim()||'presence-global') + '-test';
+                    const opts = authUrl ? { authUrl } : { key };
+                    const client = new Ably.Realtime(opts);
+                    const ch = client.channels.get(chName);
+                    await new Promise((resolve, reject)=>{
+                        ch.attach(()=>{
+                            ch.presence.enter({}, ()=>{
+                                ch.presence.get((err, members)=>{ if (!err) resolve(true); else reject(err); });
+                            });
+                        });
+                        setTimeout(()=>reject(new Error('Timeout')), 4000);
+                    });
+                    if (status){ status.style.color='#22c55e'; status.textContent='✅ Verbinding OK'; }
+                    setTimeout(()=>{ try{ ch.detach(); } catch{} }, 1000);
+                } catch(e){ if (status){ status.style.color='#ef4444'; status.textContent='❌ '+(e.message||e); } }
+            };
+            if (typeof Ably === 'undefined' || !Ably.Realtime){
+                if (status){ status.style.color='#f59e0b'; status.textContent='Ably lib niet geladen — fallback wordt geladen…'; }
+                return loadAblyLib(()=>{ initAblyPresence(); run(); });
+            }
+            return run();
+        }
+        function saveUptimeBadge(){
+            try {
+                const u = document.getElementById('uptime-badge-url')?.value.trim()||'';
+                const l = document.getElementById('uptime-badge-link')?.value.trim()||'';
+                localStorage.setItem('uptimeBadgeUrl', u);
+                localStorage.setItem('uptimeBadgeLink', l);
+                // update live footer
+                try {
+                    const img = document.querySelector('#footer-uptime img, #uptime-badge img');
+                    const a = document.getElementById('footer-uptime') || document.getElementById('uptime-badge');
+                    if (img && u) img.src = u;
+                    if (a && l) a.href = l;
+                } catch{}
+                const s = document.getElementById('uptime-save-status'); if (s){ s.style.color='#22c55e'; s.textContent='Opgeslagen'; setTimeout(()=>s.textContent='',2000); }
+            } catch(e){ alert('❌ Opslaan mislukt: '+e.message); }
+        }
+        function previewUptimeBadge(){
+            try {
+                const u = document.getElementById('uptime-badge-url')?.value.trim();
+                if (!u){ alert('Vul eerst de badge-URL in'); return; }
+                window.open(u, '_blank');
+            } catch(e){ alert('❌ Preview mislukt: '+e.message); }
+        }
+
+        // Loader voor Ably UMD
+        function loadAblyLib(cb){
+            if (typeof Ably !== 'undefined' && Ably.Realtime){ cb && cb(); return; }
+            try {
+                const s = document.createElement('script');
+                s.src = 'https://cdn.jsdelivr.net/npm/ably@1.2.44/build/ably.min.js';
+                s.async = true;
+                s.onload = ()=>{ try{ cb && cb(); } catch(e){ console.warn(e); } };
+                s.onerror = ()=>{ console.warn('Ably fallback load failed'); };
+                document.head.appendChild(s);
+            } catch(e){ console.warn('loadAblyLib failed', e); }
+        }
+
+                function resetIntegrations(){
+            if (!confirm('Weet je zeker dat je alle integratie-instellingen wilt verwijderen?')) return;
+            try {
+                                ['supabaseUrl','supabaseAnon','supabaseChannel','presenceProvider','ablyKey','ablyChannel','ablyAuthUrl','uptimeBadgeUrl','uptimeBadgeLink','presenceId']
+                  .forEach(k=>localStorage.removeItem(k));
+                alert('Integraties gereset. De pagina wordt herladen.');
+                setTimeout(()=>location.reload(), 150);
+            } catch(e){ alert('❌ Reset mislukt: '+e.message); }
+        }
         function setAdminSession(minutes=60) {
             try { localStorage.setItem('adminSession', JSON.stringify({ ts: Date.now(), exp: Date.now() + minutes*60*1000 })); } catch {}
         }
@@ -3601,6 +4131,7 @@ ${matrixContent}
             if (tabName === 'newsletter') loadSubscriberList();
             if (tabName === 'logs') loadActivityLogs();
             if (tabName === 'cv') loadCvSettings();
+            if (tabName === 'integrations') loadIntegrationsSettings();
         }
         
         function uploadSoftware() {
@@ -4202,6 +4733,9 @@ ${matrixContent}
             }
             publicExplorer.innerHTML = '';
 
+            // verberg zoek/sort controls in overzichtsweergave
+            try { const ctrls = document.getElementById('public-sw-controls'); if (ctrls) ctrls.style.display = 'none'; } catch{}
+
             // Toolbar ook in overzicht tonen
             const canBack = publicNavIndex > 0;
             const canFwd = publicNavIndex < publicNavHistory.length - 1;
@@ -4217,7 +4751,8 @@ ${matrixContent}
                 <button class=\"tech-btn\" style=\"background:#ef4444;color:#fff;opacity:.5;pointer-events:none;\" disabled>✖ Close</button>
             `;
             const right = document.createElement('div');
-            right.innerHTML = `<button class=\"tech-btn\" style=\"background:#22c55e;color:#111;\" onclick=\"publicExportFiltered()\">⬇ Download lijst</button>`;
+            right.style.cssText = 'display:flex;gap:8px;align-items:center;';
+            right.innerHTML = `<span style=\"color:#9ca3af\">📁 Overzicht</span><button class=\"tech-btn\" style=\"background:#22c55e;color:#111;\" onclick=\"publicExportFiltered()\">⬇ Download lijst</button>`;
             toolbar.appendChild(left);
             toolbar.appendChild(right);
             publicExplorer.appendChild(toolbar);
@@ -4449,7 +4984,8 @@ ${matrixContent}
                 <button class="tech-btn" style="background:#ef4444;color:#fff;" onclick="publicCloseView()">✖ Close</button>
             `;
             const right = document.createElement('div');
-            right.innerHTML = `<button class="tech-btn" style="background:#22c55e;color:#111;" onclick="publicExportCurrent()">⬇ Download lijst</button>`;
+            right.style.cssText = 'display:flex;gap:8px;align-items:center;';
+            right.innerHTML = `<span style="color:#9ca3af">📁 ${category}</span><button class="tech-btn" style="background:#22c55e;color:#111;" onclick="publicExportCurrent()">⬇ Download lijst</button>`;
             toolbar.appendChild(left);
             toolbar.appendChild(right);
 
@@ -4459,6 +4995,14 @@ ${matrixContent}
 
             explorer.innerHTML = '';
             explorer.appendChild(toolbar);
+
+            // toon zoek/sort controls voor focus-view
+            try {
+                const ctrls = document.getElementById('public-sw-controls');
+                const search = document.getElementById('public-sw-search');
+                if (ctrls) ctrls.style.display = 'flex';
+                if (search) search.placeholder = `Zoek in ${category}...`;
+            } catch{}
             explorer.appendChild(header);
 
             if (items.length === 0){
@@ -4534,14 +5078,23 @@ ${matrixContent}
             const lang = prefs.lang || 'nl';
             const theme = prefs.theme || 'dark';
             const requireCode = (localStorage.getItem('cvRequireCode')||'true') === 'true';
-            const unlocked = sessionStorage.getItem('cvUnlocked') === '1';
+            let unlocked = sessionStorage.getItem('cvUnlocked') === '1';
             const pdfUrl = localStorage.getItem('cvPdfUrl')||'';
             const wordUrl = localStorage.getItem('cvWordUrl')||'';
+            // URL param auto-unlock
+            try {
+                const urlCode = new URLSearchParams(window.location.search).get('cvcode');
+                if (urlCode && isCvCodeValid(urlCode)) {
+                    sessionStorage.setItem('cvUnlocked','1');
+                    unlocked = true;
+                }
+            } catch{}
 
             const header = `
                 <div style="position:sticky;top:0;z-index:2;display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:linear-gradient(135deg,#7c3aed,#2563eb);color:#fff;border-radius:14px 14px 0 0;">
                     <div style="font-weight:800;display:flex;align-items:center;gap:8px">📄 Curriculum Vitae</div>
                     <div style="display:flex;gap:8px;align-items:center;">
+                        <span id="cv-ttl-inline" style="font-size:12px;opacity:.85"></span>
                         <select id=\"cv-lang\" style=\"padding:6px 10px;border-radius:8px;border:none;cursor:pointer;\">
                             <option value=\"nl\" ${lang==='nl'?'selected':''}>NL</option>
                             <option value=\"en\" ${lang==='en'?'selected':''}>EN</option>
@@ -4611,6 +5164,19 @@ ${matrixContent}
                 savePrefs();
             });
 
+            // Set inline TTL label when available and unlocked
+            try {
+                const ttlSpan = overlay.querySelector('#cv-ttl-inline');
+                const exp = parseInt(localStorage.getItem('cvAuthExpires')||'0',10)||0;
+                if (ttlSpan){
+                    if (requireCode && unlocked && exp>0 && Date.now()<exp){
+                        ttlSpan.textContent = '⏳ ' + humanizeMs(exp - Date.now());
+                    } else {
+                        ttlSpan.textContent = '';
+                    }
+                }
+            } catch{}
+
             // Gate handling
             if (requireCode && !unlocked){
                 const unlockBtn = overlay.querySelector('#cv-unlock');
@@ -4619,7 +5185,9 @@ ${matrixContent}
                 unlockBtn.addEventListener('click', ()=>{
                     const code = (localStorage.getItem('cvAuthCode')||'').trim();
                     const val = (input.value||'').trim();
+                    const exp = parseInt(localStorage.getItem('cvAuthExpires')||'0',10)||0;
                     if (!code){ err.textContent = 'Er is nog geen toegangscode ingesteld.'; err.style.display='block'; return; }
+                    if (exp>0 && Date.now()>exp){ err.textContent = 'Code is verlopen.'; err.style.display='block'; return; }
                     if (val && val === code){
                         sessionStorage.setItem('cvUnlocked','1');
                         // rebuild with content
@@ -4640,6 +5208,14 @@ ${matrixContent}
                         contentEl.style.padding = '16px 18px';
                         contentEl.innerHTML = htmlContent;
                         wrapper.appendChild(contentEl);
+                        // update TTL label now that it's unlocked
+                        try {
+                            const ttlSpan = overlay.querySelector('#cv-ttl-inline');
+                            const expNow = parseInt(localStorage.getItem('cvAuthExpires')||'0',10)||0;
+                            if (ttlSpan && expNow>0 && Date.now()<expNow){
+                                ttlSpan.textContent = '⏳ ' + humanizeMs(expNow - Date.now());
+                            }
+                        } catch{}
                         attachCvDownloadHandlers(overlay);
                     } else {
                         err.textContent = 'Onjuiste code';
@@ -4750,10 +5326,14 @@ ${matrixContent}
                 const requireCode = (localStorage.getItem('cvRequireCode')||'true') === 'true';
                 const pdfUrl = localStorage.getItem('cvPdfUrl') || '';
                 const wordUrl = localStorage.getItem('cvWordUrl') || '';
+                const ttl = parseFloat(localStorage.getItem('cvTtlHours')||'3');
+                const expiresAt = parseInt(localStorage.getItem('cvAuthExpires')||'0',10)||0;
                 const codeEl = document.getElementById('cv-code'); if (codeEl) codeEl.value = code;
                 const reqEl = document.getElementById('cv-require-code'); if (reqEl) reqEl.checked = requireCode;
                 const pdfEl = document.getElementById('cv-pdf-url'); if (pdfEl) pdfEl.value = pdfUrl;
                 const wEl = document.getElementById('cv-word-url'); if (wEl) wEl.value = wordUrl;
+                const ttlEl = document.getElementById('cv-ttl'); if (ttlEl) ttlEl.value = String(ttl);
+                const leftEl = document.getElementById('cv-ttl-left'); if (leftEl) leftEl.textContent = expiresAt ? ('Resterend: ' + humanizeMs(expiresAt - Date.now())) : '';
             } catch(e) { console.warn('loadCvSettings failed', e); }
         }
         function saveCvSettings(){
@@ -4761,18 +5341,24 @@ ${matrixContent}
                 const requireCode = !!(document.getElementById('cv-require-code')?.checked);
                 const pdfUrl = document.getElementById('cv-pdf-url')?.value.trim()||'';
                 const wordUrl = document.getElementById('cv-word-url')?.value.trim()||'';
+                const ttl = parseFloat(document.getElementById('cv-ttl')?.value||'3');
                 localStorage.setItem('cvRequireCode', String(requireCode));
                 localStorage.setItem('cvPdfUrl', pdfUrl);
                 localStorage.setItem('cvWordUrl', wordUrl);
+                localStorage.setItem('cvTtlHours', String(ttl));
                 addActivityLog('📝 CV settings saved');
                 alert('✅ CV-instellingen opgeslagen');
             } catch(e) { alert('❌ Opslaan mislukt: '+e.message); }
         }
         function generateCvCode(){
             const code = Math.random().toString(36).slice(2,8).toUpperCase();
+            const ttlHours = parseFloat(localStorage.getItem('cvTtlHours')||'3');
+            const expires = Date.now() + (ttlHours * 60 * 60 * 1000);
             localStorage.setItem('cvAuthCode', code);
+            localStorage.setItem('cvAuthExpires', String(expires));
             sessionStorage.removeItem('cvUnlocked');
             const el = document.getElementById('cv-code'); if (el) el.value = code;
+            const leftEl = document.getElementById('cv-ttl-left'); if (leftEl) leftEl.textContent = 'Resterend: ' + humanizeMs(expires - Date.now());
             addActivityLog('🔐 Nieuwe CV-code gegenereerd');
         }
         function copyCvCode(){
@@ -4784,11 +5370,51 @@ ${matrixContent}
                 alert('Kopiëren mislukt.');
             });
         }
+        function copyCvLink(){
+            const code = localStorage.getItem('cvAuthCode')||'';
+            if (!code){ alert('Geen code ingesteld.'); return; }
+            const url = new URL(window.location.href);
+            url.searchParams.set('cvcode', code);
+            navigator.clipboard.writeText(url.toString()).then(()=>{
+                alert('🔗 Link gekopieerd');
+            }).catch(()=> alert('Kopiëren mislukt.'));
+        }
+        function copyCvMailto(){
+            const code = localStorage.getItem('cvAuthCode')||'';
+            if (!code){ alert('Geen code ingesteld.'); return; }
+            const url = new URL(window.location.href);
+            url.searchParams.set('cvcode', code);
+            const exp = parseInt(localStorage.getItem('cvAuthExpires')||'0',10)||0;
+            const ttlText = (exp>0 && Date.now()<exp) ? humanizeMs(exp - Date.now()) : '';
+            const subject = encodeURIComponent('CV downloadlink');
+            const body = encodeURIComponent(`Hoi,\n\nHierbij de beveiligde link naar mijn CV:\n${url.toString()}\n${ttlText?`\nLet op: de link/code verloopt over: ${ttlText}\n`:''}\nGroet,`);
+            const mailto = `mailto:?subject=${subject}&body=${body}`;
+            navigator.clipboard.writeText(mailto).then(()=>{
+                alert('✉️ Mailto-link gekopieerd');
+            }).catch(()=> alert('Kopiëren mislukt.'));
+        }
         function invalidateCvCode(){
             localStorage.removeItem('cvAuthCode');
+            localStorage.removeItem('cvAuthExpires');
             sessionStorage.removeItem('cvUnlocked');
             const el = document.getElementById('cv-code'); if (el) el.value='';
+            const leftEl = document.getElementById('cv-ttl-left'); if (leftEl) leftEl.textContent = '';
             addActivityLog('🗑️ CV-code ongeldig gemaakt');
+        }
+        function isCvCodeValid(input){
+            const code = (localStorage.getItem('cvAuthCode')||'').trim();
+            const exp = parseInt(localStorage.getItem('cvAuthExpires')||'0',10)||0;
+            if (!code || !input) return false;
+            if (Date.now() > exp && exp>0) return false;
+            return input.trim() === code;
+        }
+        function humanizeMs(ms){
+            if (!ms || ms<=0) return 'verlopen';
+            const s = Math.floor(ms/1000);
+            const h = Math.floor(s/3600);
+            const m = Math.floor((s%3600)/60);
+            if (h>0) return `${h}u ${m}m`;
+            return `${m}m`;
         }
         
         function loadActivityLogs() {
@@ -4969,6 +5595,31 @@ ${matrixContent}
             newsArticles = JSON.parse(localStorage.getItem('newsArticles') || '[]');
             console.log('📰 Loaded news articles:', newsArticles.length, 'items');
             loadNewsDisplay();
+
+            // Initialize realtime dashboard and WebAuthn demo
+            try { initRealtimeDashboard(); } catch(e){ console.warn(e); }
+            try { initWebAuthnDemo(); } catch(e){ console.warn(e); }
+            // Initialize Supabase presence (requires localStorage supabaseUrl/supabaseAnon)
+            try {
+                const provider = localStorage.getItem('presenceProvider') || 'supabase';
+                try {
+                    const ind = document.getElementById('presence-provider-indicator');
+                    if (ind) ind.textContent = 'Presence: ' + (provider === 'ably' ? 'Ably' : 'Supabase');
+                } catch{}
+                if (provider === 'ably'){
+                    if (typeof Ably === 'undefined' || !Ably.Realtime) {
+                        loadAblyLib(()=>{ try{ initAblyPresence(); } catch(e){ console.warn(e); } });
+                    } else {
+                        initAblyPresence();
+                    }
+                } else {
+                    if (typeof window.supabase === 'undefined'){
+                        loadSupabaseLib(()=>{ try{ initSupabasePresence(); } catch(e){ console.warn(e); } });
+                    } else {
+                        initSupabasePresence();
+                    }
+                }
+            } catch(e){ console.warn(e); }
             
             // Setup admin login button click handler (popup modal login)
             const adminLoginBtn = document.getElementById('admin-login-btn');
