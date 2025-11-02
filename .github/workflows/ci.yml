@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  admin-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright (Chromium + deps)
+        run: npx playwright install --with-deps chromium
+
+      - name: Start static server
+        run: |
+          nohup python3 -m http.server 8000 >/dev/null 2>&1 &
+          for i in {1..30}; do
+            if curl -sSf http://localhost:8000 >/dev/null; then echo "Server up"; exit 0; fi
+            sleep 1
+          done
+          echo "Server did not start in time" && exit 1
+
+      - name: Run admin smoke test
+        run: npm run test:admin
+
+      - name: Upload screenshots and traces
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-artifacts
+          path: artifacts/**
+          if-no-files-found: warn

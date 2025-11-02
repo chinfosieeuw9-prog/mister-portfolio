@@ -1,17 +1,36 @@
 const { chromium } = require('playwright');
+const fs = require('fs');
+const fsp = require('fs/promises');
+const path = require('path');
 
 (async () => {
   const baseUrl = 'http://localhost:8000/';
+  const artifactsDir = path.resolve(process.cwd(), 'artifacts', 'admin-smoke');
+  await fsp.mkdir(artifactsDir, { recursive: true }).catch(() => {});
+
   const browser = await chromium.launch({ headless: true });
-  const ctx = await browser.newContext();
+  const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  // Enable Playwright tracing (screenshots, DOM snapshots)
+  try { await ctx.tracing.start({ screenshots: true, snapshots: true, sources: true }); } catch {}
   const page = await ctx.newPage();
+
+  let stepIndex = 0;
+  const snap = async (name) => {
+    const file = path.join(artifactsDir, `${String(stepIndex).padStart(2,'0')}-${name}.png`);
+    try { await page.screenshot({ path: file, fullPage: true }); } catch {}
+  };
 
   const step = async (name, fn) => {
     try {
       await fn();
+      stepIndex += 1;
+      await snap(name.replace(/\s+/g,'_'));
       console.log(`PASS | ${name}`);
     } catch (err) {
-      console.error(`FAIL | ${name}:`, err.message || err);
+      // Capture failure screenshot and stop tracing
+      try { await snap(`FAIL-${name.replace(/\s+/g,'_')}`); } catch {}
+      try { await ctx.tracing.stop({ path: path.join(artifactsDir, 'trace.zip') }); } catch {}
+      console.error(`FAIL | ${name}:`, err && err.message ? err.message : err);
       await browser.close();
       process.exit(1);
     }
@@ -80,6 +99,8 @@ const { chromium } = require('playwright');
     if (hasAdminOnly) throw new Error('admin-only class still present after logout');
   });
 
+  // Save final trace on success and close
+  try { await ctx.tracing.stop({ path: path.join(artifactsDir, 'trace.zip') }); } catch {}
   await browser.close();
   console.log('ALL STEPS PASSED');
   process.exit(0);
