@@ -39,6 +39,41 @@
                                                    }
                                  },
                         "versionTag":  "v5.8"
+                    },
+                    {
+                        "site":  {
+                                     "status":  200,
+                                     "url":  "https://mister.us.kg",
+                                     "online":  true
+                                 },
+                        "durationMs":  34811,
+                        "type":  "workflow",
+                        "git":  {
+                                    "dirty":  false,
+                                    "message":  "Auto-backup 2025-11-02 22:00:24",
+                                    "sha":  "0cc62bf"
+                                },
+                        "timestamp":  "2025-11-02T22:00:27.9176757+01:00",
+                        "artifacts":  {
+                                          "zip":  "C:\\Users\\Jordan\\Desktop\\mister-backups\\mister-backup-v5.9.zip",
+                                          "zipBytes":  4859581,
+                                          "filesCount":  1089
+                                      },
+                        "cloudSync":  {
+                                          "target":  "C:\\Users\\Jordan\\OneDrive\\mister-backups",
+                                          "ok":  false
+                                      },
+                        "apis":  {
+                                     "ablyAuth":  {
+                                                      "url":  "http://localhost:3001/ably/token",
+                                                      "status":  500
+                                                  },
+                                     "formspree":  {
+                                                       "url":  null,
+                                                       "status":  null
+                                                   }
+                                 },
+                        "versionTag":  "v5.9"
                     }
                 ]
 }

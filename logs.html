@@ -38,6 +38,9 @@
     <h1>Backup logboek</h1>
     <div class="sub">Automatisch bijgehouden bij backups en workflows. Deze pagina leest <code>logs/logs.json</code>.</div>
     <div class="toolbar">
+      <a href="admin.html" class="btn" title="Terug naar Admin">← Terug naar admin</a>
+      <button id="runBtn" class="btn" title="Start volledige backup workflow">▶ Run workflow</button>
+      <span id="runStatus" class="small muted"></span>
   <input id="search" placeholder="Zoek op versie, type, API..." aria-label="Zoeken in logboek" />
   <select id="type" aria-label="Filter op type">
         <option value="">Alle types</option>
@@ -50,9 +53,11 @@
     <div class="footer">Tip: draai <code>full-backup-workflow.ps1</code> voor een volledige workflow entry met API- en cloudstatus.</div>
   </div>
   <script>
-    const elList = document.getElementById('list');
+  const elList = document.getElementById('list');
     const elSearch = document.getElementById('search');
     const elType = document.getElementById('type');
+  const runBtn = document.getElementById('runBtn');
+  const runStatus = document.getElementById('runStatus');
     let entries = [];
 
     function fmt(ts){try{return new Date(ts).toLocaleString()}catch{return ts}}
@@ -100,6 +105,27 @@
       }
       render();
     }
+
+    async function runWorkflow(){
+      try{
+        runStatus.textContent = 'workflow starten…';
+        runStatus.classList.remove('err','ok');
+        const ctrl = new AbortController();
+        const t = setTimeout(()=>ctrl.abort(), 120000);
+        const res = await fetch('http://localhost:3001/workflow/run', {
+          method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ quick:true }), signal: ctrl.signal
+        });
+        clearTimeout(t);
+        if(!res.ok) throw new Error('HTTP '+res.status);
+        const j = await res.json().catch(()=>({}));
+        runStatus.textContent = 'klaar (exit '+(j.exitCode??0)+')';
+        setTimeout(load, 800);
+      }catch(e){
+        runStatus.textContent = 'fout: '+(e.message||e);
+      }
+    }
+
+    if (runBtn) runBtn.addEventListener('click', runWorkflow);
 
     elSearch.addEventListener('input', render);
     elType.addEventListener('change', render);
