@@ -167,7 +167,7 @@ app.post('/workflow/run', async (req, res) => {
         const entry = {
           type: 'note',
           timestamp: new Date().toISOString(),
-          versionTag: ver || 'release',
+          versionTag: ver ? `release-${ver}` : 'release',
           message: 'Workflow run voltooid (backend).'
         };
         json.entries = Array.isArray(json.entries) ? json.entries : [];

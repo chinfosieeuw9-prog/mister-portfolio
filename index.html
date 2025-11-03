@@ -5785,7 +5785,10 @@
                     .then(json => {
                         const entries = Array.isArray(json.entries) ? json.entries.slice() : [];
                         entries.sort((a,b)=> new Date(b.timestamp) - new Date(a.timestamp));
-                        const items = entries.slice(0, 12);
+                        // Pinned-only filter
+                        const pinnedOnly = (localStorage.getItem('adminLogsPinnedOnly')||'') === '1';
+                        const filtered = pinnedOnly ? entries.filter(e=>e && e.type==='note' && e.pinned===true) : entries;
+                        const items = filtered.slice(0, 12);
                         // expose items so action buttons (edit/delete/pin) can reference original timestamps
                         window._itemsForLogs = items;
                         if (items.length === 0) { container.innerHTML = '<div style="color:#9ca3af">Geen log entries gevonden.</div>'; return; }
@@ -5862,6 +5865,9 @@
                                     <button id="run-workflow-btn" style="background:#1f1f1f;border:1px solid #333;color:#fff;padding:6px 10px;border-radius:6px;cursor:pointer" onclick="runWorkflow()">Run workflow</button>
                                     <button id=\"add-note-btn\" style=\"background:#1f1f1f;border:1px solid #333;color:#fff;padding:6px 10px;border-radius:6px;cursor:pointer\" onclick=\"addLogNote()\">Notitie toevoegen</button>
                                     <a href="logs/logs.json" download style="background:#0f172a;border:1px solid #333;color:#93c5fd;padding:6px 10px;border-radius:6px;cursor:pointer;text-decoration:none">Download logs.json</a>
+                                    <label style="display:inline-flex;align-items:center;gap:6px;color:#9ca3af;font-size:12px;border:1px solid #333;padding:6px 10px;border-radius:6px;background:#0b0b0b;cursor:pointer">
+                                        <input type="checkbox" id="pinned-only-toggle" style="accent-color:#22c55e"> Alleen pinned
+                                    </label>
                                     <span style="color:#9ca3af;font-size:12px">Sneltoets: n = notitie</span>
                                 </div>
                             </div>
@@ -5900,6 +5906,18 @@
                             </div>
                         `;
                         try { checkBackendStatus(); } catch {}
+                        // Wire pinned-only toggle
+                        try {
+                            const tog = document.getElementById('pinned-only-toggle');
+                            if (tog){
+                                const pinnedOnlyNow = (localStorage.getItem('adminLogsPinnedOnly')||'') === '1';
+                                tog.checked = pinnedOnlyNow;
+                                tog.addEventListener('change', ()=>{
+                                    try { localStorage.setItem('adminLogsPinnedOnly', tog.checked ? '1' : '0'); } catch{}
+                                    loadActivityLogs();
+                                });
+                            }
+                        } catch{}
                     })
                     .catch(err => {
                         console.warn('loadActivityLogs error', err);
@@ -6018,7 +6036,8 @@
                     body: JSON.stringify({ timestamp: ts, message: newMsg, versionTag: newTag })
                 });
                 const j = await r.json().catch(()=>({}));
-                if (!r.ok || !j.ok){ alert('Opslaan mislukt: '+(j.error||r.status||'?')); return; }
+                if (!r.ok || !j.ok){ try { showToast('Bewerken mislukt: '+(j.error||r.status||'?'), 'error'); } catch {} return; }
+                try { showToast('Notitie bijgewerkt.', 'success'); } catch {}
                 loadActivityLogs();
             } catch(e){ alert('Fout tijdens bewerken: '+(e && e.message ? e.message : e)); }
         }
@@ -6035,7 +6054,8 @@
                     body: JSON.stringify({ timestamp: ts })
                 });
                 const j = await r.json().catch(()=>({}));
-                if (!r.ok || !j.ok){ alert('Verwijderen mislukt: '+(j.error||r.status||'?')); return; }
+                if (!r.ok || !j.ok){ try { showToast('Verwijderen mislukt: '+(j.error||r.status||'?'), 'error'); } catch {} return; }
+                try { showToast('Notitie verwijderd.', 'info'); } catch {}
                 loadActivityLogs();
             } catch(e){ alert('Fout tijdens verwijderen: '+(e && e.message ? e.message : e)); }
         }
@@ -6052,7 +6072,8 @@
                     body: JSON.stringify({ timestamp: ts, pinned: newPinned })
                 });
                 const j = await r.json().catch(()=>({}));
-                if (!r.ok || !j.ok){ alert('Pin wijzigen mislukt: '+(j.error||r.status||'?')); return; }
+                if (!r.ok || !j.ok){ try { showToast('Pin wijzigen mislukt: '+(j.error||r.status||'?'), 'error'); } catch {} return; }
+                try { showToast(newPinned ? 'Gepinned.' : 'Unpinned.', 'success'); } catch {}
                 loadActivityLogs();
             } catch(e){ alert('Fout tijdens pinnen: '+(e && e.message ? e.message : e)); }
         }
