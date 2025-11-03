@@ -1,6 +1,28 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
+    <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="expires" content="0">
+    <script>
+        (function(){
+            try {
+                const v = Date.now();
+                document.addEventListener('DOMContentLoaded', function(){
+                    // Bust CSS caches
+                    document.querySelectorAll('link[rel="stylesheet"][href]').forEach(function(link){
+                        const href = link.getAttribute('href');
+                        if (href && href.indexOf('?') === -1) { link.href = href + '?v=' + v; }
+                    });
+                    // Bust JS caches
+                    document.querySelectorAll('script[src]').forEach(function(s){
+                        const src = s.getAttribute('src');
+                        if (src && src.indexOf('?') === -1) { s.src = src + '?v=' + v; }
+                    });
+                });
+            } catch(e) { /* no-op */ }
+        })();
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Paneel - Mister</title>
@@ -26,7 +48,39 @@
     </style>
 </head>
 <body>
-    <div id="admin-notification-bar" class="admin-notification-bar" style="display:none;"></div>
+        <div id="admin-notification-bar" class="admin-notification-bar" style="display:none;"></div>
+        <script>
+        // Backend base helpers (shared with index.html semantics)
+        function _normBase(u){ try { return String(u||'').trim().replace(/\/$/,''); } catch { return 'http://localhost:3001'; } }
+        function getBackendBase(){
+            try {
+                const ls = localStorage.getItem('backendBase')||'';
+                const ss = sessionStorage.getItem('backendBase')||'';
+                return _normBase(ls||ss||'http://localhost:3001');
+            } catch { return 'http://localhost:3001'; }
+        }
+        async function detectBackendBaseOnce(){
+            const cands = [];
+            try { const saved = (localStorage.getItem('backendBase')||'').trim(); if (saved) cands.push(saved); } catch {}
+            cands.push('http://localhost:3001','http://localhost:3002');
+            const uniq = [...new Set(cands.map(_normBase))];
+            for (const b of uniq){
+                try { const r = await fetch(_normBase(b)+'/health', { cache:'no-store' }); if (r.ok){ try{ sessionStorage.setItem('backendBase', _normBase(b)); }catch{} return _normBase(b); } } catch {}
+            }
+            return _normBase(uniq[0]);
+        }
+        async function updateAdminBackendChips(){
+            const chip = document.getElementById('admin-backend-chip');
+            const baseEl = document.getElementById('admin-backend-base');
+            const base = await detectBackendBaseOnce();
+            if (baseEl) baseEl.textContent = 'base: ' + base;
+            if (!chip) return;
+            try { const r = await fetch(base.replace(/\/$/,'') + '/health', { cache:'no-store' });
+                if (r.ok){ chip.textContent = 'backend: online'; chip.style.color = '#22c55e'; chip.style.borderColor = '#195b37'; }
+                else { chip.textContent = 'backend: offline'; chip.style.color = '#ef4444'; chip.style.borderColor = '#5b1d1d'; }
+            } catch { chip.textContent = 'backend: offline'; chip.style.color = '#ef4444'; chip.style.borderColor = '#5b1d1d'; }
+        }
+        </script>
     <script>
     // Zorg dat admin status uit localStorage wordt gelezen
     window.isAdmin = localStorage.getItem('isAdmin') === 'true';
@@ -36,7 +90,10 @@
             <div id="admin-tabs-layout" class="admin-tabs-layout">
                 <div class="admin-card">
                     <button id="admin-logout-btn" class="admin-btn admin-logout-btn">Uitloggen</button>
-                    <div class="admin-title">Admin Paneel (Tabs)</div>
+                    <div class="admin-title" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">Admin Paneel (Tabs)
+                        <span id="admin-backend-chip" style="border:1px solid #333;border-radius:999px;padding:2px 8px;color:#9ca3af;font-size:12px">backend: —</span>
+                        <span id="admin-backend-base" style="border:1px solid #333;border-radius:999px;padding:2px 8px;color:#9ca3af;font-size:12px">base: —</span>
+                    </div>
                     <div style="display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 6px;align-items:center;">
                         <button id="run-workflow-btn" class="admin-btn">▶️ Run backup workflow</button>
                         <a href="logs.html" class="admin-btn" style="text-decoration:none;display:inline-block;">📊 Open logboek</a>
@@ -44,7 +101,11 @@
                         <a href="explorer-demo.html" class="admin-btn" style="text-decoration:none;display:inline-block;">🗂️ Nieuwe Explorer</a>
                         <a href="index.html" class="admin-btn" style="text-decoration:none;display:inline-block;">🏠 Naar Home</a>
                         <span id="workflow-status" style="font-size:12px;color:#9ca3af;margin-left:6px;"></span>
+                        <button id="check-upload-btn" class="admin-btn" type="button">🧪 Check upload</button>
+                        <button id="restart-backend-btn" class="admin-btn" type="button">♻️ Restart backend</button>
+                        <button id="start-help-btn" class="admin-btn" type="button">❓ Start-hulp</button>
                     </div>
+                    <div id="upload-check-output" class="admin-demo-muted" style="white-space:pre-wrap;margin-top:6px;"></div>
                     <script>
                     (function(){
                         const btn = document.getElementById('run-workflow-btn');
@@ -53,15 +114,17 @@
                         // Health check on load
                         (async ()=>{
                             try {
+                                const base = await detectBackendBaseOnce();
                                 const ctrl = new AbortController();
                                 const t = setTimeout(()=>ctrl.abort(), 4000);
-                                const r = await fetch('http://localhost:3001/health', { signal: ctrl.signal });
+                                const r = await fetch(base.replace(/\/$/,'') + '/health', { signal: ctrl.signal });
                                 clearTimeout(t);
                                 if (!r.ok) throw new Error('HTTP '+r.status);
-                                btn.disabled = false; out.style.color = '#22c55e'; out.textContent = 'Backend online';
+                                btn.disabled = false; out.style.color = '#22c55e'; out.textContent = 'Backend online • '+base;
                             } catch {
                                 btn.disabled = true; out.style.color = '#ef4444'; out.textContent = 'Backend offline';
                             }
+                            try { updateAdminBackendChips(); } catch {}
                         })();
                         btn.addEventListener('click', async ()=>{
                             out.style.color = '#9ca3af';
@@ -69,7 +132,8 @@
                             try {
                                 const ctrl = new AbortController();
                                 const t = setTimeout(()=>ctrl.abort(), 120000);
-                                const res = await fetch('http://localhost:3001/workflow/run', {
+                                const base = await detectBackendBaseOnce();
+                                const res = await fetch(base.replace(/\/$/,'') + '/workflow/run', {
                                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify({ quick:true }), signal: ctrl.signal
                                 });
@@ -77,13 +141,87 @@
                                 if (!res.ok) throw new Error('HTTP '+res.status);
                                 const j = await res.json();
                                 out.style.color = '#22c55e';
-                                out.textContent = 'Klaar. Exit: '+(j.exitCode ?? '0');
+                                out.textContent = 'Klaar. Exit: '+(j.exitCode ?? '0')+' • '+getBackendBase();
                                 console.log('Workflow result', j);
                                 alert('Workflow klaar. Zie logs.html voor details.');
                             } catch(e){
                                 out.style.color = '#ef4444';
                                 out.textContent = 'Fout: '+(e.message || e);
                             }
+                        });
+                        // Upload check
+                        const chk = document.getElementById('check-upload-btn');
+                        const outEl = document.getElementById('upload-check-output');
+                        if (chk) chk.addEventListener('click', async ()=>{
+                            if (outEl){ outEl.textContent = 'Controleren…'; }
+                            try{
+                                const base = await detectBackendBaseOnce();
+                                const r = await fetch(base.replace(/\/$/,'') + '/upload/check', { cache:'no-store' });
+                                const j = await r.json().catch(()=>({}));
+                                const nice = j ? {
+                                    ok: j.ok===true,
+                                    user: j.user && (j.user.login||j.user.id||null),
+                                    repo: j.repo && (j.repo.full_name||null),
+                                    push: !!(j.repo && j.repo.permissions && j.repo.permissions.push),
+                                    branch: j.branch && (j.branch.name||null),
+                                    advice: j.advice||null
+                                } : null;
+                                if (outEl){ outEl.textContent = (nice?JSON.stringify(nice,null,2):'—') + '\n(base: '+base+')'; }
+                                try{ updateAdminBackendChips(); }catch{}
+                            } catch(e){ if (outEl){ outEl.textContent = '❌ '+(e.message||e); } }
+                        });
+                        // Restart backend
+                        const rst = document.getElementById('restart-backend-btn');
+                        if (rst) rst.addEventListener('click', async ()=>{
+                            rst.disabled = true;
+                            try{
+                                const base = await detectBackendBaseOnce();
+                                const r = await fetch(base.replace(/\/$/,'') + '/admin/restart', { method:'POST' });
+                                const j = await r.json().catch(()=>({}));
+                                alert('Herstart aangevraagd. Backend zal binnen enkele seconden opnieuw opstarten.');
+                                // Poll health a few times to confirm
+                                const poll = async ()=>{
+                                    try{ const h = await fetch(base.replace(/\/$/,'') + '/health', { cache:'no-store' }); if (h.ok){ updateAdminBackendChips(); return true; } }catch{}
+                                    return false;
+                                };
+                                let ok = false; for (let i=0;i<6;i++){ ok = await poll(); if (ok) break; await new Promise(r=>setTimeout(r, 1500)); }
+                                if (!ok) alert('Let op: kon backend nog niet confirmeren. Ververs pagina na 5-10s.');
+                            } catch(e){ alert('Restart mislukt: '+(e.message||e)); }
+                            finally{ rst.disabled = false; }
+                        });
+
+                        // Start-hulp overlay
+                        const startHelpBtn = document.getElementById('start-help-btn');
+                        if (startHelpBtn) startHelpBtn.addEventListener('click', ()=>{
+                            try{
+                                const overlay = document.createElement('div');
+                                overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;z-index:9999;';
+                                const box = document.createElement('div');
+                                box.style.cssText = 'background:#111;border:1px solid #333;color:#e5e7eb;border-radius:12px;max-width:720px;width:92vw;max-height:84vh;overflow:auto;';
+                                box.innerHTML = `
+                                    <div style="padding:14px 16px;background:linear-gradient(135deg,#7c3aed,#2563eb);border-radius:12px 12px 0 0;display:flex;align-items:center;justify-content:space-between;color:#fff">
+                                        <div style="font-weight:800">Start-hulp: Upload-backend (lokaal)</div>
+                                        <button style="background:rgba(255,255,255,.2);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer">✕</button>
+                                    </div>
+                                    <div style="padding:14px;display:grid;gap:10px;font-size:14px;line-height:1.45;">
+                                        <div>Deze lamp/base slaan op de lokale Node backend (uploads, nieuws, logs, workflow). Supabase staat hier los van.</div>
+                                        <ol style="margin:0 0 0 18px;">
+                                            <li>Open deze workspace in VS Code.</li>
+                                            <li>Start taak: <b>Start Backend</b> (draait op 3001 of 3002).</li>
+                                            <li>Of PowerShell:
+                                                <div style="background:#0b0b0b;border:1px solid #333;border-radius:8px;padding:8px;margin-top:6px;font-family:ui-monospace,Consolas,monospace;font-size:12px;white-space:pre;">cd upload-backend
+npm install
+node index.js</div>
+                                            </li>
+                                            <li>Controleer <code>upload-backend/.env</code> (GITHUB_TOKEN, GITHUB_REPO, evt. PORT=3002).</li>
+                                            <li>Terug hier: klik “Auto-detect” of stel base in; lampje moet “online”.</li>
+                                        </ol>
+                                    </div>`;
+                                overlay.appendChild(box);
+                                overlay.addEventListener('click', (e)=>{ if (e.target===overlay) overlay.remove(); });
+                                const closeBtn = box.querySelector('button'); if (closeBtn) closeBtn.addEventListener('click', ()=>overlay.remove());
+                                document.body.appendChild(overlay);
+                            } catch(e){ alert('Kon start-hulp niet openen: '+(e.message||e)); }
                         });
                         // Quick-jump naar Nieuws tab
                         const openNewsBtn = document.getElementById('open-news-tab-btn');
@@ -505,7 +643,7 @@
                 let items = [];
                 // 1) backend
                 try{
-                    const r = await tryFetch('http://localhost:3001/news', { headers:{'Accept':'application/json'} }, 3500);
+                    const r = await tryFetch(getBackendBase().replace(/\/$/,'') + '/news', { headers:{'Accept':'application/json'} }, 3500);
                     if (r && r.ok){ items = await r.json(); }
                 }catch{}
                 // 2) static fallback
@@ -529,7 +667,7 @@
                 }
                 if (msg){ msg.style.color = '#9ca3af'; msg.textContent = 'Plaatsen…'; }
                 try{
-                    const res = await tryFetch('http://localhost:3001/news', {
+                    const res = await tryFetch(getBackendBase().replace(/\/$/,'') + '/news', {
                         method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ title, content, link, date: new Date().toISOString().slice(0,10) })
                     }, 5000);
                                 if (res && res.ok){
@@ -544,7 +682,7 @@
                                         } else if (res) {
                                             msg.textContent = 'Backend gaf fout ('+res.status+'). Probeer opnieuw of herstart de upload-backend.';
                                         } else {
-                                            msg.textContent = 'Backend niet bereikbaar. Start of herstart de upload-backend (port 3001).';
+                                            msg.textContent = 'Backend niet bereikbaar ('+getBackendBase()+').';
                                         }
                                     }
                     }
@@ -552,7 +690,7 @@
             }
 
             if (form){ form.addEventListener('submit', submitNews); }
-            document.addEventListener('DOMContentLoaded', loadNews);
+            document.addEventListener('DOMContentLoaded', function(){ loadNews(); updateAdminBackendChips(); });
         })();
         </script>
 </html>

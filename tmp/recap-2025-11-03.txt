@@ -1,0 +1,27 @@
+Wat ik vandaag heb veranderd en toegevoegd (03-11-2025)
+
+Backend & scripts
+- Start-hulp toegevoegd in admin.html (uitleg lokaal starten backend).
+- Nieuwe scripts-map met één-klik tools (.ps1 + .cmd):
+  * start-backend-3002, start-backend-3002-safe (eerst poort 3002 vrijmaken), start-backend-auto (probeert 3002, ruimt op, valt terug op 3001).
+  * start-live-server, start-live-server-safe (poort 8000 eerst vrijmaken).
+  * detect-base-and-health (nu met pauze zodat venster open blijft).
+  * news-list, logs-append (POST en GET-fallback), workflow-run, restart-backend.
+  * kill-port (default 3002) voor snelle troubleshooting.
+  * open-admin, open-index, open-logs (auto live server + cache-buster), en open-admin-tabs (admin in index.html).
+- Scripts houden vensters open (-NoExit of handmatige pauze) zodat foutmeldingen leesbaar zijn.
+
+Caching & pagina’s
+- Sterke no-cache maatregelen in admin.html en logs.html: meta-tags + cache-buster die ?v=<timestamp> op alle CSS/JS zet.
+- open-admin/open-index/open-logs openen nu altijd met cache-buster, waardoor oude versies niet meer terugkomen.
+
+Backend detectie & poorten
+- Auto-detectie 3001→3002 blijft leidend in UI en scripts; basis is vandaag http://localhost:3002.
+- start-backend-auto lost EADDRINUSE op door eerst poort op te ruimen en zo nodig te wisselen naar 3001.
+
+Resultaat
+- Admin (tabs) toont backend status en base helder.
+- Eén-klik scripts voor starten, health, nieuws, logs, workflow, restart.
+- Caching-problemen gemitigeerd; openen van Admin/Logs/Index haalt nu nieuwste assets op.
+
+Versie-tag: ops-scripts-v1

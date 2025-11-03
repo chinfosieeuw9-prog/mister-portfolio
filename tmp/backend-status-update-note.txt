@@ -1,0 +1,25 @@
+What I changed
+News now auto-uses the active backend base (3001 → 3002 fallback) instead of a hardcoded port.
+Added a status “lamp” and current base to:
+CV (already there)
+Software (new chips)
+News (new chips)
+Logs helper endpoints in the Admin view now also use the dynamic backend base.
+logs.html now auto-detects the backend and shows which base it used in the status line.
+Files changed
+index.html
+News API calls updated to dynamic base:
+loadNewsAdmin, deleteNewsAdmin, saveNewsAdmin, submitNewsAdmin now call getBackendBase() + /news[…].
+Error text now shows the actual base (not hardcoded “port 3001”).
+New status chips:
+Software: spans with ids soft-backend-chip and soft-backend-base.
+News: spans with ids news-backend-chip and news-backend-base.
+Status wiring:
+On tab switch: checkBackendStatusFor() runs for Software and News too.
+On general refresh: status updates now also refresh Software + News chips.
+Logs actions in Admin:
+/logs/append, /logs/update, /logs/delete now use getBackendBase().
+Public news loader (bottom of file): now fetches from getBackendBase() + /news before falling back to news.json.
+logs.html
+Added small getBackendBase + auto-detect (3001→3002) helper.
+Health check and “Run workflow” use the detected base; status shows “backend online • http://localhost:3002” (for example).

@@ -1,6 +1,26 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
+  <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="pragma" content="no-cache">
+  <meta http-equiv="expires" content="0">
+  <script>
+    (function(){
+      try {
+        const v = Date.now();
+        document.addEventListener('DOMContentLoaded', function(){
+          document.querySelectorAll('link[rel="stylesheet"][href]').forEach(function(link){
+            const href = link.getAttribute('href');
+            if (href && href.indexOf('?') === -1) { link.href = href + '?v=' + v; }
+          });
+          document.querySelectorAll('script[src]').forEach(function(s){
+            const src = s.getAttribute('src');
+            if (src && src.indexOf('?') === -1) { s.src = src + '?v=' + v; }
+          });
+        });
+      } catch(e) {}
+    })();
+  </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Backup Logboek • mister.us.kg</title>
@@ -97,15 +117,33 @@
   const runStatus = document.getElementById('runStatus');
   let entries = [];
 
+  // --- Backend base helpers (reuse same keys as index.html) ---
+  function normBase(u){ try{ return String(u||'').trim().replace(/\/$/,''); } catch{ return 'http://localhost:3001'; } }
+  function getBackendBase(){
+    try{
+      const ls = localStorage.getItem('backendBase')||'';
+      const ss = sessionStorage.getItem('backendBase')||'';
+      return normBase(ls||ss||'http://localhost:3002');
+    }catch{ return 'http://localhost:3001'; }
+  }
+  async function detectBackend(){
+    const cands = [getBackendBase(), 'http://localhost:3001','http://localhost:3002'];
+    for (const b of [...new Set(cands.map(normBase))]){
+      try{ const r = await fetch(normBase(b)+'/health',{cache:'no-store'}); if (r.ok){ try{ sessionStorage.setItem('backendBase', normBase(b)); }catch{} return normBase(b);} }catch{}
+    }
+    return normBase(cands[0]);
+  }
+
   async function checkBackendHealth(){
     try{
       const ctrl = new AbortController();
       const t = setTimeout(()=>ctrl.abort(), 4000);
-      const res = await fetch('http://localhost:3001/health', { signal: ctrl.signal });
+      const base = await detectBackend();
+      const res = await fetch(base.replace(/\/$/,'') + '/health', { signal: ctrl.signal });
       clearTimeout(t);
       if (!res.ok) throw new Error('HTTP '+res.status);
       if (runBtn) runBtn.disabled = false;
-      if (runStatus) { runStatus.textContent = 'backend online'; runStatus.style.color = '#22c55e'; }
+      if (runStatus) { runStatus.textContent = 'backend online • '+base; runStatus.style.color = '#22c55e'; }
     }catch(e){
       if (runBtn) runBtn.disabled = true;
       if (runStatus) { runStatus.textContent = 'backend offline'; runStatus.style.color = '#ef4444'; }
@@ -206,13 +244,14 @@
       runStatus.textContent = 'workflow starten…';
       const ctrl = new AbortController();
       const t = setTimeout(()=>ctrl.abort(), 120000);
-      const res = await fetch('http://localhost:3001/workflow/run', {
+      const base = await detectBackend();
+      const res = await fetch(base.replace(/\/$/,'') + '/workflow/run', {
         method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ quick:true }), signal: ctrl.signal
       });
       clearTimeout(t);
       if(!res.ok) throw new Error('HTTP '+res.status);
       const j = await res.json().catch(()=>({}));
-      runStatus.textContent = 'klaar (exit '+((j.exitCode!=null)?j.exitCode:0)+')';
+      runStatus.textContent = 'klaar (exit '+((j.exitCode!=null)?j.exitCode:0)+') • '+base;
       setTimeout(load, 800);
     }catch(e){ runStatus.textContent = 'fout: '+(e.message||e); }
   }

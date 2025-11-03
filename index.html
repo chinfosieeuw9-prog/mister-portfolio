@@ -1,6 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="expires" content="0">
+    <script>
+        (function(){
+            try {
+                const v = Date.now();
+                document.addEventListener('DOMContentLoaded', function(){
+                    // Bust CSS caches
+                    document.querySelectorAll('link[rel="stylesheet"][href]').forEach(function(link){
+                        const href = link.getAttribute('href');
+                        if (href && href.indexOf('?') === -1) { link.href = href + '?v=' + v; }
+                    });
+                    // Bust JS caches
+                    document.querySelectorAll('script[src]').forEach(function(s){
+                        const src = s.getAttribute('src');
+                        if (src && src.indexOf('?') === -1) { s.src = src + '?v=' + v; }
+                    });
+                });
+            } catch(e) {}
+        })();
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -44,7 +66,7 @@
             // HTTP→HTTPS redirect for mister.us.kg (no effect on localhost)
             (function(){
                 try{
-                    var host = (location.hostname||'').toLowerCase();
+                        const host = (location.hostname||'').toLowerCase();
                     if (location.protocol === 'http:' && (host === 'mister.us.kg' || host === 'www.mister.us.kg')){
                         location.replace('https://' + location.host + location.pathname + location.search + location.hash);
                     }
@@ -1302,14 +1324,14 @@
                 return window.FORMSPREE_ENDPOINT;
             };
         </script>
-    
+
     <!-- Upload Dialog -->
     <div id="uploadDialog" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); z-index:9999; align-items:center; justify-content:center;">
         <form id="uploadForm" style="background:#fff; padding:32px; border-radius:12px; box-shadow:0 8px 32px rgba(0,0,0,0.2); min-width:320px; max-width:90vw; display:flex; flex-direction:column; gap:16px;">
             <h2 style="color:#2d1b69;">Software Upload</h2>
             <input type="file" name="file" required style="border:1px dashed #2d1b69; padding:12px;" />
             <input type="text" name="name" placeholder="Naam software" required style="padding:8px; border-radius:6px; border:1px solid #ccc;" />
-            <select name="category" required style="padding:8px; border-radius:6px; border:1px solid #ccc;">
+            <select name="category" required title="Categorie kiezen" aria-label="Categorie kiezen" style="padding:8px; border-radius:6px; border:1px solid #ccc;">
                 <option value="">Categorie kiezen</option>
                 <option value="tool">Tool</option>
                 <option value="game">Game</option>
@@ -1617,7 +1639,10 @@
                 </div>
                 
                 <div id="admin-software" class="admin-content">
-                    <h3>📁 Software Explorer</h3>
+                    <h3 style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">📁 Software Explorer
+                        <span id="soft-backend-chip" style="border:1px solid #333;border-radius:999px;padding:2px 8px;color:#9ca3af;font-size:12px">backend: —</span>
+                        <span id="soft-backend-base" style="border:1px solid #333;border-radius:999px;padding:2px 8px;color:#9ca3af;font-size:12px">base: —</span>
+                    </h3>
                     
                     <!-- Explorer View -->
                     <div class="explorer-container">
@@ -1707,7 +1732,10 @@
                 </div>
 
                 <div id="admin-cv" class="admin-content">
-                    <h3>📄 CV-instellingen</h3>
+                    <h3 style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">📄 CV-instellingen
+                        <span id="cv-backend-chip" style="border:1px solid #333;border-radius:999px;padding:2px 8px;color:#9ca3af;font-size:12px">backend: —</span>
+                        <span id="cv-backend-base" style="border:1px solid #333;border-radius:999px;padding:2px 8px;color:#9ca3af;font-size:12px">base: —</span>
+                    </h3>
                     <div class="grid-12 grid-maxw-720">
                         <div class="flex-12-end">
                             <div style="flex:1;min-width:220px;">
@@ -1764,7 +1792,10 @@
                 </div>
                 
                 <div id="admin-news" class="admin-content">
-                    <h3>📰 Nieuwsbeheer</h3>
+                    <h3 style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">📰 Nieuwsbeheer
+                        <span id="news-backend-chip" style="border:1px solid #333;border-radius:999px;padding:2px 8px;color:#9ca3af;font-size:12px">backend: —</span>
+                        <span id="news-backend-base" style="border:1px solid #333;border-radius:999px;padding:2px 8px;color:#9ca3af;font-size:12px">base: —</span>
+                    </h3>
                     <form id="news-admin-form" onsubmit="return submitNewsAdmin(event)" style="display:grid;gap:10px;max-width:720px;">
                         <div style="display:grid;gap:6px;">
                             <label style="color:#9ca3af;font-size:12px;">Titel</label>
@@ -1792,6 +1823,25 @@
                 <div id="admin-integrations" class="admin-content">
                     <h3>⚙️ Integraties</h3>
                     <div style="display:grid;gap:14px;max-width:820px;">
+                        <!-- Backend status & upload-diagnose -->
+                        <div id="section-backend" style="padding:12px;border:1px solid #333;border-radius:10px;background:#0f0f0f;display:grid;gap:10px;">
+                            <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;">
+                                <div style="font-weight:700;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                                    <span>Upload-backend</span>
+                                    <span id="backend-status-pill" style="border:1px solid #333;border-radius:999px;padding:2px 8px;color:#9ca3af">—</span>
+                                    <span id="backend-base-pill" style="border:1px solid #333;border-radius:999px;padding:2px 8px;color:#9ca3af">base: —</span>
+                                </div>
+                                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                                    <input id="backend-base-input" type="url" class="form-input" placeholder="http://localhost:3001" style="max-width:260px" />
+                                    <button class="tech-btn" onclick="saveBackendBaseUrl()">💾 Opslaan</button>
+                                    <button class="tech-btn" onclick="autoDetectBackendBase()">🔍 Auto-detect</button>
+                                    <button class="tech-btn" onclick="checkUploadDiagnostics()">🧪 Check upload</button>
+                                    <button class="tech-btn" onclick="showBackendStartHelp()">❓ Start-hulp</button>
+                                </div>
+                            </div>
+                            <div id="upload-check-output" style="display:none;background:#0b0b0b;border:1px solid #222;border-radius:8px;padding:10px;color:#d1d5db;overflow:auto;font-size:12px"></div>
+                            <div style="font-size:12px;color:#9ca3af">Tip: draait de backend niet? Start de taak “Start Backend” in VS Code of voer node upload-backend/index.js uit. Zorg dat je GitHub token in upload-backend/.env “Contents: Read and write” rechten heeft (of klassieke repo-scope).</div>
+                        </div>
                         <div style="padding:12px;border:1px solid #333;border-radius:10px;background:#0f0f0f;display:grid;gap:10px;">
                             <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
                                 <div style="font-weight:700;">Presence provider</div>
@@ -2285,6 +2335,9 @@
                 // toggle sections per provider
                 const secSb = document.getElementById('section-supabase');
                 const secAb = document.getElementById('section-ably');
+                // backend base input preset
+                try { const bInp = document.getElementById('backend-base-input'); if (bInp) bInp.value = getBackendBase(); } catch{}
+                try { renderBackendStatusPills(); } catch{}
                 const applyVis = ()=>{
                     const p = (document.getElementById('presence-provider')?.value)||'supabase';
                     if (secSb) secSb.style.display = p==='supabase' ? 'grid' : 'none';
@@ -4327,12 +4380,12 @@
             document.getElementById(`admin-${tabName}`).classList.add('active');
             
             // Load specific data
-            if (tabName === 'software') loadSoftwareList();
+            if (tabName === 'software') { loadSoftwareList(); try { checkBackendStatusFor('soft-backend-chip','soft-backend-base'); } catch{} }
             if (tabName === 'newsletter') loadSubscriberList();
             if (tabName === 'logs') loadActivityLogs();
-            if (tabName === 'cv') loadCvSettings();
+            if (tabName === 'cv') { loadCvSettings(); try { checkBackendStatusFor('cv-backend-chip', 'cv-backend-base'); } catch{} }
             if (tabName === 'integrations') loadIntegrationsSettings();
-            if (tabName === 'news') loadNewsAdmin();
+            if (tabName === 'news') { loadNewsAdmin(); try { checkBackendStatusFor('news-backend-chip','news-backend-base'); } catch{} }
         }
 
         // --- Nieuwsbeheer (in-page admin tab) ---
@@ -4341,6 +4394,96 @@
             const t = setTimeout(() => ctrl.abort(), ms || 5000);
             try { const r = await fetch(url, { ...(opts||{}), signal: ctrl.signal }); clearTimeout(t); return r; }
             catch (e) { clearTimeout(t); return null; }
+        }
+
+        // Backend base helper: prefer saved URL, else detect 3001 → 3002, cache in-memory
+        window.__backendBase = '';
+        function getSavedBackendBase(){ try{ return (localStorage.getItem('backendBase')||'').trim(); }catch{ return ''; } }
+        function setSavedBackendBase(u){ try{ if(u) localStorage.setItem('backendBase', u); else localStorage.removeItem('backendBase'); }catch{} }
+        async function detectBackendBaseOnce(){
+            if (window.__backendBase) return window.__backendBase;
+            const saved = getSavedBackendBase();
+            if (saved){ window.__backendBase = saved; return saved; }
+            // try 3001 then 3002
+            const c1 = await tryFetch('http://localhost:3001/health', { cache:'no-store' }, 1200);
+            if (c1 && c1.ok){ window.__backendBase = 'http://localhost:3001'; return window.__backendBase; }
+            const c2 = await tryFetch('http://localhost:3002/health', { cache:'no-store' }, 1200);
+            if (c2 && c2.ok){ window.__backendBase = 'http://localhost:3002'; return window.__backendBase; }
+            window.__backendBase = 'http://localhost:3001'; // default
+            return window.__backendBase;
+        }
+        function getBackendBase(){ return window.__backendBase || getSavedBackendBase() || 'http://localhost:3001'; }
+        async function autoDetectBackendBase(){
+            try{
+                const base = await detectBackendBaseOnce();
+                const inp = document.getElementById('backend-base-input'); if (inp) inp.value = base;
+                renderBackendStatusPills();
+                showToast('Backend basis gedetecteerd: '+base, 'info');
+            } catch(e){ showToast('Auto-detect mislukt: '+(e&&e.message?e.message:e), 'error'); }
+        }
+        function saveBackendBaseUrl(){
+            try{
+                const inp = document.getElementById('backend-base-input');
+                const v = (inp && inp.value ? inp.value.trim() : '');
+                if (!v){ setSavedBackendBase(''); window.__backendBase=''; renderBackendStatusPills(); return; }
+                // basic validation
+                if (!/^https?:\/\//i.test(v)) { alert('Voer een geldige URL in, bv. http://localhost:3001'); return; }
+                setSavedBackendBase(v);
+                window.__backendBase = v;
+                renderBackendStatusPills();
+                showToast('Backend basis opgeslagen: '+v, 'success');
+            } catch(e){ showToast('Opslaan mislukt: '+(e&&e.message?e.message:e), 'error'); }
+        }
+        async function renderBackendStatusPills(){
+            const pill = document.getElementById('backend-status-pill');
+            const baseP = document.getElementById('backend-base-pill');
+            const base = getBackendBase();
+            if (baseP){ baseP.textContent = 'base: '+base; baseP.style.borderColor = '#333'; baseP.style.color = '#9ca3af'; }
+            if (pill){
+                try{
+                    const r = await tryFetch(base.replace(/\/$/,'') + '/health', { cache:'no-store' }, 1500);
+                    if (r && r.ok){ pill.textContent='online'; pill.style.color='#22c55e'; pill.style.borderColor='#195b37'; }
+                    else { pill.textContent='offline'; pill.style.color='#ef4444'; pill.style.borderColor='#5b1d1d'; }
+                }catch{ pill.textContent='offline'; pill.style.color='#ef4444'; pill.style.borderColor='#5b1d1d'; }
+            }
+            // Also update tiny chip in logs panel, if present
+            try{
+                const chip = document.getElementById('backend-status-chip');
+                if (chip){
+                    const r = await tryFetch(base.replace(/\/$/,'') + '/health', { cache:'no-store' }, 1500);
+                    if (r && r.ok){ chip.textContent = 'backend: online'; chip.style.color='#22c55e'; chip.style.borderColor='#195b37'; }
+                    else { chip.textContent = 'backend: offline'; chip.style.color='#ef4444'; chip.style.borderColor='#5b1d1d'; }
+                }
+            }catch{}
+        }
+        async function checkUploadDiagnostics(){
+            const out = document.getElementById('upload-check-output');
+            if (out){ out.style.display='block'; out.textContent = 'Controleren…'; }
+            try {
+                const base = getBackendBase();
+                const r = await tryFetch(base.replace(/\/$/,'') + '/upload/check', { cache:'no-store' }, 6000);
+                const j = r ? (await r.json().catch(()=>({}))) : null;
+                if (!r || !r.ok || !j){ throw new Error('Geen respons van backend'); }
+                const summary = [];
+                if (j.user){ summary.push('👤 user: '+(j.user.login||j.user.name||'-')); }
+                if (j.repo){
+                    const rp = j.repo;
+                    summary.push('📦 repo: '+(rp.full_name||'-'));
+                    if (rp.permissions){ summary.push('🔐 rights: push='+(rp.permissions.push?'true':'false')+', admin='+(rp.permissions.admin?'true':'false')); }
+                }
+                if (j.branch){ summary.push('🌿 branch: '+(j.branch.name||'-')); }
+                if (j.advice){ summary.push('💡 '+j.advice); }
+                const nice = {
+                    ok: j.ok===true,
+                    user: j.user && (j.user.login||j.user.name||j.user.id||null),
+                    repo: j.repo && (j.repo.full_name||j.repo.name||null),
+                    push: !!(j.repo && j.repo.permissions && j.repo.permissions.push),
+                    branch: j.branch && (j.branch.name||null),
+                    advice: j.advice||null
+                };
+                if (out){ out.textContent = summary.join('\n') + '\n\n' + JSON.stringify(nice, null, 2); }
+                showToast('Upload-diagnose uitgevoerd', 'success');
+            } catch(e){ if (out){ out.textContent = '❌ Fout: '+(e&&e.message?e.message:e); } showToast('Diagnose mislukt: '+(e&&e.message?e.message:e), 'error'); }
         }
 
         // Simple toast utility
@@ -4387,6 +4530,131 @@
             return el;
         }
 
+        // --- Backend base URL helpers (3001→3002 auto-detect) ---
+        function normalizeBase(u){ try { return String(u||'').trim().replace(/\/$/,''); } catch { return 'http://localhost:3001'; } }
+        function getBackendBase(){
+            try {
+                const ls = localStorage.getItem('backendBase') || '';
+                const ss = sessionStorage.getItem('backendBase') || '';
+                const v = ls || ss || 'http://localhost:3001';
+                return normalizeBase(v);
+            } catch { return 'http://localhost:3001'; }
+        }
+        function setBackendBase(u, persist){
+            const v = normalizeBase(u||'');
+            try { sessionStorage.setItem('backendBase', v); } catch{}
+            if (persist) { try { localStorage.setItem('backendBase', v); } catch{} }
+            try { renderBackendStatusPills(); } catch{}
+            return v;
+        }
+        async function detectBackendBaseOnce(){
+            const candidates = [];
+            // If user set a custom base, prefer verifying it first
+            const user = (localStorage.getItem('backendBase')||'').trim();
+            if (user) candidates.push(user);
+            candidates.push('http://localhost:3001','http://localhost:3002');
+            // unique
+            const uniq = [...new Set(candidates.map(normalizeBase))];
+            for (const base of uniq){
+                try {
+                    const r = await tryFetch(normalizeBase(base) + '/health', { cache:'no-store' }, 2000);
+                    if (r && r.ok){ setBackendBase(base, false); return base; }
+                } catch { /* try next */ }
+            }
+            // default to first
+            return setBackendBase(uniq[0] || 'http://localhost:3001', false);
+        }
+        function renderBackendStatusPills(){
+            try {
+                const base = getBackendBase();
+                const baseEl = document.getElementById('backend-base-pill');
+                if (baseEl){ baseEl.textContent = 'base: ' + base; }
+                const inp = document.getElementById('backend-base-input');
+                if (inp && !inp.value) inp.value = base;
+            } catch{}
+            // Also reuse existing chip in Logs card
+            try { checkBackendStatus(); } catch{}
+        }
+        function saveBackendBaseUrl(){
+            try {
+                const inp = document.getElementById('backend-base-input');
+                if (!inp) return;
+                const v = setBackendBase(inp.value, true);
+                showToast('Backend basis-URL opgeslagen: ' + v, 'success');
+            } catch(e){ alert('Opslaan mislukt: '+(e.message||e)); }
+        }
+        async function autoDetectBackendBase(){
+            try{
+                const b = await detectBackendBaseOnce();
+                const inp = document.getElementById('backend-base-input'); if (inp) inp.value = getBackendBase();
+                renderBackendStatusPills();
+                showToast('Gedetecteerde backend: ' + (b||getBackendBase()), 'info');
+            } catch(e){ alert('Auto-detect mislukt: '+(e.message||e)); }
+        }
+        async function checkUploadDiagnostics(){
+            const out = document.getElementById('upload-check-output');
+            if (out) { out.style.display='block'; out.textContent = 'Bezig met controleren…'; }
+            try{
+                const r = await tryFetch(getBackendBase().replace(/\/$/,'') + '/upload/check', { headers: { 'Accept':'application/json' } }, 5000);
+                const j = r ? (await r.json().catch(()=>({}))) : null;
+                // Bouw een compacte regel indien velden bestaan
+                let line = '';
+                try {
+                    const user = j && (j.user || (j.ok && j.details && j.details.user));
+                    const repo = j && (j.repo || (j.ok && j.details && j.details.repo));
+                    const push = (j && j.push)!=null ? j.push : (j && j.permissions && (j.permissions.push || j.permissions.admin));
+                    const branch = j && (j.branch || (j.details && j.details.branch));
+                    const advice = j && (j.advice || (j.details && j.details.advice));
+                    if (user||repo||branch){
+                        line = '👤 user: ' + (user||'-') + ' 🧱 repo: ' + (repo||'-') + ' 🔐 rights: push=' + (push===true?'true':'false') + ' 🌿 branch: ' + (branch||'-') + ' 💡 ' + (advice||'');
+                    }
+                } catch{}
+                if (out){
+                    out.innerHTML = '';
+                    if (line){
+                        const p = document.createElement('div'); p.style.marginBottom='6px'; p.textContent = line; out.appendChild(p);
+                    }
+                    const pre = document.createElement('pre'); pre.textContent = JSON.stringify(j, null, 2); out.appendChild(pre);
+                }
+                renderBackendStatusPills();
+            } catch(e){ if (out){ out.textContent = 'Check mislukt: ' + (e.message||e); } }
+        }
+
+        // Start-hulp overlay: toont korte stappen om de upload-backend lokaal te starten
+        function showBackendStartHelp(){
+            try{
+                const overlay = document.createElement('div');
+                overlay.className = 'modal-overlay';
+                overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;z-index:9999;';
+                const box = document.createElement('div');
+                box.style.cssText = 'background:#111;border:1px solid #333;color:#e5e7eb;border-radius:12px;max-width:720px;width:92vw;max-height:84vh;overflow:auto;';
+                box.innerHTML = `
+                    <div style="padding:14px 16px;background:linear-gradient(135deg,#7c3aed,#2563eb);border-radius:12px 12px 0 0;display:flex;align-items:center;justify-content:space-between;color:#fff">
+                        <div style="font-weight:800">Start-hulp: Upload-backend (lokaal)</div>
+                        <button style="background:rgba(255,255,255,.2);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer">✕</button>
+                    </div>
+                    <div style="padding:14px;display:grid;gap:10px;font-size:14px;line-height:1.45;">
+                        <div>Deze “backend” is de lokale Node.js server voor uploads, nieuws, logs en workflow. Supabase blijft een aparte cloudintegratie. Het groene lampje en de “base” gelden dus voor deze Node-backend.</div>
+                        <ol style="margin:0 0 0 18px;">
+                            <li>Open dit project in VS Code.</li>
+                            <li>Gebruik Taken → “Start Backend” (aanwezig in deze workspace). Dit start de server op 3001 (of 3002).</li>
+                            <li>Alternatief (PowerShell): ga naar map <code>upload-backend</code> en start handmatig:
+                                <div style="background:#0b0b0b;border:1px solid #333;border-radius:8px;padding:8px;margin-top:6px;font-family:ui-monospace,Consolas,monospace;font-size:12px;white-space:pre;">cd upload-backend
+npm install
+node index.js</div>
+                            </li>
+                            <li>Zorg dat <code>upload-backend/.env</code> aanwezig is (GITHUB_TOKEN, GITHUB_REPO, PORT=3002 optioneel).</li>
+                            <li>Keer terug naar deze pagina en klik “Auto-detect” of stel de base in; het lampje moet “online” tonen.</li>
+                        </ol>
+                        <div class="muted-small">Tip: De knop “Restart backend” staat in de standalone admin.html. Die werkt alleen als de backend al draait.</div>
+                    </div>`;
+                overlay.appendChild(box);
+                overlay.addEventListener('click', (e)=>{ if (e.target===overlay) overlay.remove(); });
+                const closeBtn = box.querySelector('button'); if (closeBtn) closeBtn.addEventListener('click', ()=>overlay.remove());
+                document.body.appendChild(overlay);
+            } catch(e){ alert('Kon start-hulp niet openen: '+(e.message||e)); }
+        }
+
         // Admin-only visibility helpers
         function applyAdminVisibility(isAdmin){
             try {
@@ -4407,7 +4675,7 @@
             list.innerHTML = '<li style="color:#9ca3af">Laden…</li>';
             let items = [];
             try {
-                const r = await tryFetch('http://localhost:3001/news', { headers: { 'Accept':'application/json' } }, 3500);
+                const r = await tryFetch(getBackendBase().replace(/\/$/,'') + '/news', { headers: { 'Accept':'application/json' } }, 3500);
                 if (r && r.ok) items = await r.json();
             } catch {}
             if (!Array.isArray(items) || items.length === 0) {
@@ -4437,7 +4705,7 @@
             const msg = document.getElementById('news-admin-msg');
             if (msg) { msg.style.color = '#9ca3af'; msg.textContent = 'Verwijderen…'; }
             try {
-                const r = await tryFetch('http://localhost:3001/news?index=' + index, { method:'DELETE' }, 6000);
+                const r = await tryFetch(getBackendBase().replace(/\/$/,'') + '/news?index=' + index, { method:'DELETE' }, 6000);
                 if (r && r.ok) {
                     let removed = null;
                     try { removed = await r.json(); } catch {}
@@ -4449,7 +4717,7 @@
                         { label: 'Ongedaan maken', onClick: async () => {
                             try {
                                 const body = JSON.stringify({ index: originalIndex, item: payload });
-                                const rr = await tryFetch('http://localhost:3001/news/insert', { method:'POST', headers:{'Content-Type':'application/json'}, body }, 6000);
+                                const rr = await tryFetch(getBackendBase().replace(/\/$/,'') + '/news/insert', { method:'POST', headers:{'Content-Type':'application/json'}, body }, 6000);
                                 if (rr && rr.ok) showToast('Hersteld.', 'success'); else showToast('Herstellen mislukt.', 'error');
                             } catch { showToast('Herstellen mislukt.', 'error'); }
                             await loadNewsAdmin();
@@ -4502,7 +4770,7 @@
             const link = (document.getElementById('edit-link-'+index)?.value || '').trim();
             try {
                 const body = { index, title, date, content, link };
-                const r = await tryFetch('http://localhost:3001/news?index=' + index, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) }, 6000);
+                const r = await tryFetch(getBackendBase().replace(/\/$/,'') + '/news?index=' + index, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) }, 6000);
                 if (r && r.ok) {
                     if (msg) { msg.textContent = ''; }
                     showToast('Item bijgewerkt.', 'success');
@@ -4530,7 +4798,7 @@
             if (!title || !content) { if (msg) { msg.style.color='#ef4444'; msg.textContent='Titel en bericht zijn verplicht.'; } return false; }
             if (msg) { msg.style.color='#9ca3af'; msg.textContent='Plaatsen…'; }
             try {
-                const res = await tryFetch('http://localhost:3001/news', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ title, content, link, date: new Date().toISOString().slice(0,10) }) }, 6000);
+                const res = await tryFetch(getBackendBase().replace(/\/$/,'') + '/news', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ title, content, link, date: new Date().toISOString().slice(0,10) }) }, 6000);
                 if (res && res.ok) {
                     if (msg) { msg.style.color='#22c55e'; msg.textContent='Nieuws geplaatst.'; setTimeout(()=>{ msg.textContent=''; }, 2000); }
                     titleEl.value = ''; contentEl.value=''; if (linkEl) linkEl.value='';
@@ -4538,7 +4806,7 @@
                 } else {
                     if (msg) {
                         msg.style.color='#ef4444';
-                        if (!res) msg.textContent='Backend niet bereikbaar (port 3001).';
+                        if (!res) msg.textContent='Backend niet bereikbaar ('+getBackendBase()+').';
                         else if (res.status === 404) msg.textContent='Endpoint /news ontbreekt. Herstart backend.';
                         else msg.textContent='Fout: '+res.status;
                     }
@@ -5836,7 +6104,7 @@
                 fd.append('category', 'cv');
                 fd.append('description', isPdf ? 'CV PDF' : 'CV Word');
 
-                const resp = await fetch('http://localhost:3001/upload', { method: 'POST', body: fd });
+                const resp = await fetch(getBackendBase().replace(/\/$/,'') + '/upload', { method: 'POST', body: fd });
                 const data = await resp.json().catch(()=>({}));
                 if (!resp.ok || !data || data.success !== true) {
                     const extra = data && (data.github || data.details || data.reason) ? ' • ' + JSON.stringify((data.github || data.details || data.reason)) : '';
@@ -6060,10 +6328,10 @@
             try{
                 const controller = new AbortController();
                 const to = setTimeout(()=>controller.abort(), 120000);
-                const r = await fetch('http://localhost:3001/workflow/run', { method:'POST', signal: controller.signal });
+                const r = await fetch(getBackendBase().replace(/\/$/,'') + '/workflow/run', { method:'POST', signal: controller.signal });
                 const j = await r.json().catch(()=>({}));
                 if (!r.ok || !j.ok){
-                    alert('Workflow mislukt:\n'+(j.error||r.status||'onbekend')+"\n\nControleer of de backend draait op http://localhost:3001 (health endpoint)." );
+                    alert('Workflow mislukt:\n'+(j.error||r.status||'onbekend')+"\n\nControleer of de backend draait op "+getBackendBase()+" (health endpoint)." );
                 } else {
                     // korte weergave van output; daarna log herladen
                     console.log('[workflow stdout]', j.stdout);
@@ -6098,7 +6366,7 @@
             if (!message){ if (stat){ stat.style.color='#ef4444'; stat.textContent='Vul een bericht in.'; } return false; }
             if (stat){ stat.style.color='#9ca3af'; stat.textContent='Opslaan…'; }
             try{
-                const r = await fetch('http://localhost:3001/logs/append', {
+                const r = await fetch(getBackendBase().replace(/\/$/,'') + '/logs/append', {
                     method:'POST', headers:{'Content-Type':'application/json; charset=utf-8'},
                     body: JSON.stringify({ message, type:'note', versionTag: tag || 'note' })
                 });
@@ -6106,7 +6374,7 @@
                 if (!r.ok || !j.ok){
                     // Fallback: try GET with query params (URL-encoded)
                     const qs = new URLSearchParams({ message, versionTag: (tag||'note'), type:'note' }).toString();
-                    const r2 = await fetch('http://localhost:3001/logs/append?'+qs, { method:'GET' });
+                    const r2 = await fetch(getBackendBase().replace(/\/$/,'') + '/logs/append?'+qs, { method:'GET' });
                     const j2 = await r2.json().catch(()=>({}));
                     if (!r2.ok || !j2.ok){
                         const detail = (j && j.error) ? ('\n'+j.error) : (' (HTTP '+(r.status||'?')+')');
@@ -6158,7 +6426,7 @@
                 const newMsg = (prompt('Wijzig notitie', curMsg) ?? '').trim();
                 if (!newMsg) return;
                 const newTag = (prompt('Wijzig tag', curTag) ?? '').trim() || 'note';
-                const r = await fetch('http://localhost:3001/logs/update', {
+                const r = await fetch(getBackendBase().replace(/\/$/,'') + '/logs/update', {
                     method:'PUT', headers:{'Content-Type':'application/json'},
                     body: JSON.stringify({ timestamp: ts, message: newMsg, versionTag: newTag })
                 });
@@ -6176,7 +6444,7 @@
                 if (!e) return;
                 if (!confirm('Notitie verwijderen?')) return;
                 const ts = e.timestamp;
-                const r = await fetch('http://localhost:3001/logs/delete', {
+                const r = await fetch(getBackendBase().replace(/\/$/,'') + '/logs/delete', {
                     method:'DELETE', headers:{'Content-Type':'application/json'},
                     body: JSON.stringify({ timestamp: ts })
                 });
@@ -6194,7 +6462,7 @@
                 if (!e) return;
                 const ts = e.timestamp;
                 const newPinned = !Boolean(e.pinned);
-                const r = await fetch('http://localhost:3001/logs/update', {
+                const r = await fetch(getBackendBase().replace(/\/$/,'') + '/logs/update', {
                     method:'PUT', headers:{'Content-Type':'application/json'},
                     body: JSON.stringify({ timestamp: ts, pinned: newPinned })
                 });
@@ -6254,7 +6522,7 @@
         // Logging helpers: append a note to backend logs (graceful if backend is down)
         async function appendLogNote(message, versionTag='note'){
             try {
-                const r = await tryFetch('http://localhost:3001/logs/append', {
+                const r = await tryFetch(getBackendBase().replace(/\/$/,'') + '/logs/append', {
                     method:'POST',
                     headers:{ 'Content-Type':'application/json' },
                     body: JSON.stringify({ message: String(message||'').slice(0, 8000), type:'note', versionTag })
@@ -6276,10 +6544,20 @@
         }
 
         async function checkBackendStatus(){
-            const el = document.getElementById('backend-status-chip');
+            // Update default chip used op Admin Logs card
+            await checkBackendStatusFor('backend-status-chip');
+            // Update CV chip indien aanwezig
+            await checkBackendStatusFor('cv-backend-chip', 'cv-backend-base');
+            await checkBackendStatusFor('soft-backend-chip', 'soft-backend-base');
+            await checkBackendStatusFor('news-backend-chip', 'news-backend-base');
+        }
+        async function checkBackendStatusFor(statusId, baseId){
+            const el = statusId ? document.getElementById(statusId) : null;
+            const baseEl = baseId ? document.getElementById(baseId) : null;
+            if (baseEl){ try { baseEl.textContent = 'base: ' + getBackendBase(); } catch{} }
             if (!el) return;
             try{
-                const r = await fetch('http://localhost:3001/health', { cache:'no-store' });
+                const r = await fetch(getBackendBase().replace(/\/$/,'') + '/health', { cache:'no-store' });
                 if (!r.ok) throw new Error('HTTP '+r.status);
                 el.textContent = 'backend: online';
                 el.style.color = '#22c55e';
@@ -6516,7 +6794,7 @@
                 let loaded = false;
                 // 1) Try backend API
                 try {
-                    const r = await tryFetch('http://localhost:3001/news', { headers: { 'Accept':'application/json' }}, 3500);
+                    const r = await tryFetch((getBackendBase&&getBackendBase()||'http://localhost:3001').replace(/\/$/,'') + '/news', { headers: { 'Accept':'application/json' }}, 3500);
                     if (r && r.ok) {
                         const arr = await r.json();
                         if (Array.isArray(arr) && arr.length) {
@@ -6553,6 +6831,8 @@
             // Initialize realtime dashboard and WebAuthn demo
             try { initRealtimeDashboard(); } catch(e){ console.warn(e); }
             try { initWebAuthnDemo(); } catch(e){ console.warn(e); }
+            // Detect backend base early and render status
+            (async()=>{ try { await detectBackendBaseOnce(); renderBackendStatusPills(); const bInp = document.getElementById('backend-base-input'); if (bInp) bInp.value = getBackendBase(); } catch(e){ console.warn('backend base detect failed', e); } })();
             // Initialize Supabase presence (requires localStorage supabaseUrl/supabaseAnon)
             try {
                 const provider = localStorage.getItem('presenceProvider') || 'supabase';

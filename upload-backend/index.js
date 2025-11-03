@@ -4,7 +4,7 @@ import axios from 'axios';
 import dotenv from 'dotenv';
 import fs from 'fs';
 import Ably from 'ably';
-import { exec } from 'child_process';
+import { exec, spawn } from 'child_process';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -121,27 +121,75 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     res.json({ success: true, path: githubPath, html_url: htmlUrl, download_url: downloadUrl, pages_url: pagesUrl });
   } catch (err) {
     // Bubble up as much diagnostic info as possible to ease troubleshooting
+    const status = (err && err.response && err.response.status) ? err.response.status : (err && err.status) ? err.status : 500;
+    const headers = (err && err.response && err.response.headers) ? err.response.headers : undefined;
+    const ghData = (err && err.response && err.response.data) ? err.response.data : undefined;
+    const ghMsg = (ghData && (ghData.message || ghData.error)) ? (ghData.message || ghData.error) : undefined;
+    const reason = (err && err.message) ? err.message : String(err || 'error');
+
     try {
-      const status = err && err.response && err.response.status ? err.response.status : 500;
-      const ghData = err && err.response && err.response.data ? err.response.data : null;
-      const ghMsg = ghData && (ghData.message || ghData.error) ? (ghData.message || ghData.error) : undefined;
       console.error('GitHub upload error:', {
         status,
+        reason,
         ghMessage: ghMsg,
-        rateLimit: err && err.response && err.response.headers ? {
-          remaining: err.response.headers['x-ratelimit-remaining'],
-          reset: err.response.headers['x-ratelimit-reset']
-        } : undefined
+        rateLimit: headers ? {
+          remaining: headers['x-ratelimit-remaining'],
+          reset: headers['x-ratelimit-reset']
+        } : undefined,
+        data: ghData
       });
-      res.status(status === 401 || status === 403 ? 403 : 500).json({
-        error: 'Upload naar GitHub mislukt.',
-        status,
-        github: ghMsg || ghData || null
-      });
-    } catch (e2) {
-      console.error('Upload error (fallback):', e2);
-      res.status(500).json({ error: 'Upload naar GitHub mislukt.' });
+    } catch {}
+
+    const out = {
+      error: 'Upload naar GitHub mislukt.',
+      status,
+      reason,
+      github: ghMsg || null,
+      details: ghData || null
+    };
+    res.status((status === 401 || status === 403) ? 403 : 500).json(out);
+  }
+});
+
+// Diagnostics: check GitHub token/repo permissions and branch existence
+app.get('/upload/check', async (req, res) => {
+  try {
+    if (UPLOAD_DISABLED) {
+      return res.status(503).json({ ok: false, error: 'GITHUB_TOKEN/GITHUB_REPO ontbreken in .env' });
     }
+    const [owner, repo] = String(GITHUB_REPO).split('/');
+    const gh = axios.create({
+      baseURL: 'https://api.github.com',
+      headers: { Authorization: `token ${GITHUB_TOKEN}`, 'User-Agent': 'upload-backend' },
+      validateStatus: () => true
+    });
+
+  const meResp = await gh.get('/user');
+  const user = meResp.status === 200 ? { login: meResp.data.login, id: meResp.data.id } : null;
+  const scopes = meResp.headers ? (meResp.headers['x-oauth-scopes'] || meResp.headers['x-oauth-client-id'] || null) : null;
+
+    const repoResp = await gh.get(`/repos/${owner}/${repo}`);
+    const repoOk = repoResp.status === 200;
+    const permissions = repoOk && repoResp.data && repoResp.data.permissions ? repoResp.data.permissions : null;
+    const defaultBranch = repoOk && repoResp.data ? repoResp.data.default_branch : null;
+
+    const branch = GITHUB_BRANCH || defaultBranch;
+    const branchResp = await gh.get(`/repos/${owner}/${repo}/branches/${branch}`);
+    const branchOk = branchResp.status === 200;
+
+    // Summarize
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    return res.json({
+      ok: repoOk && branchOk,
+  user,
+  token: { scopes },
+      repo: { full_name: repoOk ? repoResp.data.full_name : GITHUB_REPO, default_branch: defaultBranch, permissions },
+      branch: { name: branch, exists: branchOk },
+      requires: { contentsWrite: true },
+      advice: permissions && permissions.push ? 'Token heeft push-rechten: uploads zouden moeten werken.' : 'Token mist push (write) rechten op deze repo. Maak een token met Contents: Read and write.'
+    });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
   }
 });
 
@@ -568,6 +616,26 @@ app.get('/__diag', (req, res) => {
     });
   } catch (e) {
     res.status(500).json({ ok:false, error: e.message });
+  }
+});
+
+// Admin: restart this backend process (spawn a new instance, then exit)
+app.post('/admin/restart', (req, res) => {
+  try {
+    const node = process.execPath; // current node executable
+    const child = spawn(node, [__filename], {
+      cwd: __dirname,
+      detached: true,
+      stdio: 'ignore',
+      env: process.env
+    });
+    child.unref();
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.json({ ok: true, restarting: true });
+    // Give the response a moment to flush, then exit current process
+    setTimeout(() => process.exit(0), 200);
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
   }
 });
 
