@@ -836,7 +836,11 @@
         }
         
         .logs-height {
-            height: 200px !important;
+            /* Vergroot het logpaneel ~3x en laat scroll toe */
+            min-height: 600px !important;
+            max-height: 80vh !important;
+            height: auto !important;
+            overflow-y: auto !important;
         }
         
         /* Featured Card Hover Effect */
@@ -1929,6 +1933,8 @@
     let softwareSearchQuery = '';
     let softwareSortKey = 'date_desc';
     let explorerMode = 'admin'; // 'admin' for full controls, 'public' for read-only modal
+        // News articles store (initialize early so functions can use it safely)
+        let newsArticles = JSON.parse(localStorage.getItem('newsArticles') || '[]');
         let activityLogs = JSON.parse(localStorage.getItem('activityLogs') || '[]');
         // Admin session helpers (client-side only)
 
@@ -3404,8 +3410,8 @@
                 console.error('❌ News container not found!');
                 return;
             }
-            
-                        container.innerHTML = `
+            // Clear existing items before rendering
+            container.innerHTML = '';
             
             if (newsArticles.length === 0) {
                 container.innerHTML = '<div style="color: #666; font-style: italic; padding: 8px;">Geen nieuws berichten gevonden</div>';
@@ -5793,10 +5799,48 @@
                 localStorage.setItem('newsArticles', JSON.stringify(sampleNews));
             }
             
-            // Load news articles and display
-            newsArticles = JSON.parse(localStorage.getItem('newsArticles') || '[]');
-            console.log('📰 Loaded news articles:', newsArticles.length, 'items');
-            loadNewsDisplay();
+            // Load news articles and display (backend -> static -> localStorage)
+            (async function(){
+                function timeout(ms){return new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),ms));}
+                async function tryFetch(url, opts, ms){
+                    try { return await Promise.race([fetch(url, opts), timeout(ms||4000)]); } catch(e){ return null; }
+                }
+                let loaded = false;
+                // 1) Try backend API
+                try {
+                    const r = await tryFetch('http://localhost:3001/news', { headers: { 'Accept':'application/json' }}, 3500);
+                    if (r && r.ok) {
+                        const arr = await r.json();
+                        if (Array.isArray(arr) && arr.length) {
+                            newsArticles = arr.map((n,i)=>({ id: Date.now()+i, ...n }));
+                            localStorage.setItem('newsArticles', JSON.stringify(newsArticles));
+                            loaded = true;
+                            console.log('📰 News loaded from backend:', newsArticles.length);
+                        }
+                    }
+                } catch(e){ console.warn('news backend load failed', e); }
+                // 2) Fallback to static news.json
+                if (!loaded) {
+                    try {
+                        const r2 = await tryFetch('news.json?ts='+Date.now(), { headers: { 'Accept':'application/json' }}, 3000);
+                        if (r2 && r2.ok) {
+                            const arr2 = await r2.json();
+                            if (Array.isArray(arr2) && arr2.length) {
+                                newsArticles = arr2.map((n,i)=>({ id: Date.now()+i, ...n }));
+                                localStorage.setItem('newsArticles', JSON.stringify(newsArticles));
+                                loaded = true;
+                                console.log('📰 News loaded from static file:', newsArticles.length);
+                            }
+                        }
+                    } catch(e){ console.warn('news static load failed', e); }
+                }
+                // 3) Final fallback: localStorage
+                if (!loaded) {
+                    newsArticles = JSON.parse(localStorage.getItem('newsArticles') || '[]');
+                    console.log('📰 News loaded from localStorage:', newsArticles.length);
+                }
+                loadNewsDisplay();
+            })();
 
             // Initialize realtime dashboard and WebAuthn demo
             try { initRealtimeDashboard(); } catch(e){ console.warn(e); }

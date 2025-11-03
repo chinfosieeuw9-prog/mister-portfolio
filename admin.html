@@ -49,6 +49,19 @@
                         const btn = document.getElementById('run-workflow-btn');
                         const out = document.getElementById('workflow-status');
                         if (!btn) return;
+                        // Health check on load
+                        (async ()=>{
+                            try {
+                                const ctrl = new AbortController();
+                                const t = setTimeout(()=>ctrl.abort(), 4000);
+                                const r = await fetch('http://localhost:3001/health', { signal: ctrl.signal });
+                                clearTimeout(t);
+                                if (!r.ok) throw new Error('HTTP '+r.status);
+                                btn.disabled = false; out.style.color = '#22c55e'; out.textContent = 'Backend online';
+                            } catch {
+                                btn.disabled = true; out.style.color = '#ef4444'; out.textContent = 'Backend offline';
+                            }
+                        })();
                         btn.addEventListener('click', async ()=>{
                             out.style.color = '#9ca3af';
                             out.textContent = 'Workflow starten…';
@@ -464,4 +477,73 @@
         console.error('Admin script error:', e);
     });
     </script>
+        <script>
+        // Nieuwsbeheer: laad en plaats nieuws via backend /news
+        (function(){
+            const form = document.getElementById('news-admin-form');
+            const msg = document.getElementById('news-form-msg');
+            const list = document.getElementById('news-list-admin');
+
+            async function tryFetch(url, opts, ms){
+                const ctrl = new AbortController();
+                const t = setTimeout(()=>ctrl.abort(), ms||4000);
+                try{ const r = await fetch(url, { ...(opts||{}), signal: ctrl.signal }); clearTimeout(t); return r; }catch(e){ clearTimeout(t); return null; }
+            }
+
+            async function loadNews(){
+                if (!list) return;
+                list.innerHTML = '<li style="color:#9ca3af">Laden…</li>';
+                let items = [];
+                // 1) backend
+                try{
+                    const r = await tryFetch('http://localhost:3001/news', { headers:{'Accept':'application/json'} }, 3500);
+                    if (r && r.ok){ items = await r.json(); }
+                }catch{}
+                // 2) static fallback
+                if (!Array.isArray(items) || items.length===0){
+                    try{ const r2 = await tryFetch('news.json?ts='+Date.now(), { headers:{'Accept':'application/json'} }, 3500); if (r2 && r2.ok) items = await r2.json(); }catch{}
+                }
+                items = Array.isArray(items)? items : [];
+                if (items.length === 0){ list.innerHTML = '<li style="color:#9ca3af">Nog geen nieuws.</li>'; return; }
+                list.innerHTML = items.map(n => '<li><b>'+((n.title||'').replace(/</g,'&lt;'))+'</b> <span style="color:#9ca3af">('+((n.date||'').replace(/</g,'&lt;'))+')</span><br><span style="font-size:12px;color:#cbd5e1">'+((n.content||'').replace(/</g,'&lt;'))+'</span></li>').join('');
+            }
+
+            async function submitNews(e){
+                e && e.preventDefault();
+                if (!form) return;
+                const title = (document.getElementById('news-title')||{}).value||'';
+                const content = (document.getElementById('news-content')||{}).value||'';
+                const link = (document.getElementById('news-link')||{}).value||'';
+                if (!title.trim() || !content.trim()){
+                    if (msg){ msg.style.color = '#ef4444'; msg.textContent = 'Titel en bericht zijn verplicht.'; }
+                    return;
+                }
+                if (msg){ msg.style.color = '#9ca3af'; msg.textContent = 'Plaatsen…'; }
+                try{
+                    const res = await tryFetch('http://localhost:3001/news', {
+                        method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ title, content, link, date: new Date().toISOString().slice(0,10) })
+                    }, 5000);
+                                if (res && res.ok){
+                        if (msg){ msg.style.color = '#22c55e'; msg.textContent = 'Nieuws geplaatst.'; }
+                        form.reset();
+                        loadNews();
+                                } else {
+                                    if (msg){
+                                        msg.style.color = '#ef4444';
+                                        if (res && res.status === 404) {
+                                            msg.textContent = 'Backend online maar /news endpoint ontbreekt. Herstart de upload-backend zodat de nieuwe routes actief zijn.';
+                                        } else if (res) {
+                                            msg.textContent = 'Backend gaf fout ('+res.status+'). Probeer opnieuw of herstart de upload-backend.';
+                                        } else {
+                                            msg.textContent = 'Backend niet bereikbaar. Start of herstart de upload-backend (port 3001).';
+                                        }
+                                    }
+                    }
+                            }catch(err){ if (msg){ msg.style.color = '#ef4444'; msg.textContent = 'Fout bij plaatsen. Controleer backend en probeer opnieuw.'; } }
+            }
+
+            if (form){ form.addEventListener('submit', submitNews); }
+            document.addEventListener('DOMContentLoaded', loadNews);
+        })();
+        </script>
 </html>

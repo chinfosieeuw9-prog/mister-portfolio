@@ -74,6 +74,41 @@
                                                    }
                                  },
                         "versionTag":  "v5.9"
+                    },
+                    {
+                        "site":  {
+                                     "status":  200,
+                                     "url":  "https://mister.us.kg",
+                                     "online":  true
+                                 },
+                        "durationMs":  49016,
+                        "type":  "workflow",
+                        "git":  {
+                                    "dirty":  false,
+                                    "message":  "Auto-backup 2025-11-03 04:59:21",
+                                    "sha":  "4413ff0"
+                                },
+                        "timestamp":  "2025-11-03T04:59:25.5011892+01:00",
+                        "artifacts":  {
+                                          "zip":  "C:\\Users\\Jordan\\Desktop\\mister-backups\\mister-backup-v5.10.zip",
+                                          "zipBytes":  4860093,
+                                          "filesCount":  1089
+                                      },
+                        "cloudSync":  {
+                                          "target":  "C:\\Users\\Jordan\\OneDrive\\mister-backups",
+                                          "ok":  false
+                                      },
+                        "apis":  {
+                                     "ablyAuth":  {
+                                                      "url":  "http://localhost:3001/ably/token",
+                                                      "status":  500
+                                                  },
+                                     "formspree":  {
+                                                       "url":  null,
+                                                       "status":  null
+                                                   }
+                                 },
+                        "versionTag":  "v5.10"
                     }
                 ]
 }

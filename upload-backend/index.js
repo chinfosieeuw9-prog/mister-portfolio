@@ -142,6 +142,118 @@ app.post('/logs/append', (req, res) => {
   }
 });
 
+// Simple news API backed by news.json (for homepage/admin use)
+app.get('/news', (req, res) => {
+  try {
+    const newsPath = path.resolve(repoRoot, 'news.json');
+    const list = fs.existsSync(newsPath)
+      ? (Array.isArray(JSON.parse(fs.readFileSync(newsPath, 'utf8') || '[]'))
+          ? JSON.parse(fs.readFileSync(newsPath, 'utf8') || '[]')
+          : [])
+      : [];
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    if (Object.prototype.hasOwnProperty.call(req.query, 'pretty')) {
+      // Pretty-printed JSON for easy viewing in a browser
+      res.type('application/json').send(JSON.stringify(list, null, 2));
+    } else {
+      res.json(list);
+    }
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+app.post('/news', (req, res) => {
+  try {
+    const { title, date, content, link, linkTitle } = req.body || {};
+    if (!title || !content) {
+      return res.status(400).json({ ok: false, error: 'title en content zijn verplicht' });
+    }
+    const newsPath = path.resolve(repoRoot, 'news.json');
+    let list = [];
+    if (fs.existsSync(newsPath)) {
+      try { list = JSON.parse(fs.readFileSync(newsPath, 'utf8') || '[]'); } catch {}
+    }
+    if (!Array.isArray(list)) list = [];
+    const item = {
+      title: String(title).trim(),
+      date: date ? String(date).trim() : new Date().toISOString().slice(0,10),
+      content: String(content).trim(),
+      link: link ? String(link).trim() : '#',
+      linkTitle: linkTitle ? String(linkTitle).trim() : 'Open',
+    };
+    // Prepend newest first
+    list.unshift(item);
+    fs.writeFileSync(newsPath, JSON.stringify(list, null, 2));
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.json({ ok: true, item, count: list.length });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+// Diagnostics: list routes and environment info to help debugging
+function listRoutes() {
+  try {
+    const routes = [];
+    app._router.stack.forEach((m) => {
+      if (m.route && m.route.path) {
+        const methods = Object.keys(m.route.methods).filter(Boolean).map(s=>s.toUpperCase());
+        routes.push({ path: m.route.path, methods });
+      } else if (m.name === 'router' && m.handle && m.handle.stack) {
+        m.handle.stack.forEach((h) => {
+          if (h.route && h.route.path) {
+            const methods = Object.keys(h.route.methods).filter(Boolean).map(s=>s.toUpperCase());
+            routes.push({ path: h.route.path, methods });
+          }
+        });
+      }
+    });
+    return routes;
+  } catch (e) { return []; }
+}
+
+app.get('/', (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  const routes = listRoutes();
+  const html = [
+    '<!doctype html><meta charset="utf-8"><title>upload-backend</title>',
+    '<h1>Upload Backend</h1>',
+    '<p>Beschikbare endpoints:</p>',
+    '<ul>',
+    ...routes.map(r=>'<li>'+r.methods.join(', ')+' '+r.path+'</li>'),
+    '</ul>',
+  ].join('');
+  res.type('html').send(html);
+});
+
+app.get('/__diag', (req, res) => {
+  try {
+    const newsPath = path.resolve(repoRoot, 'news.json');
+    const logsPath = path.resolve(repoRoot, 'logs', 'logs.json');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.json({
+      ok: true,
+      cwd: process.cwd(),
+      dirname: __dirname,
+      repoRoot,
+      node: process.version,
+      port: PORT,
+      routes: listRoutes(),
+      files: {
+        newsJsonExists: fs.existsSync(newsPath),
+        logsJsonExists: fs.existsSync(logsPath)
+      }
+    });
+  } catch (e) {
+    res.status(500).json({ ok:false, error: e.message });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`✅ Upload backend draait op http://localhost:${PORT}`);
+  try {
+    const routes = listRoutes();
+    console.log('➡️  Routes:', routes.map(r=>`${r.methods.join(',')} ${r.path}`).join(' | '));
+  } catch {}
 });

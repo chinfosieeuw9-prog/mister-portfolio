@@ -29,6 +29,17 @@
 			"command": "python -m http.server 8000",
 			"isBackground": true,
 			"group": "build"
+		},
+		{
+			"label": "Start Backend",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"upload-backend/index.js"
+			],
+			"isBackground": true,
+			"problemMatcher": [],
+			"group": "build"
 		}
 	]
 }

@@ -31,6 +31,14 @@
     .small{font-size:12px}
     .footer{margin-top:20px;color:var(--muted);font-size:12px}
     @media (max-width: 700px){.grid{grid-template-columns:1fr}}
+
+    /* Modal overlay for large JSON/details view */
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;z-index:9999}
+    .modal{background:#101010;color:#e5e7eb;border:1px solid #333;border-radius:12px;width:92vw;max-width:1200px;max-height:84vh;display:flex;flex-direction:column;overflow:hidden}
+    .modal-h{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff}
+    .modal-b{padding:12px;overflow:auto}
+    .pre{background:#0b0b0b;border:1px solid #333;border-radius:8px;padding:12px;white-space:pre;overflow:auto;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;line-height:1.45}
+    .modal-actions{display:flex;gap:8px;align-items:center}
   </style>
 </head>
 <body>
@@ -54,82 +62,123 @@
   </div>
   <script>
   const elList = document.getElementById('list');
-    const elSearch = document.getElementById('search');
-    const elType = document.getElementById('type');
+  const elSearch = document.getElementById('search');
+  const elType = document.getElementById('type');
   const runBtn = document.getElementById('runBtn');
   const runStatus = document.getElementById('runStatus');
-    let entries = [];
+  let entries = [];
 
-    function fmt(ts){try{return new Date(ts).toLocaleString()}catch{return ts}}
-    function tag(txt, cls=''){return `<span class="tag ${cls}">${txt}</span>`}
-
-    function render(){
-      const q = (elSearch.value||'').toLowerCase();
-      const t = elType.value;
-      let data = entries.slice().sort((a,b)=> new Date(b.timestamp)-new Date(a.timestamp));
-      if (t) data = data.filter(e=>e.type===t);
-      if (q) data = data.filter(e=>JSON.stringify(e).toLowerCase().includes(q));
-      elList.innerHTML = data.map(e=>{
-        const site = e.site||{}; const apis = e.apis||{}; const git = e.git||{}; const art=e.artifacts||{};
-        const okTag = site.online ? tag('online','ok') : tag('offline','err');
-        const typeTag = tag(e.type||'-');
-        const ver = `<span class="ver">${e.versionTag||'-'}</span>`;
-        const head = `
-          <div class="row">
-            <div>${ver} ${typeTag} <span class="muted">${fmt(e.timestamp)}</span></div>
-            <div>${okTag}</div>
-          </div>`;
-        const grid = `
-          <div class="grid">
-            <div class="kv"><span class="k">ZIP</span>${art.zip||'-'}</div>
-            <div class="kv"><span class="k">Index backup</span>${art.indexBackup||'-'}</div>
-            <div class="kv"><span class="k">Site status</span>${site.status||'-'} @ ${site.url||'-'}</div>
-            <div class="kv"><span class="k">Formspree</span>${(apis.formspree&&apis.formspree.status)||'-'} ${apis.formspree&&apis.formspree.url?`<span class="muted small">(${apis.formspree.url})</span>`:''}</div>
-            <div class="kv"><span class="k">Ably Auth</span>${(apis.ablyAuth&&apis.ablyAuth.status)||'-'} ${apis.ablyAuth&&apis.ablyAuth.url?`<span class="muted small">(${apis.ablyAuth.url})</span>`:''}</div>
-            <div class="kv"><span class="k">Git</span>${git.sha||'-'} <span class="muted small">${git.message||''}</span></div>
-          </div>`;
-        return `<div class="card">
-          ${head}
-          ${grid}
-        </div>`
-      }).join('');
+  async function checkBackendHealth(){
+    try{
+      const ctrl = new AbortController();
+      const t = setTimeout(()=>ctrl.abort(), 4000);
+      const res = await fetch('http://localhost:3001/health', { signal: ctrl.signal });
+      clearTimeout(t);
+      if (!res.ok) throw new Error('HTTP '+res.status);
+      if (runBtn) runBtn.disabled = false;
+      if (runStatus) { runStatus.textContent = 'backend online'; runStatus.style.color = '#22c55e'; }
+    }catch(e){
+      if (runBtn) runBtn.disabled = true;
+      if (runStatus) { runStatus.textContent = 'backend offline'; runStatus.style.color = '#ef4444'; }
     }
+  }
 
-    async function load(){
-      try{
-        const res = await fetch('logs/logs.json?ts='+Date.now());
-        const json = await res.json();
-        entries = Array.isArray(json.entries)? json.entries : [];
-      }catch(e){
-        entries = [];
-      }
-      render();
-    }
+  function fmt(ts){ try { return new Date(ts).toLocaleString(); } catch { return ts; } }
+  function tag(txt, cls=''){ return '<span class="tag '+cls+'">'+txt+'</span>'; }
 
-    async function runWorkflow(){
-      try{
-        runStatus.textContent = 'workflow starten…';
-        runStatus.classList.remove('err','ok');
-        const ctrl = new AbortController();
-        const t = setTimeout(()=>ctrl.abort(), 120000);
-        const res = await fetch('http://localhost:3001/workflow/run', {
-          method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ quick:true }), signal: ctrl.signal
-        });
-        clearTimeout(t);
-        if(!res.ok) throw new Error('HTTP '+res.status);
-        const j = await res.json().catch(()=>({}));
-        runStatus.textContent = 'klaar (exit '+(j.exitCode??0)+')';
-        setTimeout(load, 800);
-      }catch(e){
-        runStatus.textContent = 'fout: '+(e.message||e);
-      }
-    }
+  function render(){
+    const q = (elSearch.value||'').toLowerCase();
+    const t = elType.value;
+    let data = entries.slice().sort((a,b)=> new Date(b.timestamp)-new Date(a.timestamp));
+    if (t) data = data.filter(e=>e.type===t);
+    if (q) data = data.filter(e=>JSON.stringify(e).toLowerCase().includes(q));
+    elList.innerHTML = data.map((e, idx)=>{
+      const site = e.site||{}; const apis = e.apis||{}; const git = e.git||{}; const art=e.artifacts||{};
+      const okTag = site.online ? tag('online','ok') : tag('offline','err');
+      const typeTag = tag(e.type||'-');
+      const ver = '<span class="ver">'+(e.versionTag||'-')+'</span>';
+      const head = [
+        '<div class="row">',
+        '  <div>'+ver+' '+typeTag+' <span class="muted">'+fmt(e.timestamp)+'</span></div>',
+        '  <div>'+okTag+'</div>',
+        '</div>'
+      ].join('');
+      const grid = [
+        '<div class="grid">',
+        '  <div class="kv"><span class="k">ZIP</span>'+(art.zip||'-')+'</div>',
+        '  <div class="kv"><span class="k">Index backup</span>'+(art.indexBackup||'-')+'</div>',
+        '  <div class="kv"><span class="k">Site status</span>'+(site.status||'-')+' @ '+(site.url||'-')+'</div>',
+        '  <div class="kv"><span class="k">Formspree</span>'+((apis.formspree&&apis.formspree.status)||'-')+' '+(apis.formspree&&apis.formspree.url?('<span class="muted small">('+(apis.formspree.url)+')</span>'):'')+'</div>',
+        '  <div class="kv"><span class="k">Ably Auth</span>'+((apis.ablyAuth&&apis.ablyAuth.status)||'-')+' '+(apis.ablyAuth&&apis.ablyAuth.url?('<span class="muted small">('+(apis.ablyAuth.url)+')</span>'):'')+'</div>',
+        '  <div class="kv"><span class="k">Git</span>'+(git.sha||'-')+' <span class="muted small">'+(git.message||'')+'</span></div>',
+        '</div>'
+      ].join('');
+      const btn = '<div style="margin-top:8px"><button class="btn small" onclick="viewEntryDetails('+idx+')">Details</button></div>';
+      return '<div class="card">'+head+grid+btn+'</div>';
+    }).join('');
+  }
 
-    if (runBtn) runBtn.addEventListener('click', runWorkflow);
+  async function load(){
+    try{
+      const res = await fetch('logs/logs.json?ts='+Date.now());
+      const json = await res.json();
+      entries = Array.isArray(json.entries)? json.entries : [];
+    }catch(e){ entries = []; }
+    render();
+  }
 
-    elSearch.addEventListener('input', render);
-    elType.addEventListener('change', render);
-    load();
+  async function runWorkflow(){
+    try{
+      runStatus.textContent = 'workflow starten…';
+      const ctrl = new AbortController();
+      const t = setTimeout(()=>ctrl.abort(), 120000);
+      const res = await fetch('http://localhost:3001/workflow/run', {
+        method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ quick:true }), signal: ctrl.signal
+      });
+      clearTimeout(t);
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      const j = await res.json().catch(()=>({}));
+      runStatus.textContent = 'klaar (exit '+((j.exitCode!=null)?j.exitCode:0)+')';
+      setTimeout(load, 800);
+    }catch(e){ runStatus.textContent = 'fout: '+(e.message||e); }
+  }
+
+  if (runBtn) runBtn.addEventListener('click', runWorkflow);
+  elSearch.addEventListener('input', render);
+  elType.addEventListener('change', render);
+
+  load();
+  checkBackendHealth();
+
+  // Large modal with message + raw JSON
+  window.viewEntryDetails = function(idx){
+    const e = (entries||[])[idx];
+    if (!e) return;
+    const overlay = document.createElement('div');
+    overlay.className = 'overlay';
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    const head = document.createElement('div');
+    head.className = 'modal-h';
+    const title = document.createElement('div');
+    title.style.fontWeight = '800';
+    title.textContent = (e.versionTag||'-')+' • '+(e.type||'-')+' • '+fmt(e.timestamp);
+    const acts = document.createElement('div');
+    acts.className = 'modal-actions';
+    const btnCopy = document.createElement('button'); btnCopy.className = 'btn'; btnCopy.textContent = 'Kopieer JSON';
+    btnCopy.onclick = ()=>{ try{ navigator.clipboard.writeText(JSON.stringify(e,null,2)); btnCopy.textContent='Gekopieerd'; setTimeout(()=>btnCopy.textContent='Kopieer JSON',1200);}catch{} };
+    const btnClose = document.createElement('button'); btnClose.className = 'btn'; btnClose.textContent = 'Sluiten'; btnClose.onclick = ()=> overlay.remove();
+    acts.appendChild(btnCopy); acts.appendChild(btnClose);
+    head.appendChild(title); head.appendChild(acts);
+
+    const body = document.createElement('div'); body.className = 'modal-b';
+    if (e.message) { const m = document.createElement('div'); m.className='pre'; m.style.marginBottom='10px'; m.textContent = String(e.message||''); body.appendChild(m); }
+    const pre = document.createElement('pre'); pre.className='pre'; pre.textContent = JSON.stringify(e,null,2); body.appendChild(pre);
+
+    modal.appendChild(head); modal.appendChild(body); overlay.appendChild(modal);
+    overlay.addEventListener('click', (ev)=>{ if (ev.target === overlay) overlay.remove(); });
+    document.body.appendChild(overlay);
+  }
   </script>
 </body>
 </html>
