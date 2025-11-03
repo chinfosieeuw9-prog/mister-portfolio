@@ -39,7 +39,26 @@
     .modal-b{padding:12px;overflow:auto}
     .pre{background:#0b0b0b;border:1px solid #333;border-radius:8px;padding:12px;white-space:pre;overflow:auto;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;line-height:1.45}
     .modal-actions{display:flex;gap:8px;align-items:center}
+    /* Utility classes moved from inline styles */
+    .hidden{display:none}
+    .mb-6{margin-bottom:6px}
+    .fw-700{font-weight:700}
+    .list-tight{margin:0;padding-left:18px}
+    /* Permalink highlight */
+    .plink-highlight{animation: ph 2.2s ease-in-out 1}
+    @keyframes ph{0%{box-shadow:0 0 0 0 rgba(34,197,94,.8)}30%{box-shadow:0 0 0 6px rgba(34,197,94,.35)}60%{box-shadow:0 0 0 3px rgba(34,197,94,.18)}100%{box-shadow:none}}
   </style>
+  <script>
+    // Redirect HTTP -> HTTPS when served under mister.us.kg
+    (function(){
+      try{
+        var host = location.hostname;
+        if ((/(\.|^)mister\.us\.kg$/i).test(host) && location.protocol === 'http:'){
+          location.replace('https://' + host + location.pathname + location.search + location.hash);
+        }
+      }catch(e){}
+    })();
+  </script>
 </head>
 <body>
   <div class="container">
@@ -60,12 +79,12 @@
     </div>
     
     <!-- Changelog (compact) -->
-    <div id="changelog" class="card" style="display:none">
-      <div class="row" style="margin-bottom:6px">
-        <div style="font-weight:700">Changelog</div>
+    <div id="changelog" class="card hidden">
+      <div class="row mb-6">
+        <div class="fw-700">Changelog</div>
         <div class="small muted">Laatste wijzigingen (type: note)</div>
       </div>
-      <ul id="changelog-list" style="margin:0;padding-left:18px"></ul>
+      <ul id="changelog-list" class="list-tight"></ul>
     </div>
     <div id="list"></div>
     <div class="footer">Tip: draai <code>full-backup-workflow.ps1</code> voor een volledige workflow entry met API- en cloudstatus.</div>
@@ -102,7 +121,7 @@
     let data = entries.slice().sort((a,b)=> new Date(b.timestamp)-new Date(a.timestamp));
     if (t) data = data.filter(e=>e.type===t);
     if (q) data = data.filter(e=>JSON.stringify(e).toLowerCase().includes(q));
-    elList.innerHTML = data.map((e, idx)=>{
+  elList.innerHTML = data.map((e, idx)=>{
       const site = e.site||{}; const apis = e.apis||{}; const git = e.git||{}; const art=e.artifacts||{};
       const okTag = site.online ? tag('online','ok') : tag('offline','err');
       const typeTag = tag(e.type||'-');
@@ -123,8 +142,13 @@
         '  <div class="kv"><span class="k">Git</span>'+(git.sha||'-')+' <span class="muted small">'+(git.message||'')+'</span></div>',
         '</div>'
       ].join('');
-      const btn = '<div style="margin-top:8px"><button class="btn small" onclick="viewEntryDetails('+idx+')">Details</button></div>';
-      return '<div class="card">'+head+grid+btn+'</div>';
+      const permalink = '?ts='+encodeURIComponent(e.timestamp);
+      const tsId = 'log-'+String(e.timestamp||'').replace(/[^0-9A-Za-z:._-]/g,'');
+      const btns = '<div>'
+        + '<button class="btn small" onclick="viewEntryDetails('+idx+')">Details</button> '
+        + '<a class="btn small" href="'+permalink+'" title="Open deze entry via permalink">Permalink</a>'
+        + '</div>';
+      return '<div class="card" id="'+tsId+'">'+head+grid+btns+'</div>';
     }).join('');
   }
 
@@ -158,6 +182,23 @@
     }catch(e){ entries = []; }
     render();
     renderChangelog();
+    try{
+      const sp = new URLSearchParams(location.search);
+      const qts = sp.get('ts');
+      if (qts){
+        const idx = entries.findIndex(e=> String(e && e.timestamp) === qts);
+        if (idx >= 0){
+          const id = 'log-'+String(qts).replace(/[^0-9A-Za-z:._-]/g,'');
+          const el = document.getElementById(id);
+          if (el){
+            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            el.classList.add('plink-highlight');
+            setTimeout(()=>el.classList.remove('plink-highlight'), 2400);
+          }
+          setTimeout(()=>viewEntryDetails(idx), 200);
+        }
+      }
+    }catch{}
   }
 
   async function runWorkflow(){
@@ -198,10 +239,13 @@
     title.textContent = (e.versionTag||'-')+' • '+(e.type||'-')+' • '+fmt(e.timestamp);
     const acts = document.createElement('div');
     acts.className = 'modal-actions';
-    const btnCopy = document.createElement('button'); btnCopy.className = 'btn'; btnCopy.textContent = 'Kopieer JSON';
+  const btnCopy = document.createElement('button'); btnCopy.className = 'btn'; btnCopy.textContent = 'Kopieer JSON';
     btnCopy.onclick = ()=>{ try{ navigator.clipboard.writeText(JSON.stringify(e,null,2)); btnCopy.textContent='Gekopieerd'; setTimeout(()=>btnCopy.textContent='Kopieer JSON',1200);}catch{} };
+  const permalink = (location.origin||'') + location.pathname + '?ts=' + encodeURIComponent(e.timestamp);
+  const btnPermalink = document.createElement('button'); btnPermalink.className = 'btn'; btnPermalink.textContent = 'Permalink';
+  btnPermalink.onclick = ()=>{ try{ navigator.clipboard.writeText(permalink); btnPermalink.textContent='Gekopieerd'; setTimeout(()=>btnPermalink.textContent='Permalink',1200);}catch{} };
     const btnClose = document.createElement('button'); btnClose.className = 'btn'; btnClose.textContent = 'Sluiten'; btnClose.onclick = ()=> overlay.remove();
-    acts.appendChild(btnCopy); acts.appendChild(btnClose);
+  acts.appendChild(btnCopy); acts.appendChild(btnPermalink); acts.appendChild(btnClose);
     head.appendChild(title); head.appendChild(acts);
 
     const body = document.createElement('div'); body.className = 'modal-b';

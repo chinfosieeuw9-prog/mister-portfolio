@@ -40,6 +40,17 @@
     <meta name="msapplication-navbutton-color" content="#2d1b69">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-capable" content="yes">
+        <script>
+            // HTTP→HTTPS redirect for mister.us.kg (no effect on localhost)
+            (function(){
+                try{
+                    var host = (location.hostname||'').toLowerCase();
+                    if (location.protocol === 'http:' && (host === 'mister.us.kg' || host === 'www.mister.us.kg')){
+                        location.replace('https://' + location.host + location.pathname + location.search + location.hash);
+                    }
+                }catch(e){}
+            })();
+        </script>
     
     <!-- Favicon -->
     <!-- Supabase JS CDN -->
@@ -393,6 +404,33 @@
             /* visibility managed via .hidden class */
             margin-top: 24px;
         }
+        /* Sticky toolbar at the top of Admin Panel */
+        .admin-toolbar {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 12px;
+            margin: -8px -8px 12px -8px;
+            background: #0f0f0f;
+            border-bottom: 1px solid #333;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+        .admin-toolbar .btn {
+            background: #1f1f1f;
+            border: 1px solid #333;
+            color: #fff;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .admin-toolbar .btn:hover { border-color: #666; }
+        .admin-toolbar .btn-danger { background: #7f1d1d; border-color: #7f1d1d; color: #fecaca; }
+        .admin-toolbar .btn-danger:hover { filter: brightness(1.05); }
         
         /* Fallback: als iemand op #admin-access klikt (zonder JS), toon blok */
         #admin-access:target {
@@ -1552,6 +1590,15 @@
         <div class="admin-panel hidden" id="admin-panel">
             <div class="card">
                 <h2>🛠️ Admin Panel</h2>
+                <!-- Sticky top toolbar for quick actions -->
+                <div class="admin-toolbar">
+                    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                        <button class="btn" onclick="goHomeWithoutLogout()">🏠 Home</button>
+                    </div>
+                    <div>
+                        <button class="btn btn-danger" onclick="logoutAdmin()">🚪 Logout</button>
+                    </div>
+                </div>
                 <div class="admin-tabs">
                     <button class="admin-tab active" onclick="showAdminTab('content')">📝 Content</button>
                     <!-- Move News near the top for quick access -->
@@ -1825,8 +1872,6 @@
                     <h3>Activity Logs</h3>
                     <div id="activity-logs" class="news-log logs-height"></div>
                 </div>
-                
-                <button class="tech-btn logout-spacing" onclick="logoutAdmin()">🚪 Logout</button>
             </div>
         </div>
         
@@ -5785,9 +5830,11 @@
                     .then(json => {
                         const entries = Array.isArray(json.entries) ? json.entries.slice() : [];
                         entries.sort((a,b)=> new Date(b.timestamp) - new Date(a.timestamp));
-                        // Pinned-only filter
+                        // Filters: pinned-only and text query
                         const pinnedOnly = (localStorage.getItem('adminLogsPinnedOnly')||'') === '1';
-                        const filtered = pinnedOnly ? entries.filter(e=>e && e.type==='note' && e.pinned===true) : entries;
+                        const q = (localStorage.getItem('adminLogsQuery')||'').toLowerCase();
+                        let filtered = pinnedOnly ? entries.filter(e=>e && e.type==='note' && e.pinned===true) : entries;
+                        if (q) filtered = filtered.filter(e=> JSON.stringify(e).toLowerCase().includes(q));
                         const items = filtered.slice(0, 12);
                         // expose items so action buttons (edit/delete/pin) can reference original timestamps
                         window._itemsForLogs = items;
@@ -5829,6 +5876,7 @@
                                         ${isNote ? `<button onclick=\"editNoteAt(${i})\" style=\"background:#1f1f1f;border:1px solid #333;color:#fff;padding:4px 8px;border-radius:6px;cursor:pointer\">Bewerken</button>` : ''}
                                         ${isNote ? `<button onclick=\"deleteNoteAt(${i})\" style=\"background:#1f1f1f;border:1px solid #7f1d1d;color:#fecaca;padding:4px 8px;border-radius:6px;cursor:pointer\">Verwijderen</button>` : ''}
                                         ${isNote ? `<button onclick=\"togglePinAt(${i})\" style=\"background:#1f1f1f;border:1px solid #333;color:#fff;padding:4px 8px;border-radius:6px;cursor:pointer\">${pinned ? 'Unpin' : 'Pin'}</button>` : ''}
+                                        <a href=\"logs.html?ts=${encodeURIComponent(e.timestamp||'')}\" target=\"_blank\" style=\"background:#0f172a;border:1px solid #333;color:#93c5fd;padding:4px 8px;border-radius:6px;cursor:pointer;text-decoration:none\">Permalink</a>
                                     </div>
                                     <pre id=\"${did}\" style=\"display:none;background:#0b0b0b;border:1px solid #222;border-radius:8px;padding:10px;color:#d1d5db;overflow:auto;font-size:12px;margin-top:8px\">${JSON.stringify(e, null, 2)}</pre>
                                 </div>
@@ -5865,6 +5913,7 @@
                                     <button id="run-workflow-btn" style="background:#1f1f1f;border:1px solid #333;color:#fff;padding:6px 10px;border-radius:6px;cursor:pointer" onclick="runWorkflow()">Run workflow</button>
                                     <button id=\"add-note-btn\" style=\"background:#1f1f1f;border:1px solid #333;color:#fff;padding:6px 10px;border-radius:6px;cursor:pointer\" onclick=\"addLogNote()\">Notitie toevoegen</button>
                                     <a href="logs/logs.json" download style="background:#0f172a;border:1px solid #333;color:#93c5fd;padding:6px 10px;border-radius:6px;cursor:pointer;text-decoration:none">Download logs.json</a>
+                                    <input id="logs-search" type="search" placeholder="Zoek…" style="background:#181818;border:1px solid #333;color:#fff;padding:6px 10px;border-radius:6px;min-width:160px" />
                                     <label style="display:inline-flex;align-items:center;gap:6px;color:#9ca3af;font-size:12px;border:1px solid #333;padding:6px 10px;border-radius:6px;background:#0b0b0b;cursor:pointer">
                                         <input type="checkbox" id="pinned-only-toggle" style="accent-color:#22c55e"> Alleen pinned
                                     </label>
@@ -5906,7 +5955,7 @@
                             </div>
                         `;
                         try { checkBackendStatus(); } catch {}
-                        // Wire pinned-only toggle
+                        // Wire pinned-only toggle & search
                         try {
                             const tog = document.getElementById('pinned-only-toggle');
                             if (tog){
@@ -5914,6 +5963,14 @@
                                 tog.checked = pinnedOnlyNow;
                                 tog.addEventListener('change', ()=>{
                                     try { localStorage.setItem('adminLogsPinnedOnly', tog.checked ? '1' : '0'); } catch{}
+                                    loadActivityLogs();
+                                });
+                            }
+                            const search = document.getElementById('logs-search');
+                            if (search){
+                                search.value = localStorage.getItem('adminLogsQuery')||'';
+                                search.addEventListener('input', ()=>{
+                                    try { localStorage.setItem('adminLogsQuery', search.value||''); } catch{}
                                     loadActivityLogs();
                                 });
                             }
@@ -6182,6 +6239,14 @@
             // Navigate back to base (remove any admin params)
             const base = window.location.pathname.replace(/\?.*$/,'');
             window.location.href = base;
+        }
+
+        // Navigate back to homepage without clearing the admin session
+        function goHomeWithoutLogout(){
+            try {
+                const base = window.location.pathname.replace(/\?.*$/,'');
+                window.location.href = base;
+            } catch{}
         }
         
         // Profile Modal functionality

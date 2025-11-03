@@ -150,12 +150,13 @@ app.post('/workflow/run', async (req, res) => {
   try {
     const scriptPath = path.resolve(repoRoot, 'full-backup-workflow.ps1');
     const cmd = `powershell.exe -NoProfile -ExecutionPolicy Bypass -File "${scriptPath}"`;
+    const startedAt = Date.now();
     exec(cmd, { cwd: repoRoot, timeout: 180000, maxBuffer: 10 * 1024 * 1024 }, (error, stdout, stderr) => {
       if (error) {
         const code = error.killed && error.signal === 'SIGTERM' ? 'TIMEOUT' : (error.code || 'ERR');
         return res.status(500).json({ ok: false, error: error.message, code, stdout, stderr });
       }
-      // On success: append a small release note with detected versionTag
+      // On success: append a small release note with detected versionTag and artifact details
       try {
         const ver = detectCurrentVersionTag();
         const logsPath = path.resolve(repoRoot, 'logs', 'logs.json');
@@ -164,11 +165,27 @@ app.post('/workflow/run', async (req, res) => {
           fs.writeFileSync(logsPath, JSON.stringify({ entries: [] }, null, 2));
         }
         const json = safeReadJson(logsPath, { entries: [] });
+        // Try to read artifact details for nicer message
+        let details = '';
+        try {
+          const artPath = path.resolve(repoRoot, 'artifacts', 'last-backup.json');
+          if (fs.existsSync(artPath)) {
+            const a = safeReadJson(artPath, null);
+            if (a) {
+              const files = (a.filesCount != null) ? `files: ${a.filesCount}` : '';
+              const mb = (a.zipBytes != null) ? `zip: ${((Number(a.zipBytes)||0)/1e6).toFixed(2)} MB` : '';
+              const zip = a.zipPath ? `(${a.zipPath})` : '';
+              details = [files, mb].filter(Boolean).join(', ') + (zip ? ' ' + zip : '');
+            }
+          }
+        } catch {}
+        const durMs = Math.max(0, Date.now() - startedAt);
+        const dur = (durMs/1000).toFixed(1) + 's';
         const entry = {
           type: 'note',
           timestamp: new Date().toISOString(),
           versionTag: ver ? `release-${ver}` : 'release',
-          message: 'Workflow run voltooid (backend).'
+          message: `Workflow run voltooid (backend) in ${dur}. ${details}`.trim()
         };
         json.entries = Array.isArray(json.entries) ? json.entries : [];
         json.entries.push(entry);
