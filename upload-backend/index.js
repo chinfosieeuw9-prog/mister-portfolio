@@ -38,7 +38,7 @@ const { ABLY_API_KEY } = process.env;
 
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.sendStatus(200);
   next();
@@ -187,6 +187,103 @@ app.post('/news', (req, res) => {
     fs.writeFileSync(newsPath, JSON.stringify(list, null, 2));
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.json({ ok: true, item, count: list.length });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+// Delete a news item by index (newest-first order). Accepts query ?index= or JSON body { index }
+app.delete('/news', (req, res) => {
+  try {
+    const newsPath = path.resolve(repoRoot, 'news.json');
+    if (!fs.existsSync(newsPath)) {
+      return res.status(404).json({ ok: false, error: 'news.json niet gevonden' });
+    }
+    const listRaw = fs.readFileSync(newsPath, 'utf8') || '[]';
+    let list = [];
+    try { list = JSON.parse(listRaw); } catch { list = []; }
+    if (!Array.isArray(list)) list = [];
+
+    // Read index from query or body
+    let idx = undefined;
+    if (typeof req.query.index !== 'undefined') idx = Number(req.query.index);
+    else if (req.body && typeof req.body.index !== 'undefined') idx = Number(req.body.index);
+
+    if (!Number.isInteger(idx) || idx < 0 || idx >= list.length) {
+      return res.status(400).json({ ok: false, error: 'Ongeldige index' });
+    }
+
+    const removed = list.splice(idx, 1);
+    fs.writeFileSync(newsPath, JSON.stringify(list, null, 2));
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.json({ ok: true, removed: removed[0] || null, count: list.length });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+// Insert a news item at a specific index (or prepend if index invalid)
+app.post('/news/insert', (req, res) => {
+  try {
+    const newsPath = path.resolve(repoRoot, 'news.json');
+    let list = [];
+    if (fs.existsSync(newsPath)) {
+      try { list = JSON.parse(fs.readFileSync(newsPath, 'utf8') || '[]'); } catch {}
+    }
+    if (!Array.isArray(list)) list = [];
+    const { index, item } = req.body || {};
+    if (!item || typeof item !== 'object') {
+      return res.status(400).json({ ok: false, error: 'item ontbreekt' });
+    }
+    const clean = {
+      title: String(item.title || '').trim(),
+      date: String(item.date || new Date().toISOString().slice(0,10)).trim(),
+      content: String(item.content || '').trim(),
+      link: String(item.link || '#').trim(),
+      linkTitle: String(item.linkTitle || 'Open').trim(),
+    };
+    let idx = Number(index);
+    if (!Number.isInteger(idx) || idx < 0 || idx > list.length) idx = 0; // default prepend
+    list.splice(idx, 0, clean);
+    fs.writeFileSync(newsPath, JSON.stringify(list, null, 2));
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.json({ ok: true, inserted: clean, index: idx, count: list.length });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+// Update a news item by index; accepts any subset of fields in body
+app.put('/news', (req, res) => {
+  try {
+    const newsPath = path.resolve(repoRoot, 'news.json');
+    if (!fs.existsSync(newsPath)) {
+      return res.status(404).json({ ok: false, error: 'news.json niet gevonden' });
+    }
+    const listRaw = fs.readFileSync(newsPath, 'utf8') || '[]';
+    let list = [];
+    try { list = JSON.parse(listRaw); } catch { list = []; }
+    if (!Array.isArray(list)) list = [];
+
+    let idx = undefined;
+    if (typeof req.query.index !== 'undefined') idx = Number(req.query.index);
+    else if (req.body && typeof req.body.index !== 'undefined') idx = Number(req.body.index);
+    if (!Number.isInteger(idx) || idx < 0 || idx >= list.length) {
+      return res.status(400).json({ ok: false, error: 'Ongeldige index' });
+    }
+
+    const { title, date, content, link, linkTitle } = req.body || {};
+    const current = list[idx];
+    if (typeof title === 'string') current.title = title.trim();
+    if (typeof date === 'string') current.date = date.trim();
+    if (typeof content === 'string') current.content = content.trim();
+    if (typeof link === 'string') current.link = link.trim();
+    if (typeof linkTitle === 'string') current.linkTitle = linkTitle.trim();
+
+    list[idx] = current;
+    fs.writeFileSync(newsPath, JSON.stringify(list, null, 2));
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.json({ ok: true, item: current, index: idx, count: list.length });
   } catch (e) {
     res.status(500).json({ ok: false, error: e.message });
   }

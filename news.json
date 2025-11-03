@@ -3,7 +3,7 @@
     "title": "Website launched with new security features",
     "date": "2025-10-01",
     "content": "Website launched with new security features",
-    "link": "#"
+    "link": ""
   },
   {
     "title": "Added interactive tech showcase",
@@ -15,12 +15,6 @@
     "title": "Enhanced Azure integration tools",
     "date": "2025-10-15",
     "content": "Enhanced Azure integration tools",
-    "link": "#"
-  },
-  {
-    "title": "Nieuw backup systeem toegevoegd",
-    "date": "2025-10-28",
-    "content": "Automatische PowerShell-backups en restore workflow geïmplementeerd.",
     "link": "#"
   }
 ]

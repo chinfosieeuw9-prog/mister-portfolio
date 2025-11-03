@@ -40,6 +40,7 @@
                     <div style="display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 6px;align-items:center;">
                         <button id="run-workflow-btn" class="admin-btn">▶️ Run backup workflow</button>
                         <a href="logs.html" class="admin-btn" style="text-decoration:none;display:inline-block;">📊 Open logboek</a>
+                        <button id="open-news-tab-btn" class="admin-btn" type="button">📰 Nieuwsbeheer</button>
                         <a href="explorer-demo.html" class="admin-btn" style="text-decoration:none;display:inline-block;">🗂️ Nieuwe Explorer</a>
                         <a href="index.html" class="admin-btn" style="text-decoration:none;display:inline-block;">🏠 Naar Home</a>
                         <span id="workflow-status" style="font-size:12px;color:#9ca3af;margin-left:6px;"></span>
@@ -84,6 +85,14 @@
                                 out.textContent = 'Fout: '+(e.message || e);
                             }
                         });
+                        // Quick-jump naar Nieuws tab
+                        const openNewsBtn = document.getElementById('open-news-tab-btn');
+                        if (openNewsBtn) {
+                            openNewsBtn.addEventListener('click', ()=>{
+                                const newsTabBtn = document.querySelector('.admin-tab-demo[data-tab="news"]');
+                                if (newsTabBtn) newsTabBtn.click();
+                            });
+                        }
                     })();
                     </script>
         <!-- JS code moved to <script> below -->

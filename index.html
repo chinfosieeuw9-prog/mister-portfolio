@@ -1094,6 +1094,36 @@
         }
         
         /* News Log Styling */
+    /* Toast notifications */
+        .toast-container { position: fixed; top: 14px; right: 14px; z-index: 99999; display: grid; gap: 8px; }
+    .toast { min-width: 220px; max-width: 360px; background: #111827; color: #e5e7eb; border: 1px solid #374151; border-radius: 8px; padding: 10px 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.3); display:flex; align-items:flex-start; gap:10px; }
+        .toast-success { border-color: #10b981; }
+        .toast-error { border-color: #ef4444; }
+        .toast-info { border-color: #3b82f6; }
+    .toast button { background: transparent; border: none; color: #93c5fd; cursor: pointer; padding: 0; font-weight: 600; }
+    .toast .toast-actions { margin-left: auto; display:flex; gap:10px; align-items:flex-start; }
+    .toast .toast-close { color:#9ca3af; font-weight:700; font-size:14px; line-height:1; padding:0 4px; margin-left:6px; }
+    .toast .toast-close:hover { color:#e5e7eb; }
+
+    /* Admin-only UI helpers */
+    [data-admin-only] { display: none; }
+        .news-caption {
+            color: #9ca3af;
+            font-size: 12px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 4px 0 6px 0;
+        }
+        .news-caption::after {
+            content: '';
+            height: 1px;
+            background: #333;
+            flex: 1;
+            opacity: 0.8;
+        }
         .news-log {
             background: #0f0f0f;
             border: 1px solid #333;
@@ -1106,7 +1136,9 @@
         
         .news-item {
             color: #aaa;
-            font-size: 11px;
+            /* Bump base font-size for better homepage readability (title inherits this) */
+            font-size: 16px;
+            line-height: 1.3;
             margin: 4px 0;
             padding: 2px 0;
             border-bottom: 1px solid #222;
@@ -1114,6 +1146,15 @@
         
         .news-item:last-child {
             border-bottom: none;
+        }
+
+        /* Hover/active accents and mobile tap comfort */
+        .news-item:hover { background: rgba(0,212,255,0.06); }
+        .news-item:active { background: rgba(0,212,255,0.12); }
+        .news-title { color: #00d4ff; font-weight: 700; }
+        .news-item:hover .news-title { text-decoration: underline; }
+        @media (max-width: 480px) {
+            .news-item { padding: 10px 4px; margin-bottom: 8px; }
         }
 
     /* Admin-only view: show only the Admin Panel as a dedicated page */
@@ -1294,7 +1335,9 @@
                 <div class="card-icon">📰</div>
                 <h2>Nieuws</h2>
             </div>
-            <p>Blijf op de hoogte van het laatste nieuws!</p>
+            <p class="news-caption">LAATSTE NIEUWS |
+                <button id="news-admin-shortcut" data-admin-only="" title="Nieuws beheren" style="display:none;margin-left:8px;font-size:12px;background:#1f2937;border:1px solid #374151;color:#e5e7eb;padding:2px 8px;border-radius:999px;cursor:pointer">+ nieuw</button>
+            </p>
             <div id="news-log" style="min-height: 48px; max-height: 180px; overflow-y: auto; background: #0f0f0f; border-radius: 8px; padding: 10px 8px; color: #e3e6f0; margin-top: 12px; border: 1px solid #333;">DIT IS EEN TEST 05:23</div>
         </div>
         <!-- Software (3x3 grid) -->
@@ -1511,6 +1554,8 @@
                 <h2>🛠️ Admin Panel</h2>
                 <div class="admin-tabs">
                     <button class="admin-tab active" onclick="showAdminTab('content')">📝 Content</button>
+                    <!-- Move News near the top for quick access -->
+                    <button class="admin-tab" onclick="showAdminTab('news')">📰 Nieuws</button>
                     <button class="admin-tab" onclick="showAdminTab('software')">💾 Software</button>
                     <button class="admin-tab" onclick="showAdminTab('cv')">📄 CV</button>
                     <button class="admin-tab" onclick="showAdminTab('newsletter')">📧 Newsletter</button>
@@ -1659,6 +1704,32 @@
                     </div>
                 </div>
                 
+                <div id="admin-news" class="admin-content">
+                    <h3>📰 Nieuwsbeheer</h3>
+                    <form id="news-admin-form" onsubmit="return submitNewsAdmin(event)" style="display:grid;gap:10px;max-width:720px;">
+                        <div style="display:grid;gap:6px;">
+                            <label style="color:#9ca3af;font-size:12px;">Titel</label>
+                            <input id="news-admin-title" type="text" class="form-input" placeholder="Titel" required>
+                        </div>
+                        <div style="display:grid;gap:6px;">
+                            <label style="color:#9ca3af;font-size:12px;">Bericht</label>
+                            <textarea id="news-admin-content" class="form-input" style="min-height:100px" placeholder="Bericht" required></textarea>
+                        </div>
+                        <div style="display:grid;gap:6px;">
+                            <label style="color:#9ca3af;font-size:12px;">Link (optioneel)</label>
+                            <input id="news-admin-link" type="url" class="form-input" placeholder="https://...">
+                        </div>
+                        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                            <button class="tech-btn" type="submit">➕ Plaatsen</button>
+                            <span id="news-admin-msg" style="color:#9ca3af;font-size:12px;"></span>
+                        </div>
+                    </form>
+                    <div style="margin-top:12px;">
+                        <h4 style="margin-bottom:6px;">Geplaatste berichten</h4>
+                        <ul id="news-admin-list" style="list-style:none;padding:0;display:grid;gap:10px;"></ul>
+                    </div>
+                </div>
+
                 <div id="admin-integrations" class="admin-content">
                     <h3>⚙️ Integraties</h3>
                     <div style="display:grid;gap:14px;max-width:820px;">
@@ -3430,18 +3501,13 @@
                 item.style.transition = 'all 0.2s';
 
                 const t = document.createElement('div');
-                t.style.fontWeight = 'bold';
-                t.style.color = '#00d4ff';
+                t.className = 'news-title';
                 t.style.marginBottom = '2px';
                 t.textContent = article.title;
 
-                const d = document.createElement('div');
-                d.style.fontSize = '11px';
-                d.style.color = '#999';
-                d.textContent = article.date;
-
                 item.appendChild(t);
-                item.appendChild(d);
+                // Date is intentionally hidden in the list for a clean headline look;
+                // it’s shown in the popup modal (openNewsArticle) instead.
 
                 item.onmouseover = () => {
                     item.style.borderColor = '#00d4ff';
@@ -3679,17 +3745,17 @@
 
         // Admin button visibility functions
         function showAdminButtons() {
+            // Legacy toggle
             const newsUpdateBtn = document.getElementById('news-update-btn');
-            if (newsUpdateBtn) {
-                newsUpdateBtn.style.display = 'inline-block';
-            }
+            if (newsUpdateBtn) { newsUpdateBtn.style.display = 'inline-block'; }
+            // Generic: reveal all admin-only shortcuts
+            try { applyAdminVisibility(true); } catch{}
         }
 
         function hideAdminButtons() {
             const newsUpdateBtn = document.getElementById('news-update-btn');
-            if (newsUpdateBtn) {
-                newsUpdateBtn.style.display = 'none';
-            }
+            if (newsUpdateBtn) { newsUpdateBtn.style.display = 'none'; }
+            try { applyAdminVisibility(false); } catch{}
         }
         
         // Form submissions
@@ -4207,6 +4273,221 @@
             if (tabName === 'logs') loadActivityLogs();
             if (tabName === 'cv') loadCvSettings();
             if (tabName === 'integrations') loadIntegrationsSettings();
+            if (tabName === 'news') loadNewsAdmin();
+        }
+
+        // --- Nieuwsbeheer (in-page admin tab) ---
+        async function tryFetch(url, opts, ms) {
+            const ctrl = new AbortController();
+            const t = setTimeout(() => ctrl.abort(), ms || 5000);
+            try { const r = await fetch(url, { ...(opts||{}), signal: ctrl.signal }); clearTimeout(t); return r; }
+            catch (e) { clearTimeout(t); return null; }
+        }
+
+        // Simple toast utility
+        function ensureToastContainer() {
+            let c = document.getElementById('toast-container');
+            if (!c) {
+                c = document.createElement('div');
+                c.id = 'toast-container';
+                c.className = 'toast-container';
+                document.body.appendChild(c);
+            }
+            return c;
+        }
+        function showToast(message, type, actions, opts) {
+            const c = ensureToastContainer();
+            const el = document.createElement('div');
+            el.className = 'toast ' + (type ? ('toast-' + type) : '');
+            el.innerHTML = '<div style="flex:1">'+message+'</div>' + '<div class="toast-actions"></div>';
+            const act = el.querySelector('.toast-actions');
+            // Close (X)
+            const closeBtn = document.createElement('button');
+            closeBtn.className = 'toast-close';
+            closeBtn.setAttribute('aria-label', 'Close');
+            closeBtn.textContent = '×';
+            closeBtn.onclick = () => { el.remove(); };
+            act.appendChild(closeBtn);
+            if (Array.isArray(actions)) {
+                actions.forEach(a => {
+                    const b = document.createElement('button');
+                    b.textContent = a.label || 'Actie';
+                    b.onclick = () => { try { a.onClick && a.onClick(); } finally { el.remove(); } };
+                    act.appendChild(b);
+                });
+            }
+            c.appendChild(el);
+            setTimeout(() => { el.style.opacity = '0.98'; }, 10);
+            // Timeout handling: default 3500ms, allow override via opts or numeric actions
+            let ttl = 3500;
+            if (opts && typeof opts.timeout === 'number') ttl = opts.timeout;
+            else if (typeof actions === 'number') ttl = actions;
+            if (ttl > 0) {
+                setTimeout(() => { if (document.body.contains(el)) el.remove(); }, ttl);
+            }
+            return el;
+        }
+
+        // Admin-only visibility helpers
+        function applyAdminVisibility(isAdmin){
+            try {
+                const list = document.querySelectorAll('[data-admin-only]');
+                list.forEach(el => {
+                    // default to inline-block for buttons, else block
+                    const tag = (el.tagName||'').toLowerCase();
+                    const display = (el.getAttribute('data-admin-display') || (tag === 'button' ? 'inline-block' : 'block'));
+                    el.style.display = isAdmin ? display : 'none';
+                });
+            } catch {}
+        }
+
+        async function loadNewsAdmin() {
+            const list = document.getElementById('news-admin-list');
+            const msg = document.getElementById('news-admin-msg');
+            if (!list) return;
+            list.innerHTML = '<li style="color:#9ca3af">Laden…</li>';
+            let items = [];
+            try {
+                const r = await tryFetch('http://localhost:3001/news', { headers: { 'Accept':'application/json' } }, 3500);
+                if (r && r.ok) items = await r.json();
+            } catch {}
+            if (!Array.isArray(items) || items.length === 0) {
+                try { const r2 = await tryFetch('news.json?ts='+Date.now(), { headers:{'Accept':'application/json'} }, 3500); if (r2 && r2.ok) items = await r2.json(); } catch {}
+            }
+            items = Array.isArray(items) ? items : [];
+            if (items.length === 0) { list.innerHTML = '<li style="color:#9ca3af">Nog geen nieuws.</li>'; return; }
+            list.innerHTML = items.map((n, i) => (
+                '<li style="padding:10px;border:1px solid #333;border-radius:8px;background:#111;display:grid;gap:6px">'
+                + '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px">'
+                +   '<div style="font-weight:600;">'+((n.title||'').replace(/</g,'&lt;'))+'</div>'
+                +   '<div style="display:flex;gap:6px">'
+                +     '<button onclick="startEditNewsAdmin('+i+')" style="background:#0ea5e9;color:#fff;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:12px">✏️ Bewerken</button>'
+                +     '<button onclick="deleteNewsAdmin('+i+')" style="background:#b91c1c;color:#fff;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:12px">🗑 Verwijder</button>'
+                +   '</div>'
+                + '</div>'
+                + '<div style="font-size:12px;color:#9ca3af">'+((n.date||'').replace(/</g,'&lt;'))+'</div>'
+                + (n.content? '<div style="font-size:13px;color:#cbd5e1;">'+((n.content||'').replace(/</g,'&lt;'))+'</div>' : '')
+                + (n.link && n.link !== '#' ? '<div><a href="'+encodeURI(n.link)+'" target="_blank" class="text-link">Open link →</a></div>' : '')
+                + '</li>'
+            )).join('');
+            if (msg) msg.textContent = '';
+        }
+
+        async function deleteNewsAdmin(index) {
+            if (!confirm('Weet je zeker dat je dit nieuwsitem wilt verwijderen?')) return;
+            const msg = document.getElementById('news-admin-msg');
+            if (msg) { msg.style.color = '#9ca3af'; msg.textContent = 'Verwijderen…'; }
+            try {
+                const r = await tryFetch('http://localhost:3001/news?index=' + index, { method:'DELETE' }, 6000);
+                if (r && r.ok) {
+                    let removed = null;
+                    try { removed = await r.json(); } catch {}
+                    if (msg) { msg.textContent = ''; }
+                    // Undo via toast
+                    const payload = removed && removed.removed ? removed.removed : null;
+                    const originalIndex = index;
+                    showToast('Item verwijderd.', 'info', [
+                        { label: 'Ongedaan maken', onClick: async () => {
+                            try {
+                                const body = JSON.stringify({ index: originalIndex, item: payload });
+                                const rr = await tryFetch('http://localhost:3001/news/insert', { method:'POST', headers:{'Content-Type':'application/json'}, body }, 6000);
+                                if (rr && rr.ok) showToast('Hersteld.', 'success'); else showToast('Herstellen mislukt.', 'error');
+                            } catch { showToast('Herstellen mislukt.', 'error'); }
+                            await loadNewsAdmin();
+                        }}
+                    ]);
+                    await loadNewsAdmin();
+                } else {
+                    if (msg) { msg.style.color = '#ef4444'; msg.textContent = !r ? 'Backend niet bereikbaar.' : ('Fout: ' + r.status); }
+                }
+            } catch(e) {
+                if (msg) { msg.style.color = '#ef4444'; msg.textContent = 'Verwijderen mislukt.'; }
+            }
+        }
+
+        function startEditNewsAdmin(index) {
+            const list = document.getElementById('news-admin-list');
+            if (!list) return;
+            const li = list.children[index];
+            if (!li) return;
+            const title = (li.querySelector('div[style*="font-weight:600;"]')?.textContent || '').trim();
+            const dateEl = li.querySelector('div[style*="font-size:12px;"]');
+            const date = (dateEl?.textContent || '').trim();
+            const content = (li.querySelector('div[style*="font-size:13px;"]')?.textContent || '').trim();
+            const linkA = li.querySelector('a');
+            const link = linkA ? linkA.getAttribute('href') : '';
+
+            li.innerHTML = ''
+                + '<div style="display:grid;gap:8px">'
+                + '  <label style="color:#9ca3af;font-size:12px">Titel</label>'
+                + '  <input id="edit-title-'+index+'" class="form-input" value="'+title.replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'">'
+                + '  <label style="color:#9ca3af;font-size:12px">Datum (YYYY-MM-DD)</label>'
+                + '  <input id="edit-date-'+index+'" class="form-input" value="'+date.replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'">'
+                + '  <label style="color:#9ca3af;font-size:12px">Bericht</label>'
+                + '  <textarea id="edit-content-'+index+'" class="form-input" style="min-height:100px">'+content.replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</textarea>'
+                + '  <label style="color:#9ca3af;font-size:12px">Link</label>'
+                + '  <input id="edit-link-'+index+'" class="form-input" value="'+(link||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'">'
+                + '  <div style="display:flex;gap:8px;justify-content:flex-end">'
+                + '    <button onclick="saveNewsAdmin('+index+')" style="background:#10b981;color:#fff;border:none;padding:8px 12px;border-radius:6px;cursor:pointer">💾 Opslaan</button>'
+                + '    <button onclick="loadNewsAdmin()" style="background:#4b5563;color:#fff;border:none;padding:8px 12px;border-radius:6px;cursor:pointer">Annuleren</button>'
+                + '  </div>'
+                + '</div>';
+        }
+
+        async function saveNewsAdmin(index) {
+            const msg = document.getElementById('news-admin-msg');
+            if (msg) { msg.style.color = '#9ca3af'; msg.textContent = 'Opslaan…'; }
+            const title = (document.getElementById('edit-title-'+index)?.value || '').trim();
+            const date = (document.getElementById('edit-date-'+index)?.value || '').trim();
+            const content = (document.getElementById('edit-content-'+index)?.value || '').trim();
+            const link = (document.getElementById('edit-link-'+index)?.value || '').trim();
+            try {
+                const body = { index, title, date, content, link };
+                const r = await tryFetch('http://localhost:3001/news?index=' + index, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) }, 6000);
+                if (r && r.ok) {
+                    if (msg) { msg.textContent = ''; }
+                    showToast('Item bijgewerkt.', 'success');
+                    await loadNewsAdmin();
+                } else {
+                    if (msg) { msg.textContent = ''; }
+                    showToast(!r ? 'Backend niet bereikbaar.' : ('Fout: ' + r.status), 'error');
+                }
+            } catch(e) {
+                if (msg) { msg.textContent = ''; }
+                showToast('Opslaan mislukt.', 'error');
+            }
+        }
+
+        async function submitNewsAdmin(e) {
+            e && e.preventDefault();
+            const titleEl = document.getElementById('news-admin-title');
+            const contentEl = document.getElementById('news-admin-content');
+            const linkEl = document.getElementById('news-admin-link');
+            const msg = document.getElementById('news-admin-msg');
+            if (!titleEl || !contentEl) return false;
+            const title = (titleEl.value||'').trim();
+            const content = (contentEl.value||'').trim();
+            const link = (linkEl && linkEl.value || '').trim();
+            if (!title || !content) { if (msg) { msg.style.color='#ef4444'; msg.textContent='Titel en bericht zijn verplicht.'; } return false; }
+            if (msg) { msg.style.color='#9ca3af'; msg.textContent='Plaatsen…'; }
+            try {
+                const res = await tryFetch('http://localhost:3001/news', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ title, content, link, date: new Date().toISOString().slice(0,10) }) }, 6000);
+                if (res && res.ok) {
+                    if (msg) { msg.style.color='#22c55e'; msg.textContent='Nieuws geplaatst.'; setTimeout(()=>{ msg.textContent=''; }, 2000); }
+                    titleEl.value = ''; contentEl.value=''; if (linkEl) linkEl.value='';
+                    await loadNewsAdmin();
+                } else {
+                    if (msg) {
+                        msg.style.color='#ef4444';
+                        if (!res) msg.textContent='Backend niet bereikbaar (port 3001).';
+                        else if (res.status === 404) msg.textContent='Endpoint /news ontbreekt. Herstart backend.';
+                        else msg.textContent='Fout: '+res.status;
+                    }
+                }
+            } catch (err) {
+                if (msg) { msg.style.color='#ef4444'; msg.textContent='Fout bij plaatsen. Probeer opnieuw.'; }
+            }
+            return false;
         }
         
         function uploadSoftware() {
@@ -5596,6 +5877,8 @@
                     console.log('[workflow stdout]', j.stdout);
                     alert('Workflow voltooid. Log wordt vernieuwd.');
                     setTimeout(loadActivityLogs, 800);
+                    // update footer/header version shortly after logs update
+                    setTimeout(()=>{ try { refreshVersionFromLogs(); } catch(e){ console.warn('refreshVersionFromLogs failed', e); } }, 1500);
                 }
             } catch(e){
                 alert('Kon workflow niet starten: '+e.message+'\n\nWaarschijnlijk draait de backend niet. Start de upload-backend en probeer opnieuw.');
@@ -5613,6 +5896,64 @@
                 if (!r.ok || !j.ok){ alert('Kon notitie niet opslaan'); return; }
                 loadActivityLogs();
             } catch(e){ alert('Fout bij opslaan notitie: '+e.message); }
+        }
+
+        // Version auto-update from logs/artifacts
+        async function refreshVersionFromLogs(){
+            try {
+                let ver = null;
+                // Try logs.json first
+                try {
+                    const r = await fetch('logs/logs.json?ts='+Date.now());
+                    if (r.ok) {
+                        const j = await r.json();
+                        const arr = Array.isArray(j.entries) ? j.entries : [];
+                        // Prefer last workflow/backup entry
+                        for (let i = arr.length - 1; i >= 0; i--) {
+                            const e = arr[i];
+                            if (e && (e.type === 'workflow' || e.type === 'backup') && e.versionTag){ ver = e.versionTag; break; }
+                        }
+                    }
+                } catch(e){ console.warn('read logs.json failed', e); }
+                // Fallback to artifacts/last-backup.json
+                if (!ver) {
+                    try {
+                        const r2 = await fetch('artifacts/last-backup.json?ts='+Date.now());
+                        if (r2.ok){ const j2 = await r2.json(); if (j2 && j2.versionTag) ver = j2.versionTag; }
+                    } catch(e){ console.warn('read last-backup.json failed', e); }
+                }
+                if (ver){
+                    const badge = document.getElementById('site-version');
+                    const foot = document.getElementById('site-version-footer');
+                    if (badge) badge.textContent = ver;
+                    if (foot) foot.textContent = ver;
+                }
+                return !!ver;
+            } catch(e){ console.warn('refreshVersionFromLogs error', e); return false; }
+        }
+
+        // Logging helpers: append a note to backend logs (graceful if backend is down)
+        async function appendLogNote(message, versionTag='note'){
+            try {
+                const r = await tryFetch('http://localhost:3001/logs/append', {
+                    method:'POST',
+                    headers:{ 'Content-Type':'application/json' },
+                    body: JSON.stringify({ message: String(message||'').slice(0, 8000), type:'note', versionTag })
+                }, 5000);
+                return r && r.ok;
+            } catch(e){ console.warn('appendLogNote failed', e); return false; }
+        }
+        // Log a one-time deploy/change note per-browser (avoids spam), server-side log if backend is up
+        function logChangeOnce(id, message, versionTag='change'){
+            try {
+                const key = 'changelog:'+id;
+                if (localStorage.getItem(key)) return;
+                appendLogNote(message, versionTag).then((ok)=>{
+                    // Store flag regardless of network to avoid repeated attempts while offline
+                    try { localStorage.setItem(key, '1'); } catch{}
+                    if (!ok) console.warn('logChangeOnce: backend not reachable; note not persisted server-side');
+                });
+            } catch(e){ console.warn('logChangeOnce error', e); }
         }
 
         async function checkBackendStatus(){
@@ -5721,6 +6062,35 @@
         // Initialize all systems when page loads
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🚀 Initializing website systems...');
+            // Show/hide admin-only shortcuts on homepage
+            try { applyAdminVisibility(hasAdminSession && hasAdminSession()); } catch{}
+            // Wire admin news shortcut
+            try {
+                const newsBtn = document.getElementById('news-admin-shortcut');
+                if (newsBtn){
+                    newsBtn.addEventListener('click', function(e){
+                        e.preventDefault();
+                        if (hasAdminSession && hasAdminSession()){
+                            const base = window.location.pathname.replace(/\?.*$/,'');
+                            window.location.href = base + '?admin=1&clean=1';
+                        } else {
+                            openAdminLoginModal();
+                        }
+                    });
+                }
+            } catch{}
+            // Try to refresh version tag from logs
+            try { refreshVersionFromLogs(); } catch{}
+            // Auto-log this deploy change once per browser (server-side if backend up)
+            try {
+                const CHANGE_ID = 'ui-toasts-admin-news-2025-11-03';
+                const CHANGE_MSG = [
+                    'Deployed UI: toasts X-close, default 3.5s (overrideable);',
+                    'admin-only “+ nieuw” shortcut at Nieuws with session detection;',
+                    'auto-update footer version from logs/artifacts after workflow and on load.'
+                ].join(' ');
+                logChangeOnce(CHANGE_ID, CHANGE_MSG, 'ui-toasts-admin-news');
+            } catch{}
             // Router: handle admin-only view via URL param
             try {
                 const params = new URLSearchParams(window.location.search);

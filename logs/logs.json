@@ -109,6 +109,47 @@
                                                    }
                                  },
                         "versionTag":  "v5.10"
+                    },
+                    {
+                        "site":  {
+                                     "status":  200,
+                                     "url":  "https://mister.us.kg",
+                                     "online":  true
+                                 },
+                        "durationMs":  31647,
+                        "type":  "workflow",
+                        "git":  {
+                                    "dirty":  false,
+                                    "message":  "Auto-backup 2025-11-03 06:05:22",
+                                    "sha":  "919c04c"
+                                },
+                        "timestamp":  "2025-11-03T06:05:26.4342996+01:00",
+                        "artifacts":  {
+                                          "zip":  "C:\\Users\\Jordan\\Desktop\\mister-backups\\mister-backup-v6.0.zip",
+                                          "zipBytes":  4863679,
+                                          "filesCount":  1089
+                                      },
+                        "cloudSync":  {
+                                          "target":  "C:\\Users\\Jordan\\OneDrive\\mister-backups",
+                                          "ok":  false
+                                      },
+                        "apis":  {
+                                     "ablyAuth":  {
+                                                      "url":  "http://localhost:3001/ably/token",
+                                                      "status":  500
+                                                  },
+                                     "formspree":  {
+                                                       "url":  null,
+                                                       "status":  null
+                                                   }
+                                 },
+                        "versionTag":  "v6.0"
+                    },
+                    {
+                        "type": "note",
+                        "timestamp": "2025-11-03T00:00:00.000Z",
+                        "versionTag": "ui-toasts-admin-news",
+                        "message": "Here’s what changed and how to use it:\n\nToasts\n- Close X on every toast (click to dismiss).\n- Default timeout now 3.5s (was 6s).\n- Per-toast override: showToast('msg','info',[...], { timeout: 8000 }) or sticky with { timeout: 0 }.\n\nAdmin detection on the homepage\n- Added a ‘+ nieuw’ admin-only button next to ‘LAATSTE NIEUWS |’ (id: news-admin-shortcut).\n- Only visible with an active admin session; otherwise opens login. If logged in, navigates to ?admin=1.\n- New helper toggles all elements marked with data-admin-only.\n\nFooter version auto-update\n- On load and after running a backup workflow, the version badges update automatically.\n- Source priority: logs/logs.json (last workflow/backup entry’s versionTag) → fallback artifacts/last-backup.json.\n- Updates both #site-version and #site-version-footer.\n\nFiles updated\n- index.html: toast close button + timeout option; admin-only helpers; ‘+ nieuw’ shortcut; wiring on DOMContentLoaded; refreshVersionFromLogs() called on load and post-workflow.\n\nHow to try\n- Refresh homepage; if admin session exists you’ll see ‘+ nieuw’. If not, use footer triple-click → login.\n- News CRUD works as before; toasts closeable and shorter-living.\n- In Admin (logs widget), ‘Run workflow’: after finish, footer Version auto-updates.\n\nNotes\n- Custom toast timeout examples: 8s → { timeout: 8000 }, sticky → { timeout: 0 }.\n- data-admin-only elements are hidden by default; use data-admin-display to force display mode.\n\nBackend note\n- If ‘Run workflow’ fails, ensure backend at http://localhost:3001 is running and check /__diag."
                     }
                 ]
 }

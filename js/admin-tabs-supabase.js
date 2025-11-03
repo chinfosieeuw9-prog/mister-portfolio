@@ -270,22 +270,21 @@ document.addEventListener('DOMContentLoaded', function() {
             if (content) {
                 content.classList.add('active');
                 content.style.display = '';
+                // Scroll de gekozen sectie in beeld (handig op mobiel)
+                try { content.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch {}
             }
         });
     });
-    tabButtons.forEach((b, i) => {
-        if (i === 0) b.classList.add('active');
-        else b.classList.remove('active');
-    });
-    tabContents.forEach((tc, i) => {
-        if (i === 0) {
-            tc.classList.add('active');
-            tc.style.display = '';
-        } else {
-            tc.classList.remove('active');
-            tc.style.display = 'none';
-        }
-    });
+    // Initial state: toon de content die hoort bij de EERSTE knop (niet de eerste content in DOM)
+    if (tabButtons.length) {
+        const firstBtn = tabButtons[0];
+        tabButtons.forEach(b => b.classList.remove('active'));
+        tabContents.forEach(tc => { tc.classList.remove('active'); tc.style.display = 'none'; });
+        firstBtn.classList.add('active');
+        const firstTab = firstBtn.getAttribute('data-tab');
+        const firstContent = document.getElementById('tab-' + firstTab);
+        if (firstContent) { firstContent.classList.add('active'); firstContent.style.display = ''; }
+    }
 });
 
 // Upload CV-bestand naar Supabase bucket
