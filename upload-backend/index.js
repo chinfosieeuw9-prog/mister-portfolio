@@ -61,6 +61,31 @@ function safeReadJson(file, fallback) {
   }
 }
 
+// Helper: detect the most recent versionTag from logs or artifacts
+function detectCurrentVersionTag() {
+  try {
+    const logsPath = path.resolve(repoRoot, 'logs', 'logs.json');
+    const artPath = path.resolve(repoRoot, 'artifacts', 'last-backup.json');
+    // Prefer logs entries: last workflow/backup entry with versionTag
+    if (fs.existsSync(logsPath)) {
+      const j = safeReadJson(logsPath, { entries: [] });
+      const arr = Array.isArray(j.entries) ? j.entries : [];
+      for (let i = arr.length - 1; i >= 0; i--) {
+        const e = arr[i];
+        if (e && (e.type === 'workflow' || e.type === 'backup') && e.versionTag) {
+          return String(e.versionTag);
+        }
+      }
+    }
+    // Fallback to artifacts/last-backup.json
+    if (fs.existsSync(artPath)) {
+      const a = safeReadJson(artPath, null);
+      if (a && a.versionTag) return String(a.versionTag);
+    }
+  } catch {}
+  return null;
+}
+
 app.post('/upload', upload.single('file'), async (req, res) => {
   if (UPLOAD_DISABLED) {
     return res.status(503).json({ error: 'Upload functionaliteit is niet geconfigureerd (GITHUB_TOKEN/GITHUB_REPO ontbreekt)' });
@@ -130,6 +155,25 @@ app.post('/workflow/run', async (req, res) => {
         const code = error.killed && error.signal === 'SIGTERM' ? 'TIMEOUT' : (error.code || 'ERR');
         return res.status(500).json({ ok: false, error: error.message, code, stdout, stderr });
       }
+      // On success: append a small release note with detected versionTag
+      try {
+        const ver = detectCurrentVersionTag();
+        const logsPath = path.resolve(repoRoot, 'logs', 'logs.json');
+        if (!fs.existsSync(logsPath)) {
+          fs.mkdirSync(path.dirname(logsPath), { recursive: true });
+          fs.writeFileSync(logsPath, JSON.stringify({ entries: [] }, null, 2));
+        }
+        const json = safeReadJson(logsPath, { entries: [] });
+        const entry = {
+          type: 'note',
+          timestamp: new Date().toISOString(),
+          versionTag: ver || 'release',
+          message: 'Workflow run voltooid (backend).'
+        };
+        json.entries = Array.isArray(json.entries) ? json.entries : [];
+        json.entries.push(entry);
+        fs.writeFileSync(logsPath, JSON.stringify(json, null, 2));
+      } catch (e) { console.warn('Append release note failed:', e && e.message ? e.message : e); }
       res.json({ ok: true, stdout, stderr });
     });
   } catch (e) {

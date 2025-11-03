@@ -3880,6 +3880,8 @@
         function isDevBypass(){
             try {
                 const host = (location.hostname||'').toLowerCase();
+                // When running under automation (Playwright/CI), do NOT bypass — this preserves modal flow for tests
+                if (typeof navigator !== 'undefined' && navigator.webdriver) return false;
                 if (host === 'localhost' || host === '127.0.0.1') return true;
                 const p = new URLSearchParams(location.search);
                 if (p.get('dev') === '1' || p.get('bypass') === '1' || p.get('login') === 'dev') return true;
@@ -6259,6 +6261,17 @@
                     'auto-update footer version from logs/artifacts after workflow and on load.'
                 ].join(' ');
                 logChangeOnce(CHANGE_ID, CHANGE_MSG, 'ui-toasts-admin-news');
+            } catch{}
+            // Auto-log the Admin Logs actions deploy (edit/delete/pin/download/shortcut)
+            try {
+                const CHANGE_ID2 = 'ui-admin-logs-actions-2025-11-03';
+                const CHANGE_MSG2 = [
+                    'Admin Logs: bewerken/verwijderen/pinnen per notitie;',
+                    'Changelog: pinned-first en 📌 badge;',
+                    'Download-knop voor logs.json;',
+                    'Sneltoets “n” opent notitieformulier.'
+                ].join(' ');
+                logChangeOnce(CHANGE_ID2, CHANGE_MSG2, 'ui-admin-logs-actions');
             } catch{}
             // Router: handle admin-only view via URL param
             try {

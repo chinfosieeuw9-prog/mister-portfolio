@@ -1,232 +1,273 @@
-﻿{
-    "entries":  [
-                    {
-                        "type":  "note",
-                        "timestamp":  "2025-11-02T00:00:00.000Z",
-                        "versionTag":  "plan-setup",
-                        "message":  "Starting (3/6) Update backup-index script\n\nbackup-index-html.ps1+41-4\nbackup-index-html.ps1+2-2\nbackup-mister.ps1+43-1\nfull-backup-workflow.ps1+101-11\nCreated logs.html\n\nlogs.html+2-2\nCompleted (3/6) Update backup-index script\n\nHelder: we bouwen een automatisch logboek dat bij elke backup wordt bijgewerkt en tonen dit in een aparte pagina. Ik heb het meteen geÃƒÂ¯mplementeerd en aangesloten op je bestaande PowerShell-scripts.\n\nPlan (kort)\nLogdatastructuur ontwerpen en opslaan in logs/logs.json.\nbackup-index-html.ps1 uitbreiden met automatische JSON-log entry per index-backup.\nbackup-mister.ps1 uitbreiden met JSON-log (met -NoLog switch voor workflows) + artifacts/last-backup.json.\nfull-backup-workflow.ps1 laten loggen: site- en API-status + cloudsync-resultaat.\nNieuwe pagina logs.html bouwen voor een snel, overzichtelijk overzicht per versie.\nWat ik heb gedaan\n1) Logboek-bestand\nNieuw: logs.json\nStructuur:\nentries: array met objecten zoals:\ntype: \"backup\" | \"indexBackup\" | \"workflow\"\ntimestamp (ISO)\nversionTag (bv. v2.1 of index_v19)\nartifacts: paden (zip, indexBackup) en aantal files\nsite: { url, online, status }\napis: { formspree: { url, status }, ablyAuth: { url, status } }\ncloudSync: { target, ok }\ngit: { sha, message, dirty }\n2) backup-index-html.ps1\nMaakt nog steeds index_vN.html aan.\nSchrijft nu automatisch een log entry naar logs.json met:\ntype: indexBackup\nversionTag: index_vN\nartifacts.indexBackup: pad naar backup-bestand\ngit meta (sha, message, dirty) als git beschikbaar is.\n3) backup-mister.ps1\nNieuwe switch: -NoLog (om dubbele logs te voorkomen in de volledige workflow).\nLogt nog steeds naar C:\\Users\\Jordan\\Desktop\\mister-backups\\backup-log.txt.\nSchrijft extra artefactbestand: artifacts/last-backup.json met {timestamp, versionTag, zipPath, filesCount}.\nAls -NoLog NIET gezet is: voegt een JSON log entry toe aan logs/logs.json:\ntype: backup\nversionTag: uit auto-versie\nartifacts.zip + filesCount\ngit meta.\n4) full-backup-workflow.ps1\nRoept backup-mister.ps1 aan met -NoLog (workflow logt zelf alles in 1 record).\nBepaalt versionTag/zip/filesCount via artifacts/last-backup.json.\nCheckt online status van https://mister.us.kg (online + statuscode).\nLeest Formspree endpoint uit index.html en test bereikbaarheidsstatus.\nTest Ably Auth default op http://localhost:3001/ably/token.\nSync naar OneDrive (zoals je script deed) en controleert of het backup-zip bestand op OneDrive staat.\nSchrijft ÃƒÂ©ÃƒÂ©n uitgebreide workflow-log entry naar logs.json met alle bovenstaande info.\n5) Aparte pagina: logs.html\nNieuwe pagina op http://localhost:8000/logs.html\nLeest logs.json en toont entries (filter op type, zoekbalk).\nLaat per item versie, tijd, type, site-status en API-status zien + artifacts en git-info."
-                    },
-                    {
-                        "site":  {
-                                     "status":  200,
-                                     "url":  "https://mister.us.kg",
-                                     "online":  true
-                                 },
-                        "durationMs":  944924,
-                        "type":  "workflow",
-                        "git":  {
-                                    "dirty":  false,
-                                    "message":  "Auto-backup 2025-11-02 20:57:32",
-                                    "sha":  "4144bb7"
-                                },
-                        "timestamp":  "2025-11-02T20:57:37.5723714+01:00",
-                        "artifacts":  {
-                                          "zip":  "C:\\Users\\Jordan\\Desktop\\mister-backups\\mister-backup-v5.8.zip",
-                                          "filesCount":  1089
-                                      },
-                        "cloudSync":  {
-                                          "target":  "C:\\Users\\Jordan\\OneDrive\\mister-backups",
-                                          "ok":  false
-                                      },
-                        "apis":  {
-                                     "ablyAuth":  {
-                                                      "url":  "http://localhost:3001/ably/token",
-                                                      "status":  500
-                                                  },
-                                     "formspree":  {
-                                                       "url":  null,
-                                                       "status":  null
-                                                   }
-                                 },
-                        "versionTag":  "v5.8"
-                    },
-                    {
-                        "site":  {
-                                     "status":  200,
-                                     "url":  "https://mister.us.kg",
-                                     "online":  true
-                                 },
-                        "durationMs":  34811,
-                        "type":  "workflow",
-                        "git":  {
-                                    "dirty":  false,
-                                    "message":  "Auto-backup 2025-11-02 22:00:24",
-                                    "sha":  "0cc62bf"
-                                },
-                        "timestamp":  "2025-11-02T22:00:27.9176757+01:00",
-                        "artifacts":  {
-                                          "zip":  "C:\\Users\\Jordan\\Desktop\\mister-backups\\mister-backup-v5.9.zip",
-                                          "zipBytes":  4859581,
-                                          "filesCount":  1089
-                                      },
-                        "cloudSync":  {
-                                          "target":  "C:\\Users\\Jordan\\OneDrive\\mister-backups",
-                                          "ok":  false
-                                      },
-                        "apis":  {
-                                     "ablyAuth":  {
-                                                      "url":  "http://localhost:3001/ably/token",
-                                                      "status":  500
-                                                  },
-                                     "formspree":  {
-                                                       "url":  null,
-                                                       "status":  null
-                                                   }
-                                 },
-                        "versionTag":  "v5.9"
-                    },
-                    {
-                        "site":  {
-                                     "status":  200,
-                                     "url":  "https://mister.us.kg",
-                                     "online":  true
-                                 },
-                        "durationMs":  49016,
-                        "type":  "workflow",
-                        "git":  {
-                                    "dirty":  false,
-                                    "message":  "Auto-backup 2025-11-03 04:59:21",
-                                    "sha":  "4413ff0"
-                                },
-                        "timestamp":  "2025-11-03T04:59:25.5011892+01:00",
-                        "artifacts":  {
-                                          "zip":  "C:\\Users\\Jordan\\Desktop\\mister-backups\\mister-backup-v5.10.zip",
-                                          "zipBytes":  4860093,
-                                          "filesCount":  1089
-                                      },
-                        "cloudSync":  {
-                                          "target":  "C:\\Users\\Jordan\\OneDrive\\mister-backups",
-                                          "ok":  false
-                                      },
-                        "apis":  {
-                                     "ablyAuth":  {
-                                                      "url":  "http://localhost:3001/ably/token",
-                                                      "status":  500
-                                                  },
-                                     "formspree":  {
-                                                       "url":  null,
-                                                       "status":  null
-                                                   }
-                                 },
-                        "versionTag":  "v5.10"
-                    },
-                    {
-                        "site":  {
-                                     "status":  200,
-                                     "url":  "https://mister.us.kg",
-                                     "online":  true
-                                 },
-                        "durationMs":  31647,
-                        "type":  "workflow",
-                        "git":  {
-                                    "dirty":  false,
-                                    "message":  "Auto-backup 2025-11-03 06:05:22",
-                                    "sha":  "919c04c"
-                                },
-                        "timestamp":  "2025-11-03T06:05:26.4342996+01:00",
-                        "artifacts":  {
-                                          "zip":  "C:\\Users\\Jordan\\Desktop\\mister-backups\\mister-backup-v6.0.zip",
-                                          "zipBytes":  4863679,
-                                          "filesCount":  1089
-                                      },
-                        "cloudSync":  {
-                                          "target":  "C:\\Users\\Jordan\\OneDrive\\mister-backups",
-                                          "ok":  false
-                                      },
-                        "apis":  {
-                                     "ablyAuth":  {
-                                                      "url":  "http://localhost:3001/ably/token",
-                                                      "status":  500
-                                                  },
-                                     "formspree":  {
-                                                       "url":  null,
-                                                       "status":  null
-                                                   }
-                                 },
-                        "versionTag":  "v6.0"
-                    },
-                    {
-                        "type":  "note",
-                        "timestamp":  "2025-11-03T00:00:00.000Z",
-                        "versionTag":  "ui-toasts-admin-news",
-                        "message":  "Hereâ€™s what changed and how to use it:\n\nToasts\n- Close X on every toast (click to dismiss).\n- Default timeout now 3.5s (was 6s).\n- Per-toast override: showToast(\u0027msg\u0027,\u0027info\u0027,[...], { timeout: 8000 }) or sticky with { timeout: 0 }.\n\nAdmin detection on the homepage\n- Added a â€˜+ nieuwâ€™ admin-only button next to â€˜LAATSTE NIEUWS |â€™ (id: news-admin-shortcut).\n- Only visible with an active admin session; otherwise opens login. If logged in, navigates to ?admin=1.\n- New helper toggles all elements marked with data-admin-only.\n\nFooter version auto-update\n- On load and after running a backup workflow, the version badges update automatically.\n- Source priority: logs/logs.json (last workflow/backup entryâ€™s versionTag) â†’ fallback artifacts/last-backup.json.\n- Updates both #site-version and #site-version-footer.\n\nFiles updated\n- index.html: toast close button + timeout option; admin-only helpers; â€˜+ nieuwâ€™ shortcut; wiring on DOMContentLoaded; refreshVersionFromLogs() called on load and post-workflow.\n\nHow to try\n- Refresh homepage; if admin session exists youâ€™ll see â€˜+ nieuwâ€™. If not, use footer triple-click â†’ login.\n- News CRUD works as before; toasts closeable and shorter-living.\n- In Admin (logs widget), â€˜Run workflowâ€™: after finish, footer Version auto-updates.\n\nNotes\n- Custom toast timeout examples: 8s â†’ { timeout: 8000 }, sticky â†’ { timeout: 0 }.\n- data-admin-only elements are hidden by default; use data-admin-display to force display mode.\n\nBackend note\n- If â€˜Run workflowâ€™ fails, ensure backend at http://localhost:3001 is running and check /__diag."
-                    },
-                    {
-                        "site":  {
-                                     "status":  200,
-                                     "url":  "https://mister.us.kg",
-                                     "online":  true
-                                 },
-                        "durationMs":  38061,
-                        "type":  "workflow",
-                        "git":  {
-                                    "dirty":  false,
-                                    "message":  "Auto-backup 2025-11-03 07:35:33",
-                                    "sha":  "f2d8037"
-                                },
-                        "timestamp":  "2025-11-03T07:35:38.0202954+01:00",
-                        "artifacts":  {
-                                          "zip":  "C:\\Users\\Jordan\\Desktop\\mister-backups\\mister-backup-v6.1.zip",
-                                          "zipBytes":  4869411,
-                                          "filesCount":  1089
-                                      },
-                        "cloudSync":  {
-                                          "target":  "C:\\Users\\Jordan\\OneDrive\\mister-backups",
-                                          "ok":  false
-                                      },
-                        "apis":  {
-                                     "ablyAuth":  {
-                                                      "url":  "http://localhost:3001/ably/token",
-                                                      "status":  500
-                                                  },
-                                     "formspree":  {
-                                                       "url":  null,
-                                                       "status":  null
-                                                   }
-                                 },
-                        "versionTag":  "v6.1"
-                    },
-                    {
-                        "type":  "note",
-                        "timestamp":  "2025-11-03T07:36:36.834Z",
-                        "versionTag":  "SXX",
-                        "message":  "SXXXXSSSSSSS",
-                        "pinned":  true
-                    },
-                    {
-                        "site":  {
-                                     "status":  200,
-                                     "url":  "https://mister.us.kg",
-                                     "online":  true
-                                 },
-                        "durationMs":  36542,
-                        "type":  "workflow",
-                        "git":  {
-                                    "dirty":  false,
-                                    "message":  "Auto-backup 2025-11-03 08:56:38",
-                                    "sha":  "e1e4b27"
-                                },
-                        "timestamp":  "2025-11-03T08:56:42.9516680+01:00",
-                        "artifacts":  {
-                                          "zip":  "C:\\Users\\Jordan\\Desktop\\mister-backups\\mister-backup-v6.2.zip",
-                                          "zipBytes":  4873153,
-                                          "filesCount":  1089
-                                      },
-                        "cloudSync":  {
-                                          "target":  "C:\\Users\\Jordan\\OneDrive\\mister-backups",
-                                          "ok":  false
-                                      },
-                        "apis":  {
-                                     "ablyAuth":  {
-                                                      "url":  "http://localhost:3001/ably/token",
-                                                      "status":  500
-                                                  },
-                                     "formspree":  {
-                                                       "url":  null,
-                                                       "status":  null
-                                                   }
-                                 },
-                        "versionTag":  "v6.2"
-                    }
-                ]
+{
+  "entries": [
+    {
+      "type": "note",
+      "timestamp": "2025-11-02T00:00:00.000Z",
+      "versionTag": "plan-setup",
+      "message": "Starting (3/6) Update backup-index script\n\nbackup-index-html.ps1+41-4\nbackup-index-html.ps1+2-2\nbackup-mister.ps1+43-1\nfull-backup-workflow.ps1+101-11\nCreated logs.html\n\nlogs.html+2-2\nCompleted (3/6) Update backup-index script\n\nHelder: we bouwen een automatisch logboek dat bij elke backup wordt bijgewerkt en tonen dit in een aparte pagina. Ik heb het meteen geÃƒÂ¯mplementeerd en aangesloten op je bestaande PowerShell-scripts.\n\nPlan (kort)\nLogdatastructuur ontwerpen en opslaan in logs/logs.json.\nbackup-index-html.ps1 uitbreiden met automatische JSON-log entry per index-backup.\nbackup-mister.ps1 uitbreiden met JSON-log (met -NoLog switch voor workflows) + artifacts/last-backup.json.\nfull-backup-workflow.ps1 laten loggen: site- en API-status + cloudsync-resultaat.\nNieuwe pagina logs.html bouwen voor een snel, overzichtelijk overzicht per versie.\nWat ik heb gedaan\n1) Logboek-bestand\nNieuw: logs.json\nStructuur:\nentries: array met objecten zoals:\ntype: \"backup\" | \"indexBackup\" | \"workflow\"\ntimestamp (ISO)\nversionTag (bv. v2.1 of index_v19)\nartifacts: paden (zip, indexBackup) en aantal files\nsite: { url, online, status }\napis: { formspree: { url, status }, ablyAuth: { url, status } }\ncloudSync: { target, ok }\ngit: { sha, message, dirty }\n2) backup-index-html.ps1\nMaakt nog steeds index_vN.html aan.\nSchrijft nu automatisch een log entry naar logs.json met:\ntype: indexBackup\nversionTag: index_vN\nartifacts.indexBackup: pad naar backup-bestand\ngit meta (sha, message, dirty) als git beschikbaar is.\n3) backup-mister.ps1\nNieuwe switch: -NoLog (om dubbele logs te voorkomen in de volledige workflow).\nLogt nog steeds naar C:\\Users\\Jordan\\Desktop\\mister-backups\\backup-log.txt.\nSchrijft extra artefactbestand: artifacts/last-backup.json met {timestamp, versionTag, zipPath, filesCount}.\nAls -NoLog NIET gezet is: voegt een JSON log entry toe aan logs/logs.json:\ntype: backup\nversionTag: uit auto-versie\nartifacts.zip + filesCount\ngit meta.\n4) full-backup-workflow.ps1\nRoept backup-mister.ps1 aan met -NoLog (workflow logt zelf alles in 1 record).\nBepaalt versionTag/zip/filesCount via artifacts/last-backup.json.\nCheckt online status van https://mister.us.kg (online + statuscode).\nLeest Formspree endpoint uit index.html en test bereikbaarheidsstatus.\nTest Ably Auth default op http://localhost:3001/ably/token.\nSync naar OneDrive (zoals je script deed) en controleert of het backup-zip bestand op OneDrive staat.\nSchrijft ÃƒÂ©ÃƒÂ©n uitgebreide workflow-log entry naar logs.json met alle bovenstaande info.\n5) Aparte pagina: logs.html\nNieuwe pagina op http://localhost:8000/logs.html\nLeest logs.json en toont entries (filter op type, zoekbalk).\nLaat per item versie, tijd, type, site-status en API-status zien + artifacts en git-info."
+    },
+    {
+      "site": {
+        "status": 200,
+        "url": "https://mister.us.kg",
+        "online": true
+      },
+      "durationMs": 944924,
+      "type": "workflow",
+      "git": {
+        "dirty": false,
+        "message": "Auto-backup 2025-11-02 20:57:32",
+        "sha": "4144bb7"
+      },
+      "timestamp": "2025-11-02T20:57:37.5723714+01:00",
+      "artifacts": {
+        "zip": "C:\\Users\\Jordan\\Desktop\\mister-backups\\mister-backup-v5.8.zip",
+        "filesCount": 1089
+      },
+      "cloudSync": {
+        "target": "C:\\Users\\Jordan\\OneDrive\\mister-backups",
+        "ok": false
+      },
+      "apis": {
+        "ablyAuth": {
+          "url": "http://localhost:3001/ably/token",
+          "status": 500
+        },
+        "formspree": {
+          "url": null,
+          "status": null
+        }
+      },
+      "versionTag": "v5.8"
+    },
+    {
+      "site": {
+        "status": 200,
+        "url": "https://mister.us.kg",
+        "online": true
+      },
+      "durationMs": 34811,
+      "type": "workflow",
+      "git": {
+        "dirty": false,
+        "message": "Auto-backup 2025-11-02 22:00:24",
+        "sha": "0cc62bf"
+      },
+      "timestamp": "2025-11-02T22:00:27.9176757+01:00",
+      "artifacts": {
+        "zip": "C:\\Users\\Jordan\\Desktop\\mister-backups\\mister-backup-v5.9.zip",
+        "zipBytes": 4859581,
+        "filesCount": 1089
+      },
+      "cloudSync": {
+        "target": "C:\\Users\\Jordan\\OneDrive\\mister-backups",
+        "ok": false
+      },
+      "apis": {
+        "ablyAuth": {
+          "url": "http://localhost:3001/ably/token",
+          "status": 500
+        },
+        "formspree": {
+          "url": null,
+          "status": null
+        }
+      },
+      "versionTag": "v5.9"
+    },
+    {
+      "site": {
+        "status": 200,
+        "url": "https://mister.us.kg",
+        "online": true
+      },
+      "durationMs": 49016,
+      "type": "workflow",
+      "git": {
+        "dirty": false,
+        "message": "Auto-backup 2025-11-03 04:59:21",
+        "sha": "4413ff0"
+      },
+      "timestamp": "2025-11-03T04:59:25.5011892+01:00",
+      "artifacts": {
+        "zip": "C:\\Users\\Jordan\\Desktop\\mister-backups\\mister-backup-v5.10.zip",
+        "zipBytes": 4860093,
+        "filesCount": 1089
+      },
+      "cloudSync": {
+        "target": "C:\\Users\\Jordan\\OneDrive\\mister-backups",
+        "ok": false
+      },
+      "apis": {
+        "ablyAuth": {
+          "url": "http://localhost:3001/ably/token",
+          "status": 500
+        },
+        "formspree": {
+          "url": null,
+          "status": null
+        }
+      },
+      "versionTag": "v5.10"
+    },
+    {
+      "site": {
+        "status": 200,
+        "url": "https://mister.us.kg",
+        "online": true
+      },
+      "durationMs": 31647,
+      "type": "workflow",
+      "git": {
+        "dirty": false,
+        "message": "Auto-backup 2025-11-03 06:05:22",
+        "sha": "919c04c"
+      },
+      "timestamp": "2025-11-03T06:05:26.4342996+01:00",
+      "artifacts": {
+        "zip": "C:\\Users\\Jordan\\Desktop\\mister-backups\\mister-backup-v6.0.zip",
+        "zipBytes": 4863679,
+        "filesCount": 1089
+      },
+      "cloudSync": {
+        "target": "C:\\Users\\Jordan\\OneDrive\\mister-backups",
+        "ok": false
+      },
+      "apis": {
+        "ablyAuth": {
+          "url": "http://localhost:3001/ably/token",
+          "status": 500
+        },
+        "formspree": {
+          "url": null,
+          "status": null
+        }
+      },
+      "versionTag": "v6.0"
+    },
+    {
+      "type": "note",
+      "timestamp": "2025-11-03T00:00:00.000Z",
+      "versionTag": "ui-toasts-admin-news",
+      "message": "Hereâ€™s what changed and how to use it:\n\nToasts\n- Close X on every toast (click to dismiss).\n- Default timeout now 3.5s (was 6s).\n- Per-toast override: showToast('msg','info',[...], { timeout: 8000 }) or sticky with { timeout: 0 }.\n\nAdmin detection on the homepage\n- Added a â€˜+ nieuwâ€™ admin-only button next to â€˜LAATSTE NIEUWS |â€™ (id: news-admin-shortcut).\n- Only visible with an active admin session; otherwise opens login. If logged in, navigates to ?admin=1.\n- New helper toggles all elements marked with data-admin-only.\n\nFooter version auto-update\n- On load and after running a backup workflow, the version badges update automatically.\n- Source priority: logs/logs.json (last workflow/backup entryâ€™s versionTag) â†’ fallback artifacts/last-backup.json.\n- Updates both #site-version and #site-version-footer.\n\nFiles updated\n- index.html: toast close button + timeout option; admin-only helpers; â€˜+ nieuwâ€™ shortcut; wiring on DOMContentLoaded; refreshVersionFromLogs() called on load and post-workflow.\n\nHow to try\n- Refresh homepage; if admin session exists youâ€™ll see â€˜+ nieuwâ€™. If not, use footer triple-click â†’ login.\n- News CRUD works as before; toasts closeable and shorter-living.\n- In Admin (logs widget), â€˜Run workflowâ€™: after finish, footer Version auto-updates.\n\nNotes\n- Custom toast timeout examples: 8s â†’ { timeout: 8000 }, sticky â†’ { timeout: 0 }.\n- data-admin-only elements are hidden by default; use data-admin-display to force display mode.\n\nBackend note\n- If â€˜Run workflowâ€™ fails, ensure backend at http://localhost:3001 is running and check /__diag."
+    },
+    {
+      "site": {
+        "status": 200,
+        "url": "https://mister.us.kg",
+        "online": true
+      },
+      "durationMs": 38061,
+      "type": "workflow",
+      "git": {
+        "dirty": false,
+        "message": "Auto-backup 2025-11-03 07:35:33",
+        "sha": "f2d8037"
+      },
+      "timestamp": "2025-11-03T07:35:38.0202954+01:00",
+      "artifacts": {
+        "zip": "C:\\Users\\Jordan\\Desktop\\mister-backups\\mister-backup-v6.1.zip",
+        "zipBytes": 4869411,
+        "filesCount": 1089
+      },
+      "cloudSync": {
+        "target": "C:\\Users\\Jordan\\OneDrive\\mister-backups",
+        "ok": false
+      },
+      "apis": {
+        "ablyAuth": {
+          "url": "http://localhost:3001/ably/token",
+          "status": 500
+        },
+        "formspree": {
+          "url": null,
+          "status": null
+        }
+      },
+      "versionTag": "v6.1"
+    },
+    {
+      "type": "note",
+      "timestamp": "2025-11-03T07:36:36.834Z",
+      "versionTag": "SXX",
+      "message": "SXXXXSSSSSSS",
+      "pinned": true
+    },
+    {
+      "site": {
+        "status": 200,
+        "url": "https://mister.us.kg",
+        "online": true
+      },
+      "durationMs": 36542,
+      "type": "workflow",
+      "git": {
+        "dirty": false,
+        "message": "Auto-backup 2025-11-03 08:56:38",
+        "sha": "e1e4b27"
+      },
+      "timestamp": "2025-11-03T08:56:42.9516680+01:00",
+      "artifacts": {
+        "zip": "C:\\Users\\Jordan\\Desktop\\mister-backups\\mister-backup-v6.2.zip",
+        "zipBytes": 4873153,
+        "filesCount": 1089
+      },
+      "cloudSync": {
+        "target": "C:\\Users\\Jordan\\OneDrive\\mister-backups",
+        "ok": false
+      },
+      "apis": {
+        "ablyAuth": {
+          "url": "http://localhost:3001/ably/token",
+          "status": 500
+        },
+        "formspree": {
+          "url": null,
+          "status": null
+        }
+      },
+      "versionTag": "v6.2"
+    },
+    {
+      "site": {
+        "status": 200,
+        "url": "https://mister.us.kg",
+        "online": true
+      },
+      "durationMs": 43020,
+      "type": "workflow",
+      "git": {
+        "dirty": false,
+        "message": "Auto-backup 2025-11-03 16:02:23",
+        "sha": "c34abfd"
+      },
+      "timestamp": "2025-11-03T16:02:28.0736068+01:00",
+      "artifacts": {
+        "zip": "C:\\Users\\Jordan\\Desktop\\mister-backups\\mister-backup-v6.3.zip",
+        "zipBytes": 4873153,
+        "filesCount": 1089
+      },
+      "cloudSync": {
+        "target": "C:\\Users\\Jordan\\OneDrive\\mister-backups",
+        "ok": false
+      },
+      "apis": {
+        "ablyAuth": {
+          "url": "http://localhost:3001/ably/token",
+          "status": 500
+        },
+        "formspree": {
+          "url": null,
+          "status": null
+        }
+      },
+      "versionTag": "v6.3"
+    },
+    {
+      "type": "note",
+      "timestamp": "2025-11-03T15:11:29.097Z",
+      "versionTag": "ui-admin-logs-actions",
+      "message": "Admin Logs: bewerken/verwijderen/pinnen per notitie; Changelog: pinned-first en 📌 badge; Download-knop voor logs.json; Sneltoets “n” opent notitieformulier."
+    }
+  ]
 }
