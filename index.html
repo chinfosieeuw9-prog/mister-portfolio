@@ -1596,7 +1596,7 @@
                         <button class="btn" onclick="goHomeWithoutLogout()">🏠 Home</button>
                     </div>
                     <div>
-                        <button class="btn btn-danger" onclick="logoutAdmin()">🚪 Logout</button>
+                        <button class="btn btn-danger logout-spacing" onclick="logoutAdmin()">🚪 Logout</button>
                     </div>
                 </div>
                 <div class="admin-tabs">
@@ -1708,13 +1708,13 @@
 
                 <div id="admin-cv" class="admin-content">
                     <h3>📄 CV-instellingen</h3>
-                    <div style="display:grid;gap:12px;max-width:720px;">
-                        <div style="display:flex;gap:12px;align-items:end;flex-wrap:wrap;">
+                    <div class="grid-12 grid-maxw-720">
+                        <div class="flex-12-end">
                             <div style="flex:1;min-width:220px;">
-                                <label style="display:block;color:#9ca3af;font-size:12px;margin-bottom:4px;">Huidige toegangscode</label>
+                                <label class="muted-small" style="display:block;">Huidige toegangscode</label>
                                 <input id="cv-code" type="text" class="form-input" placeholder="(nog geen code)" readonly>
                             </div>
-                            <div style="display:flex;gap:8px;">
+                            <div class="flex-12 gap-8 nowrap">
                                 <button class="tech-btn" onclick="generateCvCode()">🔐 Genereer nieuwe code</button>
                                 <button class="tech-btn" onclick="copyCvCode()">📋 Kopieer</button>
                                 <button class="tech-btn" onclick="copyCvLink()">🔗 Kopieer link</button>
@@ -1722,32 +1722,44 @@
                                 <button class="tech-btn" onclick="invalidateCvCode()">🗑️ Ongeldig maken</button>
                             </div>
                         </div>
-                        <div style="display:flex;gap:12px;align-items:center;">
-                            <input id="cv-require-code" type="checkbox" style="width:18px;height:18px;">
+                        <div class="flex-12">
+                            <input id="cv-require-code" type="checkbox" class="w18h18">
                             <label for="cv-require-code">Code verplicht voor downloaden</label>
                         </div>
-                        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
-                            <label style="color:#9ca3af;font-size:12px;">Geldigheid</label>
-                            <select id="cv-ttl" class="form-input" style="max-width:200px;">
+                        <div class="flex-12">
+                            <label class="muted-small">Geldigheid</label>
+                            <select id="cv-ttl" class="form-input maxw-200">
                                 <option value="0.5">30 minuten</option>
                                 <option value="3" selected>3 uur</option>
                                 <option value="24">24 uur</option>
                                 <option value="168">7 dagen</option>
                             </select>
-                            <span id="cv-ttl-left" style="color:#9ca3af;font-size:12px;"></span>
+                            <span id="cv-ttl-left" class="muted-small"></span>
                         </div>
-                        <div style="display:grid;gap:8px;">
-                            <label style="color:#9ca3af;font-size:12px;">PDF URL</label>
+                        <div class="grid-12">
+                            <label class="muted-small">PDF URL</label>
                             <input id="cv-pdf-url" type="url" class="form-input" placeholder="https://.../cv.pdf">
                         </div>
-                        <div style="display:grid;gap:8px;">
-                            <label style="color:#9ca3af;font-size:12px;">Word URL (.docx of .doc)</label>
+                        <div class="grid-12">
+                            <label class="muted-small">Word URL (.docx of .doc)</label>
                             <input id="cv-word-url" type="url" class="form-input" placeholder="https://.../cv.docx">
+                        </div>
+                        <div class="flex-12">
+                            <div>
+                                <label class="muted-small">Upload PDF</label>
+                                <input id="cv-pdf-file" type="file" accept=".pdf" class="form-input mt-8">
+                            </div>
+                            <button class="tech-btn" onclick="uploadCvFile('pdf')">⬆️ Upload PDF</button>
+                            <div>
+                                <label class="muted-small">Upload Word</label>
+                                <input id="cv-word-file" type="file" accept=".doc,.docx" class="form-input mt-8">
+                            </div>
+                            <button class="tech-btn" onclick="uploadCvFile('word')">⬆️ Upload Word</button>
                         </div>
                         <div>
                             <button class="tech-btn" onclick="saveCvSettings()">💾 Opslaan</button>
                         </div>
-                        <div style="color:#9ca3af;font-size:12px;">Tip: Als je geen PDF/Word URL invult, gebruiken we een nette HTML-preview en kun je Word downloaden als .doc (compatibel) en PDF via afdrukken.</div>
+                        <div class="muted-small">Tip: Als je geen PDF/Word URL invult, gebruiken we een nette HTML-preview en kun je Word downloaden als .doc (compatibel) en PDF via afdrukken.</div>
                     </div>
                 </div>
                 
@@ -5804,6 +5816,44 @@
             const leftEl = document.getElementById('cv-ttl-left'); if (leftEl) leftEl.textContent = '';
             addActivityLog('🗑️ CV-code ongeldig gemaakt');
         }
+        async function uploadCvFile(kind){
+            try {
+                const isPdf = kind === 'pdf';
+                const inputId = isPdf ? 'cv-pdf-file' : 'cv-word-file';
+                const fieldId = isPdf ? 'cv-pdf-url' : 'cv-word-url';
+                const fileInput = document.getElementById(inputId);
+                if (!fileInput || !fileInput.files || !fileInput.files[0]) {
+                    alert('📁 Kies eerst een bestand om te uploaden.');
+                    return;
+                }
+                const file = fileInput.files[0];
+                if (isPdf && !/\.pdf$/i.test(file.name)) { alert('Alleen PDF toegestaan.'); return; }
+                if (!isPdf && !/\.(docx?|DOCX?)$/.test(file.name)) { alert('Alleen .doc of .docx toegestaan.'); return; }
+
+                const fd = new FormData();
+                fd.append('file', file);
+                fd.append('name', 'CV');
+                fd.append('category', 'cv');
+                fd.append('description', isPdf ? 'CV PDF' : 'CV Word');
+
+                const resp = await fetch('http://localhost:3001/upload', { method: 'POST', body: fd });
+                const data = await resp.json().catch(()=>({}));
+                if (!resp.ok || !data || data.success !== true) {
+                    const extra = data && (data.github || data.details || data.reason) ? ' • ' + JSON.stringify((data.github || data.details || data.reason)) : '';
+                    const msg = (data && (data.error||data.message)) ? (data.error||data.message) + extra : ('HTTP '+resp.status);
+                    throw new Error(msg || 'Upload mislukt');
+                }
+                const url = data.pages_url || data.download_url || (location.origin.replace(/\/+$/,'') + '/' + String(data.path||'').replace(/^\/+/,''));
+                const field = document.getElementById(fieldId);
+                if (field) field.value = url;
+                localStorage.setItem(isPdf ? 'cvPdfUrl' : 'cvWordUrl', url);
+                addActivityLog(`📄 CV ${isPdf ? 'PDF' : 'Word'} geüpload: ${file.name}`);
+                alert(`✅ ${isPdf ? 'PDF' : 'Word'} geüpload en URL ingevuld.`);
+            } catch(e) {
+                console.error('CV upload error', e);
+                alert('❌ Upload mislukt: '+ (e && e.message ? e.message : e));
+            }
+        }
         function isCvCodeValid(input){
             const code = (localStorage.getItem('cvAuthCode')||'').trim();
             const exp = parseInt(localStorage.getItem('cvAuthExpires')||'0',10)||0;
@@ -5855,8 +5905,9 @@
                             const zip  = e.artifacts && e.artifacts.zip ? e.artifacts.zip : '';
                             const idx  = e.artifacts && e.artifacts.indexBackup ? e.artifacts.indexBackup : '';
                             const did = 'logd-'+i;
+                            const cardId = 'alog-'+String(e.timestamp||'').replace(/[^0-9A-Za-z:._-]/g,'');
                             return `
-                                <div style=\"border:1px solid #333;border-radius:10px;padding:14px;margin:10px 0;background:#111;cursor:pointer\" onclick=\"if(event.target.tagName!=='BUTTON'){viewLogEntry(${i})}\">
+                                <div id=\"${cardId}\" style=\"border:1px solid #333;border-radius:10px;padding:14px;margin:10px 0;background:#111;cursor:pointer\" onclick=\"if(event.target.tagName!=='BUTTON' && event.target.tagName!=='A'){viewLogEntry(${i})}\"> 
                                     <div style=\"display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center;\">
                                         <div><strong>${ver}${pinned ? ' <span title="Pinned">📌</span>' : ''}</strong> <span style=\"color:#9ca3af\">(${type})</span></div>
                                         <div style="color:#9ca3af">${ts}</div>
@@ -5877,6 +5928,7 @@
                                         ${isNote ? `<button onclick=\"deleteNoteAt(${i})\" style=\"background:#1f1f1f;border:1px solid #7f1d1d;color:#fecaca;padding:4px 8px;border-radius:6px;cursor:pointer\">Verwijderen</button>` : ''}
                                         ${isNote ? `<button onclick=\"togglePinAt(${i})\" style=\"background:#1f1f1f;border:1px solid #333;color:#fff;padding:4px 8px;border-radius:6px;cursor:pointer\">${pinned ? 'Unpin' : 'Pin'}</button>` : ''}
                                         <a href=\"logs.html?ts=${encodeURIComponent(e.timestamp||'')}\" target=\"_blank\" style=\"background:#0f172a;border:1px solid #333;color:#93c5fd;padding:4px 8px;border-radius:6px;cursor:pointer;text-decoration:none\">Permalink</a>
+                                        <button onclick=\"try{navigator.clipboard.writeText((location.origin||'')+location.pathname.replace(/index\\.html$/, '')+'logs.html?ts='+encodeURIComponent('${'${'}e.timestamp||''${'}'}));showToast('Permalink gekopieerd','info');}catch{}\" style=\"background:#1f1f1f;border:1px solid #333;color:#fff;padding:4px 8px;border-radius:6px;cursor:pointer\">Copy</button>
                                     </div>
                                     <pre id=\"${did}\" style=\"display:none;background:#0b0b0b;border:1px solid #222;border-radius:8px;padding:10px;color:#d1d5db;overflow:auto;font-size:12px;margin-top:8px\">${JSON.stringify(e, null, 2)}</pre>
                                 </div>
@@ -5955,6 +6007,24 @@
                             </div>
                         `;
                         try { checkBackendStatus(); } catch {}
+                        // Auto-open via ?ts= for Admin Logs: scroll + temporary highlight + open details
+                        try{
+                            const sp = new URLSearchParams(location.search);
+                            const qts = sp.get('ts');
+                            if (qts){
+                                const idx = items.findIndex(e=> String(e && e.timestamp) === qts);
+                                if (idx >= 0){
+                                    const card = document.getElementById('alog-'+String(qts).replace(/[^0-9A-Za-z:._-]/g,''));
+                                    if (card){
+                                        card.scrollIntoView({ behavior:'smooth', block:'start' });
+                                        const prev = card.style.boxShadow;
+                                        card.style.boxShadow = '0 0 0 6px rgba(34,197,94,.35)';
+                                        setTimeout(()=> card.style.boxShadow = prev, 2000);
+                                    }
+                                    setTimeout(()=>{ try{ viewLogEntry(idx); }catch{} }, 200);
+                                }
+                            }
+                        }catch{}
                         // Wire pinned-only toggle & search
                         try {
                             const tog = document.getElementById('pinned-only-toggle');

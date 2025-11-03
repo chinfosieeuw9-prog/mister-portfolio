@@ -1834,3 +1834,16 @@ section {
         font-size: 3rem;
     }
 }
+
+    /* --- Utility helpers (reduce inline styles in admin sections) --- */
+    .grid-12 { display: grid; gap: 12px; }
+    .grid-maxw-720 { max-width: 720px; }
+    .flex-12 { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    .flex-12-end { display: flex; gap: 12px; align-items: end; flex-wrap: wrap; }
+    .muted-small { color: #9ca3af; font-size: 12px; }
+    .w18h18 { width: 18px; height: 18px; }
+    .maxw-200 { max-width: 200px; }
+    .mt-8 { margin-top: 8px; }
+    .mb-8 { margin-bottom: 8px; }
+    .gap-8 { gap: 8px; }
+    .nowrap { white-space: nowrap; }

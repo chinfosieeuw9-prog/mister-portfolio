@@ -8,14 +8,14 @@ import { exec } from 'child_process';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-dotenv.config();
+// ESM dirname helpers first, so we can load the correct .env file
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.resolve(__dirname, '.env') });
 
 const app = express();
 const upload = multer({ dest: 'tmp/' });
 
-// ESM dirname helpers
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, '..');
 
 
@@ -23,7 +23,8 @@ const {
   GITHUB_TOKEN,
   GITHUB_REPO,
   GITHUB_BRANCH = 'main',
-  GITHUB_UPLOAD_PATH = 'uploads/'
+  GITHUB_UPLOAD_PATH = 'uploads/',
+  PUBLIC_BASE_URL = 'https://mister.us.kg/'
 } = process.env;
 
 let UPLOAD_DISABLED = false;
@@ -111,10 +112,36 @@ app.post('/upload', upload.single('file'), async (req, res) => {
       }
     });
     fs.unlinkSync(tempPath);
-    res.json({ success: true, url: response.data.content.html_url });
+  const ghContentMeta = response && response.data && response.data.content ? response.data.content : {};
+  const htmlUrl = ghContentMeta.html_url || '';
+  const downloadUrl = ghContentMeta.download_url || '';
+    // Provide an easily usable Pages URL for the uploaded asset
+    const base = String(PUBLIC_BASE_URL || '').replace(/\/+$/,'');
+    const pagesUrl = base && githubPath ? `${base}/${githubPath}` : '';
+    res.json({ success: true, path: githubPath, html_url: htmlUrl, download_url: downloadUrl, pages_url: pagesUrl });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Upload naar GitHub mislukt.' });
+    // Bubble up as much diagnostic info as possible to ease troubleshooting
+    try {
+      const status = err && err.response && err.response.status ? err.response.status : 500;
+      const ghData = err && err.response && err.response.data ? err.response.data : null;
+      const ghMsg = ghData && (ghData.message || ghData.error) ? (ghData.message || ghData.error) : undefined;
+      console.error('GitHub upload error:', {
+        status,
+        ghMessage: ghMsg,
+        rateLimit: err && err.response && err.response.headers ? {
+          remaining: err.response.headers['x-ratelimit-remaining'],
+          reset: err.response.headers['x-ratelimit-reset']
+        } : undefined
+      });
+      res.status(status === 401 || status === 403 ? 403 : 500).json({
+        error: 'Upload naar GitHub mislukt.',
+        status,
+        github: ghMsg || ghData || null
+      });
+    } catch (e2) {
+      console.error('Upload error (fallback):', e2);
+      res.status(500).json({ error: 'Upload naar GitHub mislukt.' });
+    }
   }
 });
 
@@ -122,6 +149,33 @@ app.post('/upload', upload.single('file'), async (req, res) => {
 app.get('/health', (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.json({ ok: true, ts: Date.now() });
+});
+
+// Diagnostics: verify GitHub token/repo access quickly
+app.get('/diag/github', async (req, res) => {
+  try {
+    if (UPLOAD_DISABLED) return res.status(503).json({ ok:false, error:'GITHUB env ontbreekt' });
+    const url = `https://api.github.com/repos/${GITHUB_REPO}`;
+    const resp = await axios.get(url, {
+      headers: {
+        Authorization: `token ${GITHUB_TOKEN}`,
+        'User-Agent': 'upload-backend'
+      },
+      validateStatus: () => true
+    });
+    const scopes = resp.headers && (resp.headers['x-oauth-scopes'] || resp.headers['github-authentication-token-expiration']) || undefined;
+    const minimal = resp.data && typeof resp.data === 'object' ? {
+      name: resp.data.name,
+      full_name: resp.data.full_name,
+      private: resp.data.private,
+      default_branch: resp.data.default_branch,
+      permissions: resp.data.permissions
+    } : null;
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.status(resp.status).json({ ok: resp.status>=200 && resp.status<300, status: resp.status, scopes, repo: minimal });
+  } catch (e) {
+    res.status(500).json({ ok:false, error: e.message });
+  }
 });
 
 // Ably token endpoint (TokenRequest for authUrl)
@@ -151,12 +205,12 @@ app.post('/workflow/run', async (req, res) => {
     const scriptPath = path.resolve(repoRoot, 'full-backup-workflow.ps1');
     const cmd = `powershell.exe -NoProfile -ExecutionPolicy Bypass -File "${scriptPath}"`;
     const startedAt = Date.now();
-    exec(cmd, { cwd: repoRoot, timeout: 180000, maxBuffer: 10 * 1024 * 1024 }, (error, stdout, stderr) => {
+  exec(cmd, { cwd: repoRoot, timeout: 180000, maxBuffer: 10 * 1024 * 1024 }, async (error, stdout, stderr) => {
       if (error) {
         const code = error.killed && error.signal === 'SIGTERM' ? 'TIMEOUT' : (error.code || 'ERR');
         return res.status(500).json({ ok: false, error: error.message, code, stdout, stderr });
       }
-      // On success: append a small release note with detected versionTag and artifact details
+      // On success: append a small release note with detected versionTag and artifact + HTTPS details
       try {
         const ver = detectCurrentVersionTag();
         const logsPath = path.resolve(repoRoot, 'logs', 'logs.json');
@@ -179,13 +233,20 @@ app.post('/workflow/run', async (req, res) => {
             }
           }
         } catch {}
+        // Optional: check HTTPS status of the public site
+        let httpsInfo = '';
+        try {
+          const url = 'https://mister.us.kg/';
+          const resp = await axios.get(url, { timeout: 5000, validateStatus: ()=>true });
+          httpsInfo = `https: ${resp.status}`;
+        } catch (e) { httpsInfo = 'https: offline'; }
         const durMs = Math.max(0, Date.now() - startedAt);
         const dur = (durMs/1000).toFixed(1) + 's';
         const entry = {
           type: 'note',
           timestamp: new Date().toISOString(),
           versionTag: ver ? `release-${ver}` : 'release',
-          message: `Workflow run voltooid (backend) in ${dur}. ${details}`.trim()
+          message: [`Workflow run voltooid (backend) in ${dur}.`, details, httpsInfo].filter(Boolean).join(' ').trim()
         };
         json.entries = Array.isArray(json.entries) ? json.entries : [];
         json.entries.push(entry);
