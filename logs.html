@@ -55,7 +55,17 @@
         <option>workflow</option>
         <option>backup</option>
         <option>indexBackup</option>
+        <option>note</option>
       </select>
+    </div>
+    
+    <!-- Changelog (compact) -->
+    <div id="changelog" class="card" style="display:none">
+      <div class="row" style="margin-bottom:6px">
+        <div style="font-weight:700">Changelog</div>
+        <div class="small muted">Laatste wijzigingen (type: note)</div>
+      </div>
+      <ul id="changelog-list" style="margin:0;padding-left:18px"></ul>
     </div>
     <div id="list"></div>
     <div class="footer">Tip: draai <code>full-backup-workflow.ps1</code> voor een volledige workflow entry met API- en cloudstatus.</div>
@@ -118,6 +128,28 @@
     }).join('');
   }
 
+  function renderChangelog(){
+    try{
+      const box = document.getElementById('changelog');
+      const ul = document.getElementById('changelog-list');
+      if (!box || !ul) return;
+      // Pick last 5 note entries, prefer versionTag starting with 'ui-' or 'change'
+      const notes = (entries||[])
+        .filter(e=>e && e.type==='note')
+        .sort((a,b)=> ((b.pinned===true)-(a.pinned===true)) || (new Date(b.timestamp)-new Date(a.timestamp)));
+      const preferred = notes.filter(e=>String(e.versionTag||'').startsWith('ui-') || String(e.versionTag||'').startsWith('change'));
+      const source = (preferred.length ? preferred : notes).slice(0,5);
+      if (!source.length){ box.style.display='none'; return; }
+      box.style.display='block';
+      ul.innerHTML = source.map((e, idx)=>{
+        const title = (e.versionTag||'note')+' · '+fmt(e.timestamp)+(e.pinned?' · 📌':'');
+        const msg = (e.message||'').split('\n')[0];
+        const indexInAll = entries.indexOf(e);
+        return '<li><a href="#" onclick="viewEntryDetails('+indexInAll+');return false;" class="small">'+title+'</a>'+(msg?'<div class="muted small">'+msg.replace(/</g,'&lt;')+'</div>':'')+'</li>';
+      }).join('');
+    }catch{}
+  }
+
   async function load(){
     try{
       const res = await fetch('logs/logs.json?ts='+Date.now());
@@ -125,6 +157,7 @@
       entries = Array.isArray(json.entries)? json.entries : [];
     }catch(e){ entries = []; }
     render();
+    renderChangelog();
   }
 
   async function runWorkflow(){

@@ -43,7 +43,23 @@ app.use((req, res, next) => {
   if (req.method === 'OPTIONS') return res.sendStatus(200);
   next();
 });
-app.use(express.json());
+// Use JSON body parser for all routes EXCEPT /logs/append (we handle that route manually to tolerate BOM/odd clients)
+app.use((req, res, next) => {
+  if (req.path === '/logs/append') return next();
+  return express.json()(req, res, next);
+});
+
+// Helper: safely read JSON from file (strip BOM if present)
+function safeReadJson(file, fallback) {
+  try {
+    if (!fs.existsSync(file)) return fallback;
+    const raw = fs.readFileSync(file, 'utf8');
+    const s = String(raw || '').replace(/^\uFEFF/, '');
+    return JSON.parse(s);
+  } catch {
+    return fallback;
+  }
+}
 
 app.post('/upload', upload.single('file'), async (req, res) => {
   if (UPLOAD_DISABLED) {
@@ -122,15 +138,33 @@ app.post('/workflow/run', async (req, res) => {
 });
 
 // Append a note entry to logs/logs.json
-app.post('/logs/append', (req, res) => {
+// Route-specific parser: accept any content-type as raw text, then parse safely (handles BOM)
+app.post('/logs/append', express.text({ type: '*/*' }), (req, res) => {
   try {
-    const { message = '', versionTag = 'note', type = 'note' } = req.body || {};
+    // Be tolerant to different client encodings/bodies
+    let body = req.body;
+    if (typeof body === 'string') {
+      // Strip BOM if present and try JSON parse; if that fails, attempt to parse urlencoded
+      let s = body.replace(/^\uFEFF/, '');
+      try {
+        body = JSON.parse(s);
+      } catch {
+        // Try very simple urlencoded parse (message=...&versionTag=...&type=...)
+        try {
+          const params = new URLSearchParams(s);
+          body = Object.fromEntries(params.entries());
+        } catch {
+          body = { message: s };
+        }
+      }
+    }
+    const { message = '', versionTag = 'note', type = 'note' } = body || {};
     const logsPath = path.resolve(repoRoot, 'logs', 'logs.json');
     if (!fs.existsSync(logsPath)) {
       fs.mkdirSync(path.dirname(logsPath), { recursive: true });
       fs.writeFileSync(logsPath, JSON.stringify({ entries: [] }, null, 2));
     }
-    const json = JSON.parse(fs.readFileSync(logsPath, 'utf8') || '{"entries":[]}');
+    const json = safeReadJson(logsPath, { entries: [] });
     const entry = { type, timestamp: new Date().toISOString(), versionTag, message };
     json.entries = Array.isArray(json.entries) ? json.entries : [];
     json.entries.push(entry);
@@ -139,6 +173,74 @@ app.post('/logs/append', (req, res) => {
     res.json({ ok: true, entry });
   } catch (e) {
     res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+// Fallback: allow GET with query params (for clients that struggle with JSON bodies)
+app.get('/logs/append', (req, res) => {
+  try {
+    const { message = '', versionTag = 'note', type = 'note' } = req.query || {};
+    const logsPath = path.resolve(repoRoot, 'logs', 'logs.json');
+    if (!fs.existsSync(logsPath)) {
+      fs.mkdirSync(path.dirname(logsPath), { recursive: true });
+      fs.writeFileSync(logsPath, JSON.stringify({ entries: [] }, null, 2));
+    }
+    const json = safeReadJson(logsPath, { entries: [] });
+    const entry = { type: String(type||'note'), timestamp: new Date().toISOString(), versionTag: String(versionTag||'note'), message: String(message||'') };
+    json.entries = Array.isArray(json.entries) ? json.entries : [];
+    json.entries.push(entry);
+    fs.writeFileSync(logsPath, JSON.stringify(json, null, 2));
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.json({ ok: true, entry });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+// Update a log entry (by index or timestamp). Allows updating message, versionTag, type, pinned.
+app.put('/logs/update', express.json(), (req, res) => {
+  try {
+    const { index, timestamp, message, versionTag, type, pinned } = req.body || {};
+    const logsPath = path.resolve(repoRoot, 'logs', 'logs.json');
+    if (!fs.existsSync(logsPath)) return res.status(404).json({ ok:false, error:'logs.json niet gevonden' });
+    const json = safeReadJson(logsPath, { entries: [] });
+    let arr = Array.isArray(json.entries) ? json.entries : [];
+    let idx = Number.isInteger(index) ? index : arr.findIndex(e => e && e.timestamp === timestamp);
+    if (!Number.isInteger(idx) || idx < 0 || idx >= arr.length) return res.status(400).json({ ok:false, error:'Ongeldige index/timestamp' });
+    const cur = arr[idx] || {};
+    if (typeof message === 'string') cur.message = message;
+    if (typeof versionTag === 'string') cur.versionTag = versionTag;
+    if (typeof type === 'string') cur.type = type;
+    if (typeof pinned !== 'undefined') cur.pinned = !!pinned;
+    arr[idx] = cur;
+    json.entries = arr;
+    fs.writeFileSync(logsPath, JSON.stringify(json, null, 2));
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.json({ ok:true, index: idx, entry: cur });
+  } catch (e) {
+    res.status(500).json({ ok:false, error: e.message });
+  }
+});
+
+// Delete a log entry (by index or timestamp)
+app.delete('/logs/delete', express.json(), (req, res) => {
+  try {
+    const idxBody = req.body && req.body.index;
+    const idxQuery = typeof req.query.index !== 'undefined' ? Number(req.query.index) : undefined;
+    const ts = req.body && req.body.timestamp ? req.body.timestamp : (req.query && req.query.timestamp);
+    const logsPath = path.resolve(repoRoot, 'logs', 'logs.json');
+    if (!fs.existsSync(logsPath)) return res.status(404).json({ ok:false, error:'logs.json niet gevonden' });
+    const json = safeReadJson(logsPath, { entries: [] });
+    let arr = Array.isArray(json.entries) ? json.entries : [];
+    let idx = Number.isInteger(idxBody) ? idxBody : (Number.isInteger(idxQuery) ? idxQuery : arr.findIndex(e => e && e.timestamp === ts));
+    if (!Number.isInteger(idx) || idx < 0 || idx >= arr.length) return res.status(400).json({ ok:false, error:'Ongeldige index/timestamp' });
+    const removed = arr.splice(idx, 1);
+    json.entries = arr;
+    fs.writeFileSync(logsPath, JSON.stringify(json, null, 2));
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.json({ ok:true, removed: removed[0] || null, count: arr.length });
+  } catch (e) {
+    res.status(500).json({ ok:false, error: e.message });
   }
 });
 

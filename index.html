@@ -5784,11 +5784,15 @@
                         const entries = Array.isArray(json.entries) ? json.entries.slice() : [];
                         entries.sort((a,b)=> new Date(b.timestamp) - new Date(a.timestamp));
                         const items = entries.slice(0, 12);
+                        // expose items so action buttons (edit/delete/pin) can reference original timestamps
+                        window._itemsForLogs = items;
                         if (items.length === 0) { container.innerHTML = '<div style="color:#9ca3af">Geen log entries gevonden.</div>'; return; }
                         const rows = items.map((e, i) => {
                             const ts = e.timestamp ? new Date(e.timestamp).toLocaleString('nl-NL') : '-';
                             const ver = e.versionTag || '-';
                             const type = e.type || '-';
+                            const isNote = (type === 'note');
+                            const pinned = !!e.pinned;
                             const msg = (e.message || e.note || (e.git && e.git.message) || '');
                             const sha = (e.git && e.git.sha) ? e.git.sha : '';
                             const site = e.site || {};
@@ -5800,9 +5804,9 @@
                             const idx  = e.artifacts && e.artifacts.indexBackup ? e.artifacts.indexBackup : '';
                             const did = 'logd-'+i;
                             return `
-                                <div style=\"border:1px solid #333;border-radius:10px;padding:14px;margin:10px 0;background:#111;\">
+                                <div style=\"border:1px solid #333;border-radius:10px;padding:14px;margin:10px 0;background:#111;cursor:pointer\" onclick=\"if(event.target.tagName!=='BUTTON'){viewLogEntry(${i})}\">
                                     <div style=\"display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center;\">
-                                        <div><strong>${ver}</strong> <span style="color:#9ca3af">(${type})</span></div>
+                                        <div><strong>${ver}${pinned ? ' <span title="Pinned">📌</span>' : ''}</strong> <span style=\"color:#9ca3af\">(${type})</span></div>
                                         <div style="color:#9ca3af">${ts}</div>
                                     </div>
                                     <div style=\"margin-top:8px;color:#e5e7eb;white-space:pre-wrap;font-size:14px;line-height:1.5\">${msg || '—'}</div>
@@ -5815,25 +5819,66 @@
                                         ${zip ? `<span>zip: ${zip}</span>` : ''}
                                         ${idx ? `<span>index: ${idx}</span>` : ''}
                                     </div>
-                                    <div style=\"margin-top:8px\">
+                                    <div style=\"margin-top:8px;display:flex;gap:8px;flex-wrap:wrap\">
                                         <button onclick=\"const d=document.getElementById('${did}'); d.style.display=d.style.display==='block'?'none':'block'\" style=\"background:#1f1f1f;border:1px solid #333;color:#fff;padding:4px 8px;border-radius:6px;cursor:pointer\">Details</button>
+                                        ${isNote ? `<button onclick=\"editNoteAt(${i})\" style=\"background:#1f1f1f;border:1px solid #333;color:#fff;padding:4px 8px;border-radius:6px;cursor:pointer\">Bewerken</button>` : ''}
+                                        ${isNote ? `<button onclick=\"deleteNoteAt(${i})\" style=\"background:#1f1f1f;border:1px solid #7f1d1d;color:#fecaca;padding:4px 8px;border-radius:6px;cursor:pointer\">Verwijderen</button>` : ''}
+                                        ${isNote ? `<button onclick=\"togglePinAt(${i})\" style=\"background:#1f1f1f;border:1px solid #333;color:#fff;padding:4px 8px;border-radius:6px;cursor:pointer\">${pinned ? 'Unpin' : 'Pin'}</button>` : ''}
                                     </div>
                                     <pre id=\"${did}\" style=\"display:none;background:#0b0b0b;border:1px solid #222;border-radius:8px;padding:10px;color:#d1d5db;overflow:auto;font-size:12px;margin-top:8px\">${JSON.stringify(e, null, 2)}</pre>
                                 </div>
                             `;
                         }).join('');
+                        // Build compact changelog (latest note entries)
+                        const notesAll = items
+                            .filter(e=>e && e.type === 'note')
+                            .sort((a,b)=> ((b.pinned===true)-(a.pinned===true)) || (new Date(b.timestamp)-new Date(a.timestamp)));
+                        const notesPref = notesAll.filter(e=>String(e.versionTag||'').startsWith('ui-') || String(e.versionTag||'').startsWith('change'));
+                        const notesSrc = (notesPref.length ? notesPref : notesAll).slice(0,5);
+                        const changelog = notesSrc.length ? (`
+                            <div style="border:1px solid #333;border-radius:10px;padding:14px;margin:10px 0;background:#111;">
+                                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:8px;flex-wrap:wrap;">
+                                    <div style="font-weight:700">Changelog</div>
+                                    <div style="color:#9ca3af;font-size:12px">Laatste wijzigingen (type: note)</div>
+                                </div>
+                                <ul style="margin:0;padding-left:18px;list-style:disc;color:#e5e7eb">
+                                    ${notesSrc.map((e)=>{
+                                        const idxInAll = items.indexOf(e);
+                                        const title = `${(e.versionTag||'note')} · ${new Date(e.timestamp).toLocaleString()}${e.pinned?' · 📌':''}`;
+                                        const first = String(e.message||'').split('\n')[0];
+                                        return `<li style=\"margin:4px 0\"><a href=\"#\" onclick=\"viewLogEntry(${idxInAll});return false;\" style=\"color:#93c5fd;text-decoration:none\">${title}</a>${first?`<div style=\"color:#9ca3af;font-size:12px\">${first.replace(/</g,'&lt;')}</div>`:''}</li>`;
+                                    }).join('')}
+                                </ul>
+                            </div>
+                        `) : '';
+
                         container.innerHTML = `
                                                         <div style=\"display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px;flex-wrap:wrap;\">
                                 <div style=\"font-weight:600\">Laatste wijzigingen</div>
-                                <div style="display:flex;gap:8px;">
+                                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
                                     <button style="background:#1f1f1f;border:1px solid #333;color:#fff;padding:6px 10px;border-radius:6px;cursor:pointer" onclick="loadActivityLogs()">Vernieuwen</button>
                                     <button id="run-workflow-btn" style="background:#1f1f1f;border:1px solid #333;color:#fff;padding:6px 10px;border-radius:6px;cursor:pointer" onclick="runWorkflow()">Run workflow</button>
                                     <button id=\"add-note-btn\" style=\"background:#1f1f1f;border:1px solid #333;color:#fff;padding:6px 10px;border-radius:6px;cursor:pointer\" onclick=\"addLogNote()\">Notitie toevoegen</button>
+                                    <a href="logs/logs.json" download style="background:#0f172a;border:1px solid #333;color:#93c5fd;padding:6px 10px;border-radius:6px;cursor:pointer;text-decoration:none">Download logs.json</a>
+                                    <span style="color:#9ca3af;font-size:12px">Sneltoets: n = notitie</span>
                                 </div>
                             </div>
+                             <!-- Inline notitieformulier (verborgen tot klik) -->
+                             <div id=\"note-form\" style=\"display:none;margin:8px 0;padding:10px;border:1px dashed #333;border-radius:8px;background:#0f0f0f\">
+                                 <div style=\"display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start\">
+                                     <input id=\"note-tag\" placeholder=\"Tag (bv. ui-x, change-x)\" style=\"flex:0 0 200px;background:#181818;border:1px solid #333;color:#fff;padding:6px 8px;border-radius:6px\"/>
+                                     <textarea id=\"note-message\" placeholder=\"Schrijf je notitie…\" rows=\"3\" style=\"flex:1;min-width:260px;background:#181818;border:1px solid #333;color:#fff;padding:8px;border-radius:8px\"></textarea>
+                                     <div style=\"display:flex;gap:8px\">
+                                         <button class=\"btn\" onclick=\"return submitNoteForm()\" style=\"background:#1f1f1f;border:1px solid #333;color:#fff;padding:6px 10px;border-radius:6px;cursor:pointer\">Opslaan</button>
+                                         <button class=\"btn\" onclick=\"return cancelNoteForm()\" style=\"background:#1f1f1f;border:1px solid #333;color:#fff;padding:6px 10px;border-radius:6px;cursor:pointer\">Annuleren</button>
+                                     </div>
+                                 </div>
+                                 <div id=\"note-form-status\" class=\"small\" style=\"margin-top:6px;color:#9ca3af\"></div>
+                             </div>
                                                         <div style=\"display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:-2px 0 8px 0;color:#9ca3af\">
                                                             <span id=\"backend-status-chip\" style=\"border:1px solid #333;border-radius:999px;padding:2px 8px\">backend: —</span>
                                                         </div>
+                            ${changelog}
                             ${(()=>{ try {
                                 const last = items[0]||{}; const a = last.artifacts||{}; const s = last.site||{};
                                 const fmtB = (n)=>{ if(!n&&n!==0)return '-'; const u=['B','KB','MB','GB']; let i=0; let x=Number(n); while(x>=1024&&i<u.length-1){x/=1024;i++;} return x.toFixed(1)+' '+u[i]; };
@@ -5887,15 +5932,139 @@
             }
         }
 
-        async function addLogNote(){
-            const txt = prompt('Voer notitie in voor logboek:');
-            if (!txt || !txt.trim()) return;
+        function addLogNote(){
+            const form = document.getElementById('note-form');
+            if (form) form.style.display = form.style.display === 'none' ? 'block' : 'none';
+            if (form && form.style.display === 'block') {
+                const t = document.getElementById('note-tag');
+                const m = document.getElementById('note-message');
+                if (t) t.focus(); if (m && !t.value) m.value = '';
+            }
+        }
+
+        async function submitNoteForm(){
+            const tagEl = document.getElementById('note-tag');
+            const msgEl = document.getElementById('note-message');
+            const stat = document.getElementById('note-form-status');
+            const tag = (tagEl && tagEl.value || 'note').trim();
+            const message = (msgEl && msgEl.value || '').trim();
+            if (!message){ if (stat){ stat.style.color='#ef4444'; stat.textContent='Vul een bericht in.'; } return false; }
+            if (stat){ stat.style.color='#9ca3af'; stat.textContent='Opslaan…'; }
             try{
-                const r = await fetch('http://localhost:3001/logs/append', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ message: txt.trim(), type:'note', versionTag:'note' }) });
+                const r = await fetch('http://localhost:3001/logs/append', {
+                    method:'POST', headers:{'Content-Type':'application/json; charset=utf-8'},
+                    body: JSON.stringify({ message, type:'note', versionTag: tag || 'note' })
+                });
                 const j = await r.json().catch(()=>({}));
-                if (!r.ok || !j.ok){ alert('Kon notitie niet opslaan'); return; }
+                if (!r.ok || !j.ok){
+                    // Fallback: try GET with query params (URL-encoded)
+                    const qs = new URLSearchParams({ message, versionTag: (tag||'note'), type:'note' }).toString();
+                    const r2 = await fetch('http://localhost:3001/logs/append?'+qs, { method:'GET' });
+                    const j2 = await r2.json().catch(()=>({}));
+                    if (!r2.ok || !j2.ok){
+                        const detail = (j && j.error) ? ('\n'+j.error) : (' (HTTP '+(r.status||'?')+')');
+                        const detail2 = (j2 && j2.error) ? ('\n'+j2.error) : (' (HTTP '+(r2.status||'?')+')');
+                        if (stat){ stat.style.color='#ef4444'; stat.textContent='Kon notitie niet opslaan'+detail+' — fallback: '+detail2; }
+                        return false;
+                    }
+                    // Fallback succeeded
+                    if (stat){ stat.style.color='#22c55e'; stat.textContent='Opgeslagen (via fallback).'; }
+                    if (tagEl) tagEl.value=''; if (msgEl) msgEl.value='';
+                    const form = document.getElementById('note-form'); if (form) form.style.display='none';
+                    loadActivityLogs();
+                    return false;
+                }
+                if (stat){ stat.style.color='#22c55e'; stat.textContent='Opgeslagen.'; }
+                // Reset form + UI
+                if (tagEl) tagEl.value=''; if (msgEl) msgEl.value='';
+                const form = document.getElementById('note-form'); if (form) form.style.display='none';
                 loadActivityLogs();
-            } catch(e){ alert('Fout bij opslaan notitie: '+e.message); }
+                return false;
+            } catch(e){ if (stat){ stat.style.color='#ef4444'; stat.textContent='Fout: '+(e && e.message ? e.message : e); } return false; }
+        }
+
+        function cancelNoteForm(){
+            const form = document.getElementById('note-form'); if (form) form.style.display='none';
+            const stat = document.getElementById('note-form-status'); if (stat) stat.textContent='';
+            return false;
+        }
+
+        // Allow clicking the whole card area to toggle details
+        window.viewLogEntry = function(idx){
+            try{
+                const pre = document.getElementById('logd-'+idx);
+                if (!pre) return; const box = pre.closest('div[style*="border:1px solid #333"][style*="background:#111"]');
+                if (pre.style.display !== 'block') pre.style.display = 'block'; else pre.style.display = 'none';
+                if (box) box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }catch{}
+        }
+
+        // Note actions: edit, delete, pin/unpin
+        window.editNoteAt = async function(idx){
+            try {
+                const items = (window._itemsForLogs || []);
+                const e = items[idx];
+                if (!e) return;
+                const ts = e.timestamp;
+                const curMsg = String(e.message || e.note || '');
+                const curTag = String(e.versionTag || 'note');
+                const newMsg = (prompt('Wijzig notitie', curMsg) ?? '').trim();
+                if (!newMsg) return;
+                const newTag = (prompt('Wijzig tag', curTag) ?? '').trim() || 'note';
+                const r = await fetch('http://localhost:3001/logs/update', {
+                    method:'PUT', headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({ timestamp: ts, message: newMsg, versionTag: newTag })
+                });
+                const j = await r.json().catch(()=>({}));
+                if (!r.ok || !j.ok){ alert('Opslaan mislukt: '+(j.error||r.status||'?')); return; }
+                loadActivityLogs();
+            } catch(e){ alert('Fout tijdens bewerken: '+(e && e.message ? e.message : e)); }
+        }
+
+        window.deleteNoteAt = async function(idx){
+            try {
+                const items = (window._itemsForLogs || []);
+                const e = items[idx];
+                if (!e) return;
+                if (!confirm('Notitie verwijderen?')) return;
+                const ts = e.timestamp;
+                const r = await fetch('http://localhost:3001/logs/delete', {
+                    method:'DELETE', headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({ timestamp: ts })
+                });
+                const j = await r.json().catch(()=>({}));
+                if (!r.ok || !j.ok){ alert('Verwijderen mislukt: '+(j.error||r.status||'?')); return; }
+                loadActivityLogs();
+            } catch(e){ alert('Fout tijdens verwijderen: '+(e && e.message ? e.message : e)); }
+        }
+
+        window.togglePinAt = async function(idx){
+            try {
+                const items = (window._itemsForLogs || []);
+                const e = items[idx];
+                if (!e) return;
+                const ts = e.timestamp;
+                const newPinned = !Boolean(e.pinned);
+                const r = await fetch('http://localhost:3001/logs/update', {
+                    method:'PUT', headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({ timestamp: ts, pinned: newPinned })
+                });
+                const j = await r.json().catch(()=>({}));
+                if (!r.ok || !j.ok){ alert('Pin wijzigen mislukt: '+(j.error||r.status||'?')); return; }
+                loadActivityLogs();
+            } catch(e){ alert('Fout tijdens pinnen: '+(e && e.message ? e.message : e)); }
+        }
+
+        // Keyboard shortcut: n opens note form (when focus not in input/textarea/contenteditable)
+        if (!window._noteShortcutBound){
+            window._noteShortcutBound = true;
+            document.addEventListener('keydown', (ev)=>{
+                if (ev.key === 'n' && !ev.ctrlKey && !ev.metaKey && !ev.altKey){
+                    const ae = document.activeElement;
+                    if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.isContentEditable)) return;
+                    try { addLogNote(); ev.preventDefault(); } catch {}
+                }
+            });
         }
 
         // Version auto-update from logs/artifacts
