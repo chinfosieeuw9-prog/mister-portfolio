@@ -140,10 +140,10 @@
       try{
         const r = await fetch(base + '/scripts/list', { cache:'no-store' });
         const j = await r.json();
-        const arr = (j && j.scripts) || [];
+  const arr = (j && j.scripts) || [];
         if (!arr.length){ listEl.innerHTML = '<div class="muted">Geen scripts gevonden.</div>'; return; }
-        // Favorites
-  const favIds = ['open-scripts','start-backend-3002-safe','start-live-server-safe','open-admin-tabs','restart-backend-hard','detect-base-and-health'];
+    // Favorites (kies nieuwe admin i.p.v. oude tabs)
+  const favIds = ['open-scripts','start-backend-3002-safe','start-live-server-safe','open-admin','restart-backend-hard','detect-base-and-health'];
         const fav = arr.filter(x => favIds.includes(x.id));
         renderCards(favEl, fav);
         renderCards(listEl, arr);

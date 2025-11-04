@@ -69,16 +69,50 @@
             }
             return _normBase(uniq[0]);
         }
+        // Uptime helpers voor label "server sinds"
+        function __fmtDur(ms){
+            try{
+                ms = Math.max(0, ms|0);
+                const s = Math.floor(ms/1000);
+                const d = Math.floor(s/86400);
+                const h = Math.floor((s%86400)/3600);
+                const m = Math.floor((s%3600)/60);
+                const sec = s%60;
+                if (d>0) return `${d}d ${h}u ${m}m`;
+                if (h>0) return `${h}u ${m}m ${sec}s`;
+                if (m>0) return `${m}m ${sec}s`;
+                return `${sec}s`;
+            }catch{ return '—'; }
+        }
+        let __startedAtMs = 0;
+        function __tickUptime(){
+            try{
+                const el = document.getElementById('admin-server-uptime');
+                if (!el) return;
+                if (!__startedAtMs){ el.textContent = 'server sinds: —'; return; }
+                el.textContent = 'server sinds: ' + __fmtDur(Date.now() - __startedAtMs);
+            }catch{}
+        }
+        setInterval(__tickUptime, 1000);
+
         async function updateAdminBackendChips(){
             const chip = document.getElementById('admin-backend-chip');
             const baseEl = document.getElementById('admin-backend-base');
+            const upEl = document.getElementById('admin-server-uptime');
             const base = await detectBackendBaseOnce();
             if (baseEl) baseEl.textContent = 'base: ' + base;
             if (!chip) return;
-            try { const r = await fetch(base.replace(/\/$/,'') + '/health', { cache:'no-store' });
-                if (r.ok){ chip.textContent = 'backend: online'; chip.style.color = '#22c55e'; chip.style.borderColor = '#195b37'; }
-                else { chip.textContent = 'backend: offline'; chip.style.color = '#ef4444'; chip.style.borderColor = '#5b1d1d'; }
-            } catch { chip.textContent = 'backend: offline'; chip.style.color = '#ef4444'; chip.style.borderColor = '#5b1d1d'; }
+            try {
+                const r = await fetch(base.replace(/\/$/,'') + '/health', { cache:'no-store' });
+                if (r.ok){
+                    chip.textContent = 'backend: online'; chip.style.color = '#22c55e'; chip.style.borderColor = '#195b37';
+                    try { const j = await r.json(); if (j && j.startedAt){ __startedAtMs = new Date(j.startedAt).getTime() || 0; __tickUptime(); } } catch{}
+                } else {
+                    chip.textContent = 'backend: offline'; chip.style.color = '#ef4444'; chip.style.borderColor = '#5b1d1d'; if (upEl) upEl.textContent = 'server sinds: —';
+                }
+            } catch {
+                chip.textContent = 'backend: offline'; chip.style.color = '#ef4444'; chip.style.borderColor = '#5b1d1d'; if (upEl) upEl.textContent = 'server sinds: —';
+            }
         }
         </script>
     <script>
@@ -93,6 +127,7 @@
                     <div class="admin-title" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">Admin Paneel (Tabs)
                         <span id="admin-backend-chip" style="border:1px solid #333;border-radius:999px;padding:2px 8px;color:#9ca3af;font-size:12px">backend: —</span>
                         <span id="admin-backend-base" style="border:1px solid #333;border-radius:999px;padding:2px 8px;color:#9ca3af;font-size:12px">base: —</span>
+                        <span id="admin-server-uptime" style="border:1px solid #333;border-radius:999px;padding:2px 8px;color:#9ca3af;font-size:12px">server sinds: —</span>
                     </div>
                     <div style="display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 6px;align-items:center;">
                         <button id="run-workflow-btn" class="admin-btn">▶️ Run backup workflow</button>
