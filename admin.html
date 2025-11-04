@@ -30,13 +30,14 @@
     <style>
         body { background: #181828; color: #e3e6f0; font-family: 'Inter', sans-serif; }
         .admin-container { max-width: 480px; margin: 0 auto; padding: 32px 12px; }
-    .admin-card { background: #23234a; border-radius: 14px; box-shadow: 0 8px 32px #0002; padding: 28px 20px; margin-bottom: 24px; position: relative; }
-        .admin-title { font-size: 1.5em; font-weight: 700; margin-bottom: 18px; color: #4ade80; }
+        .admin-card { background: #23234a; border-radius: var(--card-radius, 16px); box-shadow: var(--card-shadow, 0 8px 32px #0002); padding: 28px 20px; margin-bottom: 24px; position: relative; border: var(--card-border-w, 3px) solid var(--card-border-color, #7c3aed); }
+        .admin-title { font-size: 1.5em; font-weight: 700; margin-bottom: 18px; color: #e3e6f0; }
         .admin-section { margin-bottom: 32px; }
         .admin-label { font-weight: 600; margin-bottom: 6px; display: block; }
         .admin-input, .admin-textarea { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #181828; color: #e3e6f0; margin-bottom: 12px; }
-        .admin-btn { background: #4ade80; color: #23234a; border: none; padding: 10px 22px; border-radius: 6px; font-weight: 700; cursor: pointer; margin-top: 6px; }
-        .admin-btn:hover { background: #22c55e; }
+        /* Knoppen volgen nu de globale donkere admin-stijl (rectangular) uit css/style.css */
+        .admin-btn { background: #0f0f1a; border: 1px solid var(--accent, #7c3aed); color: #e5e7eb; border-radius: 8px; padding: 8px 12px; cursor: pointer; font-weight: 700; margin-top: 6px; }
+        .admin-btn:hover { background: #171128; border-color: var(--accent-hover, #8b5cf6); }
         .admin-cv-section { margin-top: 32px; }
         .cv-download-form { display: flex; gap: 8px; }
         .cv-download-input { flex: 1; }
@@ -125,17 +126,17 @@
                 <div class="admin-card">
                     <button id="admin-logout-btn" class="admin-btn admin-logout-btn">Uitloggen</button>
                     <div class="admin-title" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">Admin Paneel (Tabs)
-                        <span id="admin-backend-chip" style="border:1px solid #333;border-radius:999px;padding:2px 8px;color:#9ca3af;font-size:12px">backend: —</span>
-                        <span id="admin-backend-base" style="border:1px solid #333;border-radius:999px;padding:2px 8px;color:#9ca3af;font-size:12px">base: —</span>
-                        <span id="admin-server-uptime" style="border:1px solid #333;border-radius:999px;padding:2px 8px;color:#9ca3af;font-size:12px">server sinds: —</span>
+                        <span id="admin-backend-chip" style="border:1px solid #333;border-radius:8px;padding:2px 8px;color:#9ca3af;font-size:12px">backend: —</span>
+                        <span id="admin-backend-base" style="border:1px solid #333;border-radius:8px;padding:2px 8px;color:#9ca3af;font-size:12px">base: —</span>
+                        <span id="admin-server-uptime" style="border:1px solid #333;border-radius:8px;padding:2px 8px;color:#9ca3af;font-size:12px">server sinds: —</span>
                     </div>
                     <div style="display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 6px;align-items:center;">
                         <button id="run-workflow-btn" class="admin-btn">▶️ Run backup workflow</button>
-                        <a href="logs.html" class="admin-btn" style="text-decoration:none;display:inline-block;">📊 Open logboek</a>
+                        <a href="logs.html" class="admin-btn">📊 Open logboek</a>
                         <button id="open-news-tab-btn" class="admin-btn" type="button">📰 Nieuwsbeheer</button>
-                        <a href="explorer-demo.html" class="admin-btn" style="text-decoration:none;display:inline-block;">🗂️ Nieuwe Explorer</a>
-                        <a href="scripts.html" class="admin-btn" style="text-decoration:none;display:inline-block;">🧰 Script runner</a>
-                        <a href="index.html" class="admin-btn" style="text-decoration:none;display:inline-block;">🏠 Naar Home</a>
+                        <a href="explorer-demo.html" class="admin-btn">🗂️ Nieuwe Explorer</a>
+                        <a href="scripts.html" class="admin-btn">🧰 Script runner</a>
+                        <a href="index.html" class="admin-btn">🏠 Naar Home</a>
                         <span id="workflow-status" style="font-size:12px;color:#9ca3af;margin-left:6px;"></span>
                         <button id="check-upload-btn" class="admin-btn" type="button">🧪 Check upload</button>
                         <button id="restart-backend-btn" class="admin-btn" type="button">♻️ Restart backend</button>

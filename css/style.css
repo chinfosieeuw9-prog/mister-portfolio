@@ -1,10 +1,12 @@
 /* Globale kaart-variabelen (site-breed te gebruiken) */
 :root {
-    /* Standaard preset: 'dik' met paarse rand */
-    --card-border-w: 3px;
+    /* Subtiel standaard: neutrale rand, paarse hover */
+    --card-border-w: 2px;
     --card-radius: 16px;
-    --card-border-color: #7c3aed; /* violet */
+    --card-border-color: #2b2d40; /* donkergrijs */
     --card-shadow: 0 4px 16px #0002;
+    --accent: #7c3aed; /* paarse accent */
+    --accent-hover: #8b5cf6;
 }
 /* --- Subtiele blauwe gloed aan de onderrand --- */
 body::before {
@@ -90,14 +92,14 @@ body::before {
     box-shadow: var(--card-shadow) !important;
     border: var(--card-border-w) solid var(--card-border-color) !important;
     color: #f3f4fa !important;
-    padding: 28px 22px !important;
-    margin: 0 0 32px 0 !important;
-    transition: box-shadow 0.2s, border-color 0.2s;
+    padding: 24px 20px !important;
+    margin: 0 0 28px 0 !important;
+    transition: box-shadow 0.18s, border-color 0.18s;
 }
 /* Duidelijke paarse hoverrand */
 .card:hover {
-    border: calc(var(--card-border-w) + 1px) solid #8b5cf6 !important;
-    box-shadow: 0 8px 32px rgba(139,92,246,0.25), 0 4px 16px rgba(0,0,0,0.22) !important;
+    border-color: var(--accent-hover) !important;
+    box-shadow: 0 8px 24px rgba(139,92,246,0.18), 0 4px 14px rgba(0,0,0,0.20) !important;
 }
 .card h2, .card h3, .card h4, .card label, .card .card-icon {
     color: #f3f4fa !important;
@@ -112,8 +114,8 @@ body::before {
     color: #8b5cf6 !important;
 }
 .card:hover {
-    box-shadow: 0 8px 32px rgba(91,33,182,0.18), 0 4px 16px rgba(0,0,0,0.18) !important;
-    border-color: #8b5cf6 !important;
+    box-shadow: 0 8px 24px rgba(91,33,182,0.16), 0 4px 14px rgba(0,0,0,0.18) !important;
+    border-color: var(--accent-hover) !important;
 }
 /* --- File Card Grid and File Cards (migrated from inline styles in index.html) --- */
 .file-card-grid {
@@ -1023,9 +1025,10 @@ body::before {
 }
 /* Card global style for all cards */
 .card {
-    background: #181828;
-    border-radius: 8px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    background: #23234a;
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow);
+    border: var(--card-border-w) solid var(--card-border-color);
     padding: 24px 18px;
     margin: 0 0 24px 0;
     box-sizing: border-box;
@@ -1075,10 +1078,10 @@ body {
 /* Globale navigatieknop-stijl (donker met subtiele rand) */
 .nav-btn {
     background: #0f0f1a;
-    border: 1px solid #374151;
+    border: 1px solid var(--card-border-color);
     color: #e5e7eb;
     border-radius: 8px;
-    padding: 8px 12px;
+    padding: 6px 10px;
     cursor: pointer;
     font-weight: 600;
     text-decoration: none;
@@ -1088,24 +1091,24 @@ body {
 }
 .nav-btn:hover {
     background: #171128;
-    border-color: #8b5cf6;
+    border-color: var(--accent-hover);
 }
 
 /* Alias voor oude admin-knoppen naar de nieuwe stijl */
 .admin-btn {
     background: #0f0f1a;
-    border: 1px solid #374151;
+    border: 1px solid var(--card-border-color);
     color: #e5e7eb;
     border-radius: 8px;
-    padding: 8px 12px;
+    padding: 7px 11px;
     cursor: pointer;
-    font-weight: 700;
+    font-weight: 600;
     text-decoration: none;
     display: inline-flex;
     align-items: center;
     gap: 8px;
 }
-.admin-btn:hover { background: #171128; border-color: #8b5cf6; }
+.admin-btn:hover { background: #171128; border-color: var(--accent-hover); }
 
 /* Contact form dark theme */
 .contact-form {

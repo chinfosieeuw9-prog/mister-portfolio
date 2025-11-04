@@ -36,6 +36,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Backup Logboek • mister.us.kg</title>
   <meta name="robots" content="noindex" />
+  <link rel="stylesheet" href="css/style.css" />
   <script src="js/status-indicators.js"></script>
   <style>
     /* Admin-aligned palette */
@@ -47,9 +48,9 @@
     .sub{color:var(--muted);font-size:13px;margin-bottom:20px}
     .toolbar{display:flex;gap:8px;align-items:center;margin-bottom:14px}
     input,select{background:#1f1f1f;border:1px solid #333;color:var(--fg);padding:8px 10px;border-radius:6px}
-    .card{background:var(--card);border:1.5px solid #333;border-radius:14px;padding:16px 16px;margin:10px 0;box-shadow:0 4px 16px #0002}
+  .card{background:var(--card);border:var(--card-border-w,3px) solid var(--card-border-color,#7c3aed);border-radius:var(--card-radius,16px);padding:22px 20px;margin:12px 0;box-shadow:var(--card-shadow,0 4px 16px #0002)}
     .row{display:flex;justify-content:space-between;gap:10px;align-items:center}
-  .tag{display:inline-block;padding:2px 10px;border-radius:999px;border:1px solid #333;font-size:12px;color:var(--muted);background:rgba(0,0,0,.15)}
+  .tag{display:inline-block;padding:2px 10px;border-radius:8px;border:1px solid #333;font-size:12px;color:var(--muted);background:rgba(0,0,0,.15)}
     .tag.ok{color:var(--ok);border-color:#195b37}
     .tag.err{color:var(--err);border-color:#5b1d1d}
     .tag.warn{color:var(--warn);border-color:#5b4a1d}
@@ -63,10 +64,7 @@
     .kv{background:#181828;border:1px solid #333;border-radius:8px;padding:10px;font-size:13px}
     .kv .k{color:var(--muted);display:block;margin-bottom:4px}
     .details{margin-top:10px;display:none}
-  .btn{background:#4ade80;border:0;color:#23234a;padding:8px 12px;border-radius:6px;cursor:pointer;font-weight:700}
-    .btn:hover{background:#22c55e}
-    .nav-btn{ background:#111827; border:1px solid #374151; color:#e5e7eb; border-radius:999px; padding:6px 12px; cursor:pointer; font-weight:600; text-decoration:none; }
-    .nav-btn:hover{ border-color:#6b7280; }
+    /* Use global .nav-btn/.admin-btn; only keep .small here */
     .small{font-size:12px}
     .footer{margin-top:20px;color:var(--muted);font-size:12px}
     @media (max-width: 700px){.grid{grid-template-columns:1fr}}
@@ -107,9 +105,9 @@
     <div class="toolbar">
       <a href="index.html" class="nav-btn" title="Terug naar Home">← Home</a>
       <a href="admin.html" class="nav-btn" title="Open Admin">⚙️ Admin</a>
-      <button class="nav-btn" onclick="location.href=location.pathname+'?v='+Date.now()" title="Harde refresh">↻ Refresh</button>
-  <button id="runBtn" class="btn" title="Start volledige backup workflow">▶ Run workflow</button>
-  <button id="openLatestBtn" class="btn" title="Scroll naar laatste backup/index">📌 Open laatste backup</button>
+    <button class="nav-btn" onclick="location.href=location.pathname+'?v='+Date.now()" title="Harde refresh">↻ Refresh</button>
+    <button id="runBtn" class="admin-btn" title="Start volledige backup workflow">▶ Run workflow</button>
+    <button id="openLatestBtn" class="admin-btn" title="Scroll naar laatste backup/index">📌 Open laatste backup</button>
       <span id="runStatus" class="small muted"></span>
       <span id="serverSince" class="small muted"></span>
   <input id="search" placeholder="Zoek op versie, type, API..." aria-label="Zoeken in logboek" />
@@ -260,8 +258,8 @@
       const permalink = '?ts='+encodeURIComponent(e.timestamp);
       const tsId = 'log-'+String(e.timestamp||'').replace(/[^0-9A-Za-z:._-]/g,'');
       const btns = '<div>'
-        + '<button class="btn small" onclick="viewEntryDetails('+idx+')">Details</button> '
-        + '<a class="btn small" href="'+permalink+'" title="Open deze entry via permalink">Permalink</a>'
+        + '<button class="nav-btn small" onclick="viewEntryDetails('+idx+')">Details</button> '
+        + '<a class="nav-btn small" href="'+permalink+'" title="Open deze entry via permalink">Permalink</a>'
         + '</div>';
       return '<div class="card" id="'+tsId+'">'+head+grid+btns+'</div>';
     }).join('');
@@ -272,8 +270,23 @@
       const box = document.getElementById('changelog');
       const ul = document.getElementById('changelog-list');
       if (!box || !ul) return;
-      function decodeMojibake(s){
-        try{ if (!s) return s; if (!(/[ÃÂâ€™“”€¢]/.test(s))) return s; return decodeURIComponent(escape(s)); }catch{ return s; }
+      function decodeM(s){
+        try{
+          if (!s) return s;
+          const str = String(s);
+          if (!(/[ÃÂâ€™“”€¢]/.test(str))) return str;
+          let t = '';
+          try { t = decodeURIComponent(escape(str)); } catch { t = str; }
+          const map = {
+            'â€™': '’', 'â€˜': '‘', 'â€œ': '“', 'â€�': '”', 'â€“': '–', 'â€”': '—',
+            'Ã©': 'é', 'Ã«': 'ë', 'Ã¨': 'è', 'Ãª': 'ê', 'Ã¶': 'ö', 'Ã¼': 'ü', 'Ã¤': 'ä',
+            'Ã¡': 'á', 'Ã ': 'à', 'Ã³': 'ó', 'Ã±': 'ñ', 'Ã§': 'ç', 'Ã­': 'í', 'Ãº': 'ú',
+            'Â ': ' ', 'Â': ''
+          };
+          let out = t;
+          for (const k in map){ out = out.split(k).join(map[k]); }
+          return out;
+        }catch{ return s; }
       }
       // Pick last 5 note entries, prefer versionTag starting with 'ui-' or 'change'
       const notes = (entries||[])
@@ -285,7 +298,7 @@
       box.style.display='block';
       ul.innerHTML = source.map((e, idx)=>{
         const title = (e.versionTag||'note')+' · '+fmt(e.timestamp)+(e.pinned?' · 📌':'');
-        const msg = decodeMojibake((e.message||'')).split('\n')[0];
+        const msg = decodeM((e.message||'')).split('\n')[0];
         const indexInAll = entries.indexOf(e);
         return '<li><a href="#" onclick="viewEntryDetails('+indexInAll+');return false;" class="small">'+title+'</a>'+(msg?'<div class="muted small">'+msg.replace(/</g,'&lt;')+'</div>':'')+'</li>';
       }).join('');
@@ -366,12 +379,22 @@
   window.viewEntryDetails = function(idx){
     const e = (entries||[])[idx];
     if (!e) return;
-    function decodeMojibake(s){
+    function decodeM(s){
       try{
         if (!s) return s;
-        // Heuristic: only try if classic mojibake bytes appear
-        if (!(/[ÃÂâ€™“”€¢]/.test(s))) return s;
-        return decodeURIComponent(escape(s));
+        const str = String(s);
+        if (!(/[ÃÂâ€™“”€¢]/.test(str))) return str;
+        let t = '';
+        try { t = decodeURIComponent(escape(str)); } catch { t = str; }
+        const map = {
+          'â€™': '’', 'â€˜': '‘', 'â€œ': '“', 'â€�': '”', 'â€“': '–', 'â€”': '—',
+          'Ã©': 'é', 'Ã«': 'ë', 'Ã¨': 'è', 'Ãª': 'ê', 'Ã¶': 'ö', 'Ã¼': 'ü', 'Ã¤': 'ä',
+          'Ã¡': 'á', 'Ã ': 'à', 'Ã³': 'ó', 'Ã±': 'ñ', 'Ã§': 'ç', 'Ã­': 'í', 'Ãº': 'ú',
+          'Â ': ' ', 'Â': ''
+        };
+        let out = t;
+        for (const k in map){ out = out.split(k).join(map[k]); }
+        return out;
       }catch{ return s; }
     }
     const overlay = document.createElement('div');
@@ -385,17 +408,17 @@
     title.textContent = (e.versionTag||'-')+' • '+(e.type||'-')+' • '+fmt(e.timestamp);
     const acts = document.createElement('div');
     acts.className = 'modal-actions';
-  const btnCopy = document.createElement('button'); btnCopy.className = 'btn'; btnCopy.textContent = 'Kopieer JSON';
+  const btnCopy = document.createElement('button'); btnCopy.className = 'nav-btn'; btnCopy.textContent = 'Kopieer JSON';
     btnCopy.onclick = ()=>{ try{ navigator.clipboard.writeText(JSON.stringify(e,null,2)); btnCopy.textContent='Gekopieerd'; setTimeout(()=>btnCopy.textContent='Kopieer JSON',1200);}catch{} };
   const permalink = (location.origin||'') + location.pathname + '?ts=' + encodeURIComponent(e.timestamp);
-  const btnPermalink = document.createElement('button'); btnPermalink.className = 'btn'; btnPermalink.textContent = 'Permalink';
+  const btnPermalink = document.createElement('button'); btnPermalink.className = 'nav-btn'; btnPermalink.textContent = 'Permalink';
   btnPermalink.onclick = ()=>{ try{ navigator.clipboard.writeText(permalink); btnPermalink.textContent='Gekopieerd'; setTimeout(()=>btnPermalink.textContent='Permalink',1200);}catch{} };
-    const btnClose = document.createElement('button'); btnClose.className = 'btn'; btnClose.textContent = 'Sluiten'; btnClose.onclick = ()=> overlay.remove();
+  const btnClose = document.createElement('button'); btnClose.className = 'nav-btn'; btnClose.textContent = 'Sluiten'; btnClose.onclick = ()=> overlay.remove();
   acts.appendChild(btnCopy); acts.appendChild(btnPermalink); acts.appendChild(btnClose);
     head.appendChild(title); head.appendChild(acts);
 
     const body = document.createElement('div'); body.className = 'modal-b';
-  if (e.message) { const m = document.createElement('div'); m.className='pre'; m.style.marginBottom='10px'; m.textContent = String(decodeMojibake(e.message||'')); body.appendChild(m); }
+  if (e.message) { const m = document.createElement('div'); m.className='pre'; m.style.marginBottom='10px'; m.textContent = String(decodeM(e.message||'')); body.appendChild(m); }
     const pre = document.createElement('pre'); pre.className='pre'; pre.textContent = JSON.stringify(e,null,2); body.appendChild(pre);
 
     modal.appendChild(head); modal.appendChild(body); overlay.appendChild(modal);
