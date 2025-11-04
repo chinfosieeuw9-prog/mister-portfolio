@@ -4,15 +4,15 @@
     if (!document.getElementById('status-indicators-css')){
       const css = document.createElement('style');
       css.id = 'status-indicators-css';
-      css.textContent = `
-      .si-dock{position:fixed;top:8px;right:8px;display:flex;gap:6px;flex-wrap:wrap;z-index:9998}
-      .si-chip{display:inline-flex;align-items:center;gap:6px;padding:2px 8px;border-radius:999px;border:1px solid #333;color:#9ca3af;font:12px/1.4 ui-sans-serif,system-ui,Segoe UI,Roboto,Arial,sans-serif;background:rgba(0,0,0,.25)}
-      .si-chip.si-ok{color:#22c55e;border-color:#195b37}
-      .si-chip.si-warn{color:#f59e0b;border-color:#5b4a1d}
-      .si-chip.si-err{color:#ef4444;border-color:#5b1d1d}
-      .si-pill{display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;border:1px dashed #444;color:#cbd5e1;background:rgba(0,0,0,.15);cursor:default}
-      .si-pill.si-click{cursor:pointer;border-style:solid}
-      `;
+  css.textContent = `
+  .si-dock{position:fixed;top:8px;right:8px;display:flex;gap:6px;flex-wrap:wrap;z-index:9998}
+  .si-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:8px;border:1px solid #333;color:#9ca3af;font:12px/1.4 ui-sans-serif,system-ui,Segoe UI,Roboto,Arial,sans-serif;background:#0f0f1a}
+  .si-chip.si-ok{color:#22c55e;border-color:#195b37}
+  .si-chip.si-warn{color:#f59e0b;border-color:#5b4a1d}
+  .si-chip.si-err{color:#ef4444;border-color:#5b1d1d}
+  .si-pill{display:inline-flex;align-items:center;padding:6px 10px;border-radius:8px;border:1px solid #7c3aed;color:#e5e7eb;background:#0f0f1a;cursor:default}
+  .si-pill.si-click{cursor:pointer;border-color:#8b5cf6}
+  `;
       document.head.appendChild(css);
     }
 
@@ -108,7 +108,7 @@
           <span id="si-chip-live" class="si-chip">live: —</span>
           <span id="si-pill-base" class="si-pill si-click" title="Klik om base te wisselen">base: —</span>
           <span id="si-pill-env" class="si-pill si-click" title="Klik om omgeving te wisselen">omgeving: —</span>
-          <a id="si-pill-live-tools" class="si-pill si-click" href="https://mister.us.kg/live-tools.html" target="_blank" rel="noopener" title="Open Live Tools (https)">Live Tools</a>
+          <a id="si-pill-live-tools" class="si-pill si-click" href="live-tools.html" target="_blank" rel="noopener" title="Open Live Tools">Live Tools</a>
         `;
         document.body.appendChild(dock);
       }
