@@ -6191,6 +6191,26 @@ node index.js</div>
                         // expose items so action buttons (edit/delete/pin) can reference original timestamps
                         window._itemsForLogs = items;
                         if (items.length === 0) { container.innerHTML = '<div style="color:#9ca3af">Geen log entries gevonden.</div>'; return; }
+                        // Helpers: type badge + linkify + latest backup index
+                        const typeBadge = (t)=>{
+                            const type = String(t||'-').toLowerCase();
+                            let color = '#9ca3af', border = '#333';
+                            if (type==='backup'){ color = '#4ade80'; border = '#195b37'; }
+                            else if (type==='indexbackup'){ color = '#60a5fa'; border = '#1e3a8a'; }
+                            else if (type==='workflow'){ color = '#fbbf24'; border = '#5b4a1d'; }
+                            else if (type==='note'){ color = '#c084fc'; border = '#4c1d95'; }
+                            return `<span style="display:inline-block;padding:2px 10px;border-radius:999px;border:1px solid ${border};font-size:12px;color:${color};background:rgba(0,0,0,.15)">${t||'-'}</span>`;
+                        };
+                        const linkifyMaybe = (v)=>{ try{ const s=String(v||''); if(/^https?:\/\//i.test(s)){ return `<a href="${s}" target="_blank" rel="noopener">${s}</a>`; } return s||'-'; }catch{ return v||'-'; } };
+                        const latestBackupIndex = (arr)=>{
+                            try{
+                                if (!Array.isArray(arr) || !arr.length) return -1;
+                                const preferred = arr.map((e,i)=>({e,i}))
+                                  .filter(x=>{ const t=String(x.e.type||'').toLowerCase(); const art=x.e.artifacts||{}; return (t==='backup'||t==='indexbackup'||art.indexBackup||art.zip); })
+                                  .sort((a,b)=> new Date(b.e.timestamp)-new Date(a.e.timestamp));
+                                return preferred.length ? preferred[0].i : -1;
+                            }catch{ return -1; }
+                        };
                         const rows = items.map((e, i) => {
                             const ts = e.timestamp ? new Date(e.timestamp).toLocaleString('nl-NL') : '-';
                             const ver = e.versionTag || '-';
@@ -6209,20 +6229,19 @@ node index.js</div>
                             const did = 'logd-'+i;
                             const cardId = 'alog-'+String(e.timestamp||'').replace(/[^0-9A-Za-z:._-]/g,'');
                             return `
-                                <div id=\"${cardId}\" style=\"border:1px solid #333;border-radius:10px;padding:14px;margin:10px 0;background:#111;cursor:pointer\" onclick=\"if(event.target.tagName!=='BUTTON' && event.target.tagName!=='A'){viewLogEntry(${i})}\"> 
+                                <div id=\"${cardId}\" style=\"border:1.5px solid #333;border-radius:12px;padding:14px;margin:10px 0;background:#0f0f0f;box-shadow:0 4px 14px #0002;cursor:pointer\" onclick=\"if(event.target.tagName!=='BUTTON' && event.target.tagName!=='A'){viewLogEntry(${i})}\"> 
                                     <div style=\"display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center;\">
-                                        <div><strong>${ver}${pinned ? ' <span title="Pinned">📌</span>' : ''}</strong> <span style=\"color:#9ca3af\">(${type})</span></div>
-                                        <div style="color:#9ca3af">${ts}</div>
+                                        <div><span style=\"font-weight:700\">${ver}</span> ${typeBadge(type)} <span style=\"color:#9ca3af\">${ts}${pinned?' · 📌':''}</span></div>
+                                        <div style="color:#9ca3af">${online}</div>
                                     </div>
                                     <div style=\"margin-top:8px;color:#e5e7eb;white-space:pre-wrap;font-size:14px;line-height:1.5\">${msg || '—'}</div>
                                     <div style=\"margin-top:8px;display:flex;gap:10px;flex-wrap:wrap;color:#9ca3af\">
                                         ${sha ? `<span>git: ${sha}</span>` : ''}
-                                        ${online ? `<span>${online}</span>` : ''}
                                         ${frm!=null ? `<span>Formspree: ${frm}</span>` : ''}
                                         ${ably!=null ? `<span>Ably: ${ably}</span>` : ''}
                                         ${cloud ? `<span>${cloud}</span>` : ''}
-                                        ${zip ? `<span>zip: ${zip}</span>` : ''}
-                                        ${idx ? `<span>index: ${idx}</span>` : ''}
+                                        ${zip ? `<span>zip: ${linkifyMaybe(zip)}</span>` : ''}
+                                        ${idx ? `<span>index: ${linkifyMaybe(idx)}</span>` : ''}
                                     </div>
                                     <div style=\"margin-top:8px;display:flex;gap:8px;flex-wrap:wrap\">
                                         <button onclick=\"const d=document.getElementById('${did}'); d.style.display=d.style.display==='block'?'none':'block'\" style=\"background:#1f1f1f;border:1px solid #333;color:#fff;padding:4px 8px;border-radius:6px;cursor:pointer\">Details</button>
@@ -6261,10 +6280,11 @@ node index.js</div>
 
                         container.innerHTML = `
                                                         <div style=\"display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px;flex-wrap:wrap;\">
-                                <div style=\"font-weight:600\">Laatste wijzigingen</div>
+                                <div style=\"font-weight:800\">Logboek</div>
                                 <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
                                     <button style="background:#1f1f1f;border:1px solid #333;color:#fff;padding:6px 10px;border-radius:6px;cursor:pointer" onclick="loadActivityLogs()">Vernieuwen</button>
                                     <button id="run-workflow-btn" style="background:#1f1f1f;border:1px solid #333;color:#fff;padding:6px 10px;border-radius:6px;cursor:pointer" onclick="runWorkflow()">Run workflow</button>
+                                    <button id=\"open-latest-backup-adm\" style=\"background:#4ade80;border:1px solid #195b37;color:#113; padding:6px 10px;border-radius:6px;cursor:pointer;font-weight:700\" title=\"Scroll naar laatste backup/index\">📌 Open laatste backup</button>
                                     <button id=\"add-note-btn\" style=\"background:#1f1f1f;border:1px solid #333;color:#fff;padding:6px 10px;border-radius:6px;cursor:pointer\" onclick=\"addLogNote()\">Notitie toevoegen</button>
                                     <a href="logs/logs.json" download style="background:#0f172a;border:1px solid #333;color:#93c5fd;padding:6px 10px;border-radius:6px;cursor:pointer;text-decoration:none">Download logs.json</a>
                                     <input id="logs-search" type="search" placeholder="Zoek…" style="background:#181818;border:1px solid #333;color:#fff;padding:6px 10px;border-radius:6px;min-width:160px" />
@@ -6308,6 +6328,22 @@ node index.js</div>
                                 <a href="logs.html" target="_blank" style="color:#00d4ff;text-decoration:none">Volledig logboek openen →</a>
                             </div>
                         `;
+                        // Wire 'Open laatste backup' button
+                        try{
+                            const btnOpen = document.getElementById('open-latest-backup-adm');
+                            if (btnOpen){
+                                const idx = latestBackupIndex(items);
+                                btnOpen.disabled = (idx < 0);
+                                btnOpen.addEventListener('click', ()=>{
+                                    if (idx >= 0){
+                                        const e = items[idx];
+                                        const card = document.getElementById('alog-'+String(e.timestamp||'').replace(/[^0-9A-Za-z:._-]/g,''));
+                                        if (card){ card.scrollIntoView({ behavior:'smooth', block:'start' }); card.style.boxShadow='0 0 0 6px rgba(34,197,94,.35)'; setTimeout(()=>card.style.boxShadow='none', 2000); }
+                                        setTimeout(()=>{ try{ viewLogEntry(idx); }catch{} }, 200);
+                                    }
+                                });
+                            }
+                        }catch{}
                         try { checkBackendStatus(); } catch {}
                         // Auto-open via ?ts= for Admin Logs: scroll + temporary highlight + open details
                         try{

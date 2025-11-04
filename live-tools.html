@@ -13,8 +13,10 @@
     body { background:#181828; color:#e3e6f0; font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; }
   .admin-container { max-width: 860px; margin: 0 auto; padding: 32px 12px; }
   @media (max-width: 960px){ .admin-container { max-width: 92vw; } }
-    .admin-card { background:#23234a; border-radius:14px; box-shadow:0 8px 32px #0002; padding: 24px 18px; margin-bottom: 16px; border:1px solid #333; }
-    .admin-title { font-size:1.4rem; font-weight:700; margin:0 0 10px; color:#4ade80; }
+    /* Gebruik dezelfde kaartvariabelen als site-breed */
+    .admin-card { background:#23234a; border-radius: var(--card-radius); box-shadow: var(--card-shadow); padding: 24px 18px; margin-bottom: 16px; border: var(--card-border-w) solid var(--card-border-color); transition: box-shadow .2s, border-color .2s; }
+    .admin-card:hover { border: calc(var(--card-border-w) + 1px) solid #8b5cf6; box-shadow: 0 8px 32px rgba(139,92,246,0.25), 0 4px 16px rgba(0,0,0,0.22); }
+  .admin-title { font-size:1.4rem; font-weight:700; margin:0 0 10px; color:#f3f4fa; }
     .muted { color:#9ca3af; font-size: .95rem; }
     .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
     .admin-btn { background:#4ade80; color:#23234a; border:none; padding:8px 12px; border-radius:6px; font-weight:700; cursor:pointer; text-decoration:none; display:inline-block; }
@@ -43,10 +45,10 @@
         <span class="muted" style="font-size:12px;border:1px solid #333;border-radius:999px;padding:2px 8px;">operaties & links</span>
       </div>
       <div class="row">
-        <a class="admin-btn" href="index.html" title="Terug naar Home">← Home</a>
-        <a class="admin-btn" href="admin.html" title="Open Admin">⚙️ Admin</a>
-        <button class="admin-btn" onclick="location.href=location.pathname+'?v='+Date.now()" title="Harde refresh">↻ Refresh</button>
-        <a class="admin-btn" href="logs.html">📊 Logboek</a>
+        <a class="nav-btn" href="index.html" title="Terug naar Home">← Home</a>
+        <a class="nav-btn" href="admin.html" title="Open Admin">⚙️ Admin</a>
+        <button class="nav-btn" onclick="location.href=location.pathname+'?v='+Date.now()" title="Harde refresh">↻ Refresh</button>
+        <a class="nav-btn" href="logs.html">📊 Logboek</a>
       </div>
     </div>
 
@@ -59,9 +61,9 @@
       <h3 style="margin:0 0 6px;">Repository</h3>
       <p class="muted">Bekijk code, workflows en instellingen.</p>
       <div class="row">
-        <a class="admin-btn" href="https://github.com/chinfosieeuw9-prog/mister-portfolio" target="_blank" rel="noopener" title="Open de GitHub repository">🔗 Repo</a>
-        <a class="admin-btn" href="https://github.com/chinfosieeuw9-prog/mister-portfolio/actions" target="_blank" rel="noopener" title="Bekijk workflow-runs en logs">⚙️ Workflows</a>
-        <a class="admin-btn" href="https://github.com/chinfosieeuw9-prog/mister-portfolio/settings" target="_blank" rel="noopener" title="Repository-instellingen">🔧 Instellingen</a>
+        <a class="nav-btn" href="https://github.com/chinfosieeuw9-prog/mister-portfolio" target="_blank" rel="noopener" title="Open de GitHub repository">🔗 Repo</a>
+        <a class="nav-btn" href="https://github.com/chinfosieeuw9-prog/mister-portfolio/actions" target="_blank" rel="noopener" title="Bekijk workflow-runs en logs">⚙️ Workflows</a>
+        <a class="nav-btn" href="https://github.com/chinfosieeuw9-prog/mister-portfolio/settings" target="_blank" rel="noopener" title="Repository-instellingen">🔧 Instellingen</a>
       </div>
     </div>
 
@@ -70,8 +72,8 @@
       <p class="muted">1‑klik via <code>/api/gh/dispatch</code> (Cloudflare Worker). Zo niet, dan openen we de GitHub UI.</p>
       <div id="dispatch-host-hint" class="muted" style="display:none;font-size:.9rem;">Je draait lokaal; 1‑klik roept de live endpoint <code>https://mister.us.kg/api/gh/dispatch</code> aan.</div>
       <div class="row">
-        <button class="admin-btn" onclick="openWorkflow('pages')" title="Start de Pages build/deploy workflow">▶ Pages bouwen</button>
-        <button class="admin-btn" onclick="openWorkflow('ci')" title="Start de CI workflow (tests)">▶ CI (tests)</button>
+        <button class="nav-btn" onclick="openWorkflow('pages')" title="Start de Pages build/deploy workflow">▶ Pages bouwen</button>
+        <button class="nav-btn" onclick="openWorkflow('ci')" title="Start de CI workflow (tests)">▶ CI (tests)</button>
       </div>
     </div>
 
@@ -79,7 +81,7 @@
       <h3 style="margin:0 0 6px;">Supabase</h3>
       <p class="muted">Data, Storage en policies beheren.</p>
       <div class="row">
-        <a class="admin-btn" href="https://supabase.com/dashboard/project/tesqycomyyifqcwdpetp/settings/general" target="_blank" rel="noopener">🗄️ Supabase</a>
+        <a class="nav-btn" href="https://supabase.com/dashboard/project/tesqycomyyifqcwdpetp/settings/general" target="_blank" rel="noopener">🗄️ Supabase</a>
       </div>
     </div>
 
@@ -87,7 +89,7 @@
       <h3 style="margin:0 0 6px;">Formspree</h3>
       <p class="muted">Contactformulieren monitoren.</p>
       <div class="row">
-        <a class="admin-btn" href="https://formspree.io/forms/xgvpzgaz/integration" target="_blank" rel="noopener">📨 Formspree</a>
+        <a class="nav-btn" href="https://formspree.io/forms/xgvpzgaz/integration" target="_blank" rel="noopener">📨 Formspree</a>
       </div>
     </div>
 
@@ -95,7 +97,7 @@
       <h3 style="margin:0 0 6px;">Logboek</h3>
       <p class="muted">Bekijk deployment/backup notities.</p>
       <div class="row">
-        <a class="admin-btn" href="logs.html">📊 Logboek</a>
+        <a class="nav-btn" href="logs.html">📊 Logboek</a>
       </div>
     </div>
 
@@ -103,23 +105,28 @@
       <h3 style="margin:0 0 6px;">Integraties</h3>
       <p class="muted">Snel naar je hosting en cloud dashboards.</p>
       <div class="row" style="gap:6px;flex-wrap:wrap;">
-        <a class="admin-btn" href="https://vercel.com/james-projects-9dae239b" target="_blank" rel="noopener">▲ Vercel</a>
-        <a class="admin-btn" href="https://vercel.com/james-projects-9dae239b/mister-portfolio/deployments" target="_blank" rel="noopener">▲ Deployments</a>
-        <a class="admin-btn" href="https://vercel.com/james-projects-9dae239b/mister-portfolio/5cs4zzwkEM9tk4veaLrvkeQbF1K3" target="_blank" rel="noopener">🔍 Details</a>
-        <a class="admin-btn" href="https://dashboard.hcaptcha.com/overview" target="_blank" rel="noopener">🛡️ hCaptcha</a>
-        <a class="admin-btn" href="https://dashboard.render.com/" target="_blank" rel="noopener">⚙️ Render</a>
-        <a class="admin-btn" href="https://dash.cloudflare.com/6fe7003b1ba7c139d73245de0cb2f2d4/home/domains" target="_blank" rel="noopener">☁️ Cloudflare</a>
-        <a class="admin-btn" href="https://dash.cloudflare.com/6fe7003b1ba7c139d73245de0cb2f2d4/us.kg/overview" target="_blank" rel="noopener">☁️ us.kg</a>
-        <a class="admin-btn" href="https://dash.cloudflare.com/6fe7003b1ba7c139d73245de0cb2f2d4/us.kg/dns" target="_blank" rel="noopener">📛 DNS</a>
-        <a class="admin-btn" href="https://dash.cloudflare.com/6fe7003b1ba7c139d73245de0cb2f2d4/us.kg/ssl-tls" target="_blank" rel="noopener">🔐 SSL/TLS</a>
-        <a class="admin-btn" href="https://dash.cloudflare.com/6fe7003b1ba7c139d73245de0cb2f2d4/us.kg/ssl-tls/edge-certificates" target="_blank" rel="noopener">🧾 HSTS</a>
-        <a class="admin-btn" href="https://dash.cloudflare.com/6fe7003b1ba7c139d73245de0cb2f2d4/us.kg/rules/redirects" target="_blank" rel="noopener">🔁 Redirects</a>
-        <a class="admin-btn" href="https://dash.cloudflare.com/6fe7003b1ba7c139d73245de0cb2f2d4/us.kg/caching" target="_blank" rel="noopener">🧠 Caching</a>
-        <a class="admin-btn" href="https://dash.cloudflare.com/6fe7003b1ba7c139d73245de0cb2f2d4/us.kg/caching/configuration" target="_blank" rel="noopener">🧹 Purge</a>
-        <a class="admin-btn" href="https://dash.cloudflare.com/6fe7003b1ba7c139d73245de0cb2f2d4/us.kg/workers/routes" target="_blank" rel="noopener">⚒️ Routes</a>
-        <a class="admin-btn" href="https://ably.com/dashboard" target="_blank" rel="noopener">🔌 Ably</a>
+        <a class="nav-btn" href="https://vercel.com/james-projects-9dae239b" target="_blank" rel="noopener">▲ Vercel</a>
+        <a class="nav-btn" href="https://vercel.com/james-projects-9dae239b/mister-portfolio/deployments" target="_blank" rel="noopener">▲ Deployments</a>
+        <a class="nav-btn" href="https://vercel.com/james-projects-9dae239b/mister-portfolio/5cs4zzwkEM9tk4veaLrvkeQbF1K3" target="_blank" rel="noopener">🔍 Details</a>
+        <a class="nav-btn" href="https://dashboard.hcaptcha.com/overview" target="_blank" rel="noopener">🛡️ hCaptcha</a>
+        <a class="nav-btn" href="https://dashboard.render.com/" target="_blank" rel="noopener">⚙️ Render</a>
+        <a class="nav-btn" href="https://dash.cloudflare.com/" target="_blank" rel="noopener" title="Open Cloudflare dashboard; kies daarna je account en zone">☁️ Cloudflare dashboard</a>
+        <a class="nav-btn" href="https://ably.com/dashboard" target="_blank" rel="noopener">� Ably</a>
       </div>
       <div class="muted" style="font-size:.9rem;margin-top:8px;">Veilige dashboard‑links; geen tokens hier in de UI.</div>
+    </div>
+
+    <div class="admin-card">
+      <h3 style="margin:0 0 6px;">Cloudflare</h3>
+      <p class="muted">Vul je IDs in voor diepe links naar je zone.</p>
+      <div class="row" style="gap:6px;flex-wrap:wrap;margin-bottom:6px;">
+        <input id="cf-account" style="background:#181828;color:#e3e6f0;border:1px solid #333;border-radius:8px;padding:8px 10px;min-width:220px;" placeholder="Account ID (bv. 1234abcd...)" />
+        <input id="cf-zone" style="background:#181828;color:#e3e6f0;border:1px solid #333;border-radius:8px;padding:8px 10px;min-width:220px;" placeholder="Zone ID (bv. abcd1234...)" />
+        <button class="nav-btn" onclick="saveCfConfig()">💾 Opslaan</button>
+        <a id="cf-dashboard" class="nav-btn" href="https://dash.cloudflare.com/" target="_blank" rel="noopener">☁️ Dashboard</a>
+      </div>
+      <div class="muted" style="font-size:.9rem;margin:2px 0 8px;">IDs vind je in Cloudflare (Account → overview, Zone → overview/API).</div>
+      <div id="cf-links" class="row" style="gap:6px;flex-wrap:wrap;"></div>
     </div>
 
     <div class="admin-card">
@@ -229,6 +236,61 @@
       window.open(base + '/actions', '_blank', 'noopener');
       toast('Worker niet ingesteld: open Actions in GitHub', false);
     }
+  </script>
+  <script>
+    function getCfConfig(){
+      try{
+        return {
+          account: localStorage.getItem('cfAccountId') || '',
+          zone: localStorage.getItem('cfZoneId') || ''
+        };
+      }catch{ return {account:'', zone:''}; }
+    }
+    function saveCfConfig(){
+      try{
+        const acc = (document.getElementById('cf-account')?.value||'').trim();
+        const zone = (document.getElementById('cf-zone')?.value||'').trim();
+        localStorage.setItem('cfAccountId', acc);
+        localStorage.setItem('cfZoneId', zone);
+        renderCfLinks();
+        toast('Cloudflare config opgeslagen');
+      }catch{ toast('Kon config niet opslaan', false); }
+    }
+    function cfAccountUrl(account){
+      if (!account) return 'https://dash.cloudflare.com/';
+      return `https://dash.cloudflare.com/${account}/home`;
+    }
+    function cfZoneUrl(account, zone, sub){
+      if (!(account && zone)) return 'https://dash.cloudflare.com/';
+      const base = `https://dash.cloudflare.com/${account}/${zone}`;
+      return sub ? `${base}/${sub}` : base + '/overview';
+    }
+    function el(tag, attrs, text){ const a=document.createElement(tag); if(attrs){ Object.entries(attrs).forEach(([k,v])=>a.setAttribute(k,v)); } if(text) a.textContent=text; return a; }
+  function link(href, label){ const a = el('a', {class:'nav-btn', href, target:'_blank', rel:'noopener'}); a.textContent = label; return a; }
+    function renderCfLinks(){
+      const {account, zone} = getCfConfig();
+      // Prefill inputs
+      const accEl = document.getElementById('cf-account'); if (accEl) accEl.value = account;
+      const zoneEl = document.getElementById('cf-zone'); if (zoneEl) zoneEl.value = zone;
+      const dash = document.getElementById('cf-dashboard'); if (dash) dash.href = cfAccountUrl(account);
+      const into = document.getElementById('cf-links'); if (!into) return;
+      into.innerHTML = '';
+      if (!(account && zone)){
+        into.appendChild(link('https://dash.cloudflare.com/', '☁️ Cloudflare'));
+        into.appendChild(el('span', {class:'muted'}, 'Vul IDs in voor diepe links.'));
+        return;
+      }
+      into.appendChild(link(cfAccountUrl(account), '☁️ Account'));
+      into.appendChild(link(cfZoneUrl(account, zone, ''), '☁️ Zone overzicht'));
+      into.appendChild(link(cfZoneUrl(account, zone, 'dns'), '📛 DNS'));
+      into.appendChild(link(cfZoneUrl(account, zone, 'ssl-tls'), '🔐 SSL/TLS'));
+      into.appendChild(link(cfZoneUrl(account, zone, 'ssl-tls/edge-certificates'), '🧾 HSTS/Edge certs'));
+      into.appendChild(link(cfZoneUrl(account, zone, 'rules/redirects'), '🔁 Redirects'));
+      into.appendChild(link(cfZoneUrl(account, zone, 'caching'), '🧠 Caching'));
+      into.appendChild(link(cfZoneUrl(account, zone, 'caching/configuration'), '🧹 Purge'));
+      into.appendChild(link(cfZoneUrl(account, zone, 'workers/routes'), '⚒️ Routes'));
+    }
+    document.addEventListener('DOMContentLoaded', renderCfLinks);
   </script>
 </body>
 </html>
