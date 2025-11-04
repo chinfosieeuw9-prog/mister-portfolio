@@ -694,6 +694,26 @@ node index.js</div>
             // 3) Centraliseer helpers: shim bestaande functies naar StatusIndicators
             window.getBackendBase = function(){ try{ return (window.StatusIndicators && StatusIndicators.getBase()) || (localStorage.getItem('backendBase')||'http://localhost:3002'); }catch{ return 'http://localhost:3002'; } }
             window.detectBackendBaseOnce = function(){ return (window.StatusIndicators && StatusIndicators.detectBaseOnce()) || Promise.resolve(window.getBackendBase()); }
+            // LIVE banner tonen wanneer omgeving=live
+            (function(){
+                function updateLiveBanner(){
+                    try{
+                        var bar = document.getElementById('admin-notification-bar');
+                        if (!bar) return;
+                        var isLive = (window.StatusIndicators && StatusIndicators.getEnvMode && StatusIndicators.getEnvMode()==='live');
+                        if (isLive){
+                            bar.style.display = 'block';
+                            bar.className = 'admin-notification-bar info';
+                            bar.innerHTML = 'LIVE omgeving actief — lokale workflow en scripts zijn uitgeschakeld. <a href="live-tools.html" style="color:#4ade80;text-decoration:underline">Open Live Tools</a>';
+                        } else {
+                            // verberg alleen als het door ons gezet is (niet bij error state)
+                            if (bar.className.indexOf('error') === -1) { bar.style.display = 'none'; bar.textContent = ''; }
+                        }
+                    }catch{}
+                }
+                document.addEventListener('DOMContentLoaded', updateLiveBanner);
+                setInterval(updateLiveBanner, 5000);
+            })();
         </script>
         <style>
             /* 2) Vervang oude inline pills door de nieuwe dock: verberg de oude badges */

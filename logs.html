@@ -38,7 +38,8 @@
   <meta name="robots" content="noindex" />
   <script src="js/status-indicators.js"></script>
   <style>
-    :root{--bg:#0a0a0a;--card:#141414;--muted:#9ca3af;--fg:#fff;--accent:#5b21b6;--ok:#22c55e;--warn:#f59e0b;--err:#ef4444}
+    /* Admin-aligned palette */
+    :root{--bg:#181828;--card:#23234a;--muted:#9ca3af;--fg:#e3e6f0;--accent:#5b21b6;--ok:#22c55e;--warn:#f59e0b;--err:#ef4444}
     *{box-sizing:border-box}
     body{margin:0;background:var(--bg);color:var(--fg);font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif}
     .container{max-width:1000px;margin:0 auto;padding:24px}
@@ -46,32 +47,32 @@
     .sub{color:var(--muted);font-size:13px;margin-bottom:20px}
     .toolbar{display:flex;gap:8px;align-items:center;margin-bottom:14px}
     input,select{background:#1f1f1f;border:1px solid #333;color:var(--fg);padding:8px 10px;border-radius:6px}
-    .card{background:var(--card);border:1px solid #2a2a2a;border-radius:12px;padding:14px 16px;margin:10px 0}
+    .card{background:var(--card);border:1.5px solid #333;border-radius:14px;padding:16px 16px;margin:10px 0;box-shadow:0 4px 16px #0002}
     .row{display:flex;justify-content:space-between;gap:10px;align-items:center}
-    .tag{display:inline-block;padding:2px 8px;border-radius:999px;border:1px solid #333;font-size:12px;color:var(--muted)}
+    .tag{display:inline-block;padding:2px 10px;border-radius:999px;border:1px solid #333;font-size:12px;color:var(--muted);background:rgba(0,0,0,.15)}
     .tag.ok{color:var(--ok);border-color:#195b37}
     .tag.err{color:var(--err);border-color:#5b1d1d}
     .tag.warn{color:var(--warn);border-color:#5b4a1d}
     .ver{font-weight:600}
     .muted{color:var(--muted)}
     .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:10px}
-    .kv{background:#1b1b1b;border:1px solid #2a2a2a;border-radius:8px;padding:10px;font-size:13px}
+    .kv{background:#181828;border:1px solid #333;border-radius:8px;padding:10px;font-size:13px}
     .kv .k{color:var(--muted);display:block;margin-bottom:4px}
     .details{margin-top:10px;display:none}
-  .btn{background:#1f1f1f;border:1px solid #333;color:var(--fg);padding:6px 10px;border-radius:6px;cursor:pointer}
-  .btn:hover{border-color:#666}
-  .nav-btn{ background:#111827; border:1px solid #374151; color:#e5e7eb; border-radius:999px; padding:6px 12px; cursor:pointer; font-weight:600; text-decoration:none; }
-  .nav-btn:hover{ border-color:#6b7280; }
+    .btn{background:#4ade80;border:0;color:#23234a;padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:700}
+    .btn:hover{background:#22c55e}
+    .nav-btn{ background:#111827; border:1px solid #374151; color:#e5e7eb; border-radius:999px; padding:6px 12px; cursor:pointer; font-weight:600; text-decoration:none; }
+    .nav-btn:hover{ border-color:#6b7280; }
     .small{font-size:12px}
     .footer{margin-top:20px;color:var(--muted);font-size:12px}
     @media (max-width: 700px){.grid{grid-template-columns:1fr}}
 
     /* Modal overlay for large JSON/details view */
   .overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;z-index:9999}
-    .modal{background:#101010;color:#e5e7eb;border:1px solid #333;border-radius:12px;width:92vw;max-width:1200px;max-height:84vh;display:flex;flex-direction:column;overflow:hidden}
+  .modal{background:#101010;color:#e5e7eb;border:1px solid #333;border-radius:12px;width:92vw;max-width:1200px;max-height:84vh;display:flex;flex-direction:column;overflow:hidden}
     .modal-h{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff}
     .modal-b{padding:12px;overflow:auto}
-    .pre{background:#0b0b0b;border:1px solid #333;border-radius:8px;padding:12px;white-space:pre;overflow:auto;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;line-height:1.45}
+  .pre{background:#0b0b0b;border:1px solid #333;border-radius:8px;padding:12px;white-space:pre;overflow:auto;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;line-height:1.45}
     .modal-actions{display:flex;gap:8px;align-items:center}
     /* Utility classes moved from inline styles */
     .hidden{display:none}
@@ -95,6 +96,7 @@
   </script>
 </head>
 <body>
+  <div id="live-banner" class="admin-notification-bar" style="display:none;"></div>
   <div class="container">
     <h1>Backup logboek</h1>
     <div class="sub">Automatisch bijgehouden bij backups en workflows. Deze pagina leest <code>logs/logs.json</code>.</div>
@@ -127,6 +129,28 @@
     <div class="footer">Tip: draai <code>full-backup-workflow.ps1</code> voor een volledige workflow entry met API- en cloudstatus.</div>
   </div>
   <script>
+  // Toon LIVE banner wanneer omgeving=live
+  (function(){
+    function updateLiveBanner(){
+      try{
+        var bar = document.getElementById('live-banner');
+        if (!bar) return;
+        var isLive = (window.StatusIndicators && StatusIndicators.getEnvMode && StatusIndicators.getEnvMode()==='live');
+        if (isLive){
+          bar.style.display = 'block';
+          bar.className = 'admin-notification-bar info';
+          bar.innerHTML = 'LIVE omgeving actief — lokale workflow starten is uitgeschakeld. <a href="live-tools.html" style="color:#4ade80;text-decoration:underline">Open Live Tools</a>';
+          try{ const rb = document.getElementById('runBtn'); if (rb) rb.disabled = true; const rs = document.getElementById('runStatus'); if (rs) { rs.style.color = '#9ca3af'; rs.textContent = 'Live modus: workflow niet beschikbaar.'; } }catch{}
+        } else {
+          bar.style.display = 'none';
+          bar.textContent = '';
+        }
+      }catch{}
+    }
+    document.addEventListener('DOMContentLoaded', updateLiveBanner);
+    setInterval(updateLiveBanner, 5000);
+  })();
+
   const elList = document.getElementById('list');
   const elSearch = document.getElementById('search');
   const elType = document.getElementById('type');

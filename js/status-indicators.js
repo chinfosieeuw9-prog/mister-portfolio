@@ -16,6 +16,19 @@
       document.head.appendChild(css);
     }
 
+    // When on HTTPS, add a CSP meta to auto-upgrade insecure requests (prevents mixed-content warnings on Pages)
+    try{
+      if (location.protocol === 'https:' && !document.getElementById('si-csp-upgrade')){
+        const m = document.createElement('meta');
+        m.id = 'si-csp-upgrade';
+        m.httpEquiv = 'Content-Security-Policy';
+        m.content = 'upgrade-insecure-requests';
+        // Insert as early as possible
+        const head = document.head || document.getElementsByTagName('head')[0];
+        head.insertBefore(m, head.firstChild || null);
+      }
+    }catch{}
+
     function normBase(u){ try{ return String(u||'').trim().replace(/\/$/,''); }catch{ return 'http://localhost:3002'; } }
     function getBase(){
       try{
@@ -25,6 +38,14 @@
       }catch{ return 'http://localhost:3002'; }
     }
     function setBase(u){ try{ localStorage.setItem('backendBase', normBase(u)); sessionStorage.setItem('backendBase', normBase(u)); }catch{} }
+
+    // Environment mode (local | live)
+    function getEnvMode(){
+      try{ return (localStorage.getItem('envMode')||'local').toLowerCase(); }catch{ return 'local'; }
+    }
+    function setEnvMode(mode){
+      try{ localStorage.setItem('envMode', (mode||'local').toLowerCase()); }catch{}
+    }
 
     async function detectBaseOnce(){
       const cands = [];
@@ -38,6 +59,8 @@
     }
 
     async function pingBackend(){
+      // In LIVE omgeving geen lokale backend meten
+      try { if (getEnvMode && getEnvMode()==='live') { return { ok:false, ms:null, base: getBase() }; } } catch { /* no-op */ }
       const base = await detectBaseOnce();
       const ctrl = new AbortController();
       const t0 = performance.now();
@@ -84,6 +107,7 @@
           <span id="si-chip-backend" class="si-chip">backend: —</span>
           <span id="si-chip-live" class="si-chip">live: —</span>
           <span id="si-pill-base" class="si-pill si-click" title="Klik om base te wisselen">base: —</span>
+          <span id="si-pill-env" class="si-pill si-click" title="Klik om omgeving te wisselen">omgeving: —</span>
         `;
         document.body.appendChild(dock);
       }
@@ -95,7 +119,8 @@
   if (!dock){ return; }
       const elB = document.getElementById('si-chip-backend');
       const elL = document.getElementById('si-chip-live');
-      const elBase = document.getElementById('si-pill-base');
+  const elBase = document.getElementById('si-pill-base');
+  const elEnv = document.getElementById('si-pill-env');
 
       // Live server
       const L = liveInfo();
@@ -121,6 +146,12 @@
         }
         if (elBase){ elBase.textContent = 'base: '+getBase(); }
       }
+
+      // Environment pill
+      try{
+        const mode = getEnvMode();
+        if (elEnv){ elEnv.textContent = 'omgeving: ' + (mode==='live'?'live':'lokaal'); }
+      }catch{}
     }
 
     function cycleBase(){
@@ -132,13 +163,29 @@
       update();
     }
 
+    function toggleEnv(){
+      const cur = getEnvMode();
+      const next = (cur==='live') ? 'local' : 'live';
+      setEnvMode(next);
+      // Optional: when switching to local, ensure a sensible base is set
+      if (next==='local'){
+        const b = getBase();
+        if (!/^http:\/\/localhost:(3001|3002)$/i.test(b)){
+          setBase('http://localhost:3002');
+        }
+      }
+      update();
+    }
+
     // Public init (optional)
     window.StatusIndicators = {
       init(){ ensureDock(); update(); if(!window.__siTimer){ window.__siTimer = setInterval(update, 6000); } },
       update,
       setBase,
       getBase,
-      detectBaseOnce
+      detectBaseOnce,
+      getEnvMode,
+      setEnvMode
     };
 
     // Auto-init after DOM ready
@@ -148,6 +195,8 @@
           StatusIndicators.init();
           const elBase = document.getElementById('si-pill-base');
           if (elBase){ elBase.addEventListener('click', cycleBase); }
+          const elEnv = document.getElementById('si-pill-env');
+          if (elEnv){ elEnv.addEventListener('click', toggleEnv); }
         }
       });
     } else {
@@ -155,6 +204,8 @@
         StatusIndicators.init();
         const elBase = document.getElementById('si-pill-base');
         if (elBase){ elBase.addEventListener('click', cycleBase); }
+        const elEnv = document.getElementById('si-pill-env');
+        if (elEnv){ elEnv.addEventListener('click', toggleEnv); }
       }
     }
   }catch(e){ /* no-op */ }
