@@ -44,6 +44,9 @@
     .max260 { max-width:260px; }
     .banner { background:#1f2937; border:1px solid #374151; color:#e5e7eb; border-radius:10px; padding:10px 12px; margin:10px 0; }
     .banner strong{ color:#f59e0b; }
+  /* Header nav buttons */
+  .nav-btn{ background:#111827; border:1px solid #374151; color:#e5e7eb; border-radius:999px; padding:6px 12px; cursor:pointer; font-weight:600; }
+  .nav-btn:hover{ border-color:#6b7280; }
   </style>
   <script>
     // Centraliseer backend helpers via StatusIndicators (indien beschikbaar)
@@ -175,7 +178,18 @@
           statusEl.textContent = 'klaar'; statusEl.style.color = '#22c55e';
           const pre = document.createElement('pre');
           pre.textContent = (j.stdout||'') + (j.stderr? ('\n-- STDERR --\n'+j.stderr) : '');
-          outEl.innerHTML = ''; outEl.appendChild(pre); outEl.style.display='block';
+          outEl.innerHTML = ''; outEl.appendChild(pre);
+          // Add a small link to view backup logs when workflow finished
+          if (id === 'workflow-run'){
+            const a = document.createElement('a');
+            a.href = 'logs.html?v=' + Date.now();
+            a.textContent = '📊 View backup';
+            a.className = 'nav-btn';
+            a.style.marginTop = '8px';
+            a.style.display = 'inline-block';
+            outEl.appendChild(a);
+          }
+          outEl.style.display='block';
         }
       } catch(e){
         // Retry with GET fallback (no preflight)
@@ -190,7 +204,17 @@
             statusEl.textContent = 'klaar'; statusEl.style.color = '#22c55e';
             const pre = document.createElement('pre');
             pre.textContent = (j2.stdout||'') + (j2.stderr? ('\n-- STDERR --\n'+j2.stderr) : '');
-            outEl.innerHTML = ''; outEl.appendChild(pre); outEl.style.display='block';
+            outEl.innerHTML = ''; outEl.appendChild(pre);
+            if (id === 'workflow-run'){
+              const a = document.createElement('a');
+              a.href = 'logs.html?v=' + Date.now();
+              a.textContent = '📊 View backup';
+              a.className = 'nav-btn';
+              a.style.marginTop = '8px';
+              a.style.display = 'inline-block';
+              outEl.appendChild(a);
+            }
+            outEl.style.display='block';
           }
           return;
         } catch(err2){
@@ -215,6 +239,9 @@
     <div class="row row-justify">
       <h1>Script Runner</h1>
       <div class="row" style="gap:6px; align-items:center;">
+        <a class="nav-btn" href="index.html" title="Terug naar Home">← Home</a>
+        <a class="nav-btn" href="admin.html" title="Open Admin">⚙️ Admin</a>
+        <button class="nav-btn" onclick="location.href=location.pathname+'?v='+Date.now()" title="Harde refresh">↻ Refresh</button>
         <span id="backend-chip" class="chip muted" title="Status van de backend (health)"><span class="dot"></span><span class="label">backend: —</span></span>
         <span id="live-chip" class="chip muted" title="Status van de live server (8000)"><span class="dot"></span><span class="label">live: —</span></span>
         <span id="base-pill" class="pill">base: —</span>

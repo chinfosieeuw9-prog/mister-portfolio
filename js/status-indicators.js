@@ -59,7 +59,23 @@
       }catch{ return { ok:false, txt:'live: —' }; }
     }
 
+    function shouldHideDock(){
+      try{
+        // Hide on homepage for non-admin visitors
+        const p = String(location.pathname||'');
+        const isHome = /(?:^|\/)index\.html$/i.test(p) || p === '/' || p === '';
+        const params = new URLSearchParams(location.search||'');
+        const adminFlag = params.get('admin') === '1';
+        const isAdmin = (localStorage.getItem('isAdmin') === 'true') || adminFlag;
+        return isHome && !isAdmin;
+      }catch{ return false; }
+    }
+
     function ensureDock(){
+      if (shouldHideDock()){
+        // Do not render dock for regular visitors on homepage
+        return null;
+      }
       let dock = document.querySelector('.si-dock');
       if (!dock){
         dock = document.createElement('div');
@@ -75,7 +91,8 @@
     }
 
     async function update(){
-      ensureDock();
+  const dock = ensureDock();
+  if (!dock){ return; }
       const elB = document.getElementById('si-chip-backend');
       const elL = document.getElementById('si-chip-live');
       const elBase = document.getElementById('si-pill-base');
@@ -127,14 +144,18 @@
     // Auto-init after DOM ready
     if (document.readyState === 'loading'){
       document.addEventListener('DOMContentLoaded', ()=>{
+        if (!shouldHideDock()){
+          StatusIndicators.init();
+          const elBase = document.getElementById('si-pill-base');
+          if (elBase){ elBase.addEventListener('click', cycleBase); }
+        }
+      });
+    } else {
+      if (!shouldHideDock()){
         StatusIndicators.init();
         const elBase = document.getElementById('si-pill-base');
         if (elBase){ elBase.addEventListener('click', cycleBase); }
-      });
-    } else {
-      StatusIndicators.init();
-      const elBase = document.getElementById('si-pill-base');
-      if (elBase){ elBase.addEventListener('click', cycleBase); }
+      }
     }
   }catch(e){ /* no-op */ }
 })();

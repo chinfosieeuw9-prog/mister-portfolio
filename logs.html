@@ -58,8 +58,10 @@
     .kv{background:#1b1b1b;border:1px solid #2a2a2a;border-radius:8px;padding:10px;font-size:13px}
     .kv .k{color:var(--muted);display:block;margin-bottom:4px}
     .details{margin-top:10px;display:none}
-    .btn{background:#1f1f1f;border:1px solid #333;color:var(--fg);padding:6px 10px;border-radius:6px;cursor:pointer}
-    .btn:hover{border-color:#666}
+  .btn{background:#1f1f1f;border:1px solid #333;color:var(--fg);padding:6px 10px;border-radius:6px;cursor:pointer}
+  .btn:hover{border-color:#666}
+  .nav-btn{ background:#111827; border:1px solid #374151; color:#e5e7eb; border-radius:999px; padding:6px 12px; cursor:pointer; font-weight:600; text-decoration:none; }
+  .nav-btn:hover{ border-color:#6b7280; }
     .small{font-size:12px}
     .footer{margin-top:20px;color:var(--muted);font-size:12px}
     @media (max-width: 700px){.grid{grid-template-columns:1fr}}
@@ -97,7 +99,9 @@
     <h1>Backup logboek</h1>
     <div class="sub">Automatisch bijgehouden bij backups en workflows. Deze pagina leest <code>logs/logs.json</code>.</div>
     <div class="toolbar">
-      <a href="admin.html" class="btn" title="Terug naar Admin">← Terug naar admin</a>
+      <a href="index.html" class="nav-btn" title="Terug naar Home">← Home</a>
+      <a href="admin.html" class="nav-btn" title="Open Admin">⚙️ Admin</a>
+      <button class="nav-btn" onclick="location.href=location.pathname+'?v='+Date.now()" title="Harde refresh">↻ Refresh</button>
       <button id="runBtn" class="btn" title="Start volledige backup workflow">▶ Run workflow</button>
       <span id="runStatus" class="small muted"></span>
       <span id="serverSince" class="small muted"></span>
@@ -217,6 +221,9 @@
       const box = document.getElementById('changelog');
       const ul = document.getElementById('changelog-list');
       if (!box || !ul) return;
+      function decodeMojibake(s){
+        try{ if (!s) return s; if (!(/[ÃÂâ€™“”€¢]/.test(s))) return s; return decodeURIComponent(escape(s)); }catch{ return s; }
+      }
       // Pick last 5 note entries, prefer versionTag starting with 'ui-' or 'change'
       const notes = (entries||[])
         .filter(e=>e && e.type==='note')
@@ -227,7 +234,7 @@
       box.style.display='block';
       ul.innerHTML = source.map((e, idx)=>{
         const title = (e.versionTag||'note')+' · '+fmt(e.timestamp)+(e.pinned?' · 📌':'');
-        const msg = (e.message||'').split('\n')[0];
+        const msg = decodeMojibake((e.message||'')).split('\n')[0];
         const indexInAll = entries.indexOf(e);
         return '<li><a href="#" onclick="viewEntryDetails('+indexInAll+');return false;" class="small">'+title+'</a>'+(msg?'<div class="muted small">'+msg.replace(/</g,'&lt;')+'</div>':'')+'</li>';
       }).join('');
@@ -291,6 +298,14 @@
   window.viewEntryDetails = function(idx){
     const e = (entries||[])[idx];
     if (!e) return;
+    function decodeMojibake(s){
+      try{
+        if (!s) return s;
+        // Heuristic: only try if classic mojibake bytes appear
+        if (!(/[ÃÂâ€™“”€¢]/.test(s))) return s;
+        return decodeURIComponent(escape(s));
+      }catch{ return s; }
+    }
     const overlay = document.createElement('div');
     overlay.className = 'overlay';
     const modal = document.createElement('div');
@@ -312,7 +327,7 @@
     head.appendChild(title); head.appendChild(acts);
 
     const body = document.createElement('div'); body.className = 'modal-b';
-    if (e.message) { const m = document.createElement('div'); m.className='pre'; m.style.marginBottom='10px'; m.textContent = String(e.message||''); body.appendChild(m); }
+  if (e.message) { const m = document.createElement('div'); m.className='pre'; m.style.marginBottom='10px'; m.textContent = String(decodeMojibake(e.message||'')); body.appendChild(m); }
     const pre = document.createElement('pre'); pre.className='pre'; pre.textContent = JSON.stringify(e,null,2); body.appendChild(pre);
 
     modal.appendChild(head); modal.appendChild(body); overlay.appendChild(modal);

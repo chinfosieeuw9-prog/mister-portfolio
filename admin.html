@@ -143,6 +143,19 @@
                                 const j = await res.json();
                                 out.style.color = '#22c55e';
                                 out.textContent = 'Klaar. Exit: '+(j.exitCode ?? '0')+' • '+getBackendBase();
+                                // Toon een kleine knop om direct het logboek te bekijken
+                                try{
+                                    let link = document.getElementById('view-backup-link');
+                                    if (!link){
+                                        link = document.createElement('a');
+                                        link.id = 'view-backup-link';
+                                        link.className = 'admin-btn';
+                                        link.style.marginLeft = '8px';
+                                        link.textContent = '📊 View backup';
+                                        btn.parentElement.appendChild(link);
+                                    }
+                                    link.href = 'logs.html?v=' + Date.now();
+                                }catch{}
                                 console.log('Workflow result', j);
                                 alert('Workflow klaar. Zie logs.html voor details.');
                             } catch(e){

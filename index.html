@@ -6760,7 +6760,7 @@ node index.js</div>
                         if (panel) panel.classList.remove('hidden');
                         if (access) access.classList.add('hidden');
                         // Initialize admin view
-                        try { showAdminTab('software'); } catch {}
+                        try { showAdminTab('integrations'); } catch {}
                         try { loadSoftwareList(); } catch {}
                         try { localStorage.setItem('adminFailedUnseen','0'); const b=document.getElementById('admin-failed-badge'); if(b) b.remove(); } catch {}
                         // Clean auxiliary param if present
