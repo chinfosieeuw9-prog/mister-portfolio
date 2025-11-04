@@ -4,7 +4,7 @@ import axios from 'axios';
 import dotenv from 'dotenv';
 import fs from 'fs';
 import Ably from 'ably';
-import { exec, spawn } from 'child_process';
+import { exec, spawn, spawnSync } from 'child_process';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -14,6 +14,7 @@ const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.resolve(__dirname, '.env') });
 
 const app = express();
+const STARTED_AT = Date.now();
 const upload = multer({ dest: 'tmp/' });
 
 const repoRoot = path.resolve(__dirname, '..');
@@ -86,6 +87,241 @@ function detectCurrentVersionTag() {
   } catch {}
   return null;
 }
+
+// --- Script Runner (whitelist) ----------------------------------------------
+// Define a safe whitelist of local scripts that can be triggered from the web UI.
+// Each entry includes an id, title, description, and how to execute it on Windows.
+const SCRIPTS = [
+  {
+    id: 'start-live-server-safe',
+    title: 'Start Live Server (8000) — Safe',
+    desc: 'Doodt poort 8000 indien nodig en start een Python http.server.',
+    type: 'ps1',
+    path: path.resolve(repoRoot, 'scripts', 'start-live-server-safe.ps1'),
+    background: true
+  },
+  {
+    id: 'start-backend-3002-safe',
+    title: 'Start Backend (3002) — Safe',
+    desc: 'Doodt poort 3002 en start de upload-backend op 3002.',
+    type: 'ps1',
+    path: path.resolve(repoRoot, 'scripts', 'start-backend-3002-safe.ps1'),
+    background: true
+  },
+  {
+    id: 'start-backend-auto',
+    title: 'Start Backend (auto)',
+    desc: 'Start backend met auto-keuze en veiligheid.',
+    type: 'ps1',
+    path: path.resolve(repoRoot, 'scripts', 'start-backend-auto.ps1'),
+    background: true
+  },
+  {
+    id: 'restart-backend-hard',
+    title: 'Restart Backend (hard)',
+    desc: 'Kill 3002 → start → health → open admin.',
+    type: 'ps1',
+    path: path.resolve(repoRoot, 'scripts', 'restart-backend-hard.ps1'),
+    background: true
+  },
+  {
+    id: 'restart-backend-hard-tabs',
+    title: 'Restart Backend (hard) + Admin Tabs',
+    desc: 'Kill 3002 → start → health → open index.html#admin.',
+    type: 'ps1',
+    path: path.resolve(repoRoot, 'scripts', 'restart-backend-hard-tabs.ps1'),
+    background: true
+  },
+  {
+    id: 'detect-base-and-health',
+    title: 'Detect Base & Health',
+    desc: 'Controleer backend basis en health status.',
+    type: 'ps1',
+    path: path.resolve(repoRoot, 'scripts', 'detect-base-and-health.ps1'),
+    background: false
+  },
+  {
+    id: 'news-list',
+    title: 'Nieuws: lijst',
+    desc: 'Toon de huidige nieuws-items via backend.',
+    type: 'ps1',
+    path: path.resolve(repoRoot, 'scripts', 'news-list.ps1'),
+    background: false
+  },
+  {
+    id: 'workflow-run',
+    title: 'Run Backup Workflow',
+    desc: 'Draait full-backup-workflow.ps1 en logt een note.',
+    type: 'backend',
+    path: '',
+    background: false
+  },
+  {
+    id: 'open-admin',
+    title: 'Open Admin',
+    desc: 'Opent admin.html met live server.',
+    type: 'ps1',
+    path: path.resolve(repoRoot, 'scripts', 'open-admin.ps1'),
+    background: true
+  },
+  {
+    id: 'open-admin-tabs',
+    title: 'Open Admin Tabs',
+    desc: 'Opent index.html met #admin tab.',
+    type: 'ps1',
+    path: path.resolve(repoRoot, 'scripts', 'open-admin-tabs.ps1'),
+    background: true
+  },
+  {
+    id: 'open-index',
+    title: 'Open Home',
+    desc: 'Opent de homepage met live server.',
+    type: 'ps1',
+    path: path.resolve(repoRoot, 'scripts', 'open-index.ps1'),
+    background: true
+  },
+  {
+    id: 'open-logs',
+    title: 'Open Logs',
+    desc: 'Opent logs.html in browser.',
+    type: 'ps1',
+    path: path.resolve(repoRoot, 'scripts', 'open-logs.ps1'),
+    background: true
+  },
+  {
+    id: 'open-scripts',
+    title: 'Open Scripts (8000)',
+    desc: 'Opent scripts.html via de live server.',
+    type: 'ps1',
+    path: path.resolve(repoRoot, 'scripts', 'open-scripts.ps1'),
+    background: true
+  },
+  {
+    id: 'kill-port-3002',
+    title: 'Kill port 3002',
+    desc: 'Beëindig processen op poort 3002.',
+    type: 'ps1',
+    path: path.resolve(repoRoot, 'scripts', 'kill-port-3002.ps1'),
+    background: true
+  },
+  {
+    id: 'kill-port-8000',
+    title: 'Kill port 8000',
+    desc: 'Beëindig processen op poort 8000.',
+    type: 'ps1',
+    path: path.resolve(repoRoot, 'scripts', 'kill-port-8000.ps1'),
+    background: true
+  }
+];
+
+function listScriptsMinimal() {
+  return SCRIPTS.map(s => ({ id: s.id, title: s.title, desc: s.desc, background: !!s.background }));
+}
+
+app.get('/scripts/list', (req, res) => {
+  try {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.json({ ok: true, scripts: listScriptsMinimal() });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+// Helper to execute a whitelisted script by id (used by POST and GET)
+async function handleScriptRun(req, res, idParam){
+  try {
+    const id = idParam || (req.body ? req.body.id : undefined);
+    if (!id) return res.status(400).json({ ok: false, error: 'id ontbreekt' });
+    const s = SCRIPTS.find(x => x.id === id);
+    if (!s) return res.status(404).json({ ok: false, error: 'Script niet gevonden' });
+
+    if (s.type === 'backend') {
+      // Special case: reuse existing backend workflow endpoint
+      // Equivalent to POST /workflow/run
+      const scriptPath = path.resolve(repoRoot, 'full-backup-workflow.ps1');
+      const cmd = `powershell.exe -NoProfile -ExecutionPolicy Bypass -File "${scriptPath}"`;
+      exec(cmd, { cwd: repoRoot, timeout: 180000, maxBuffer: 10 * 1024 * 1024 }, (error, stdout, stderr) => {
+        if (error) return res.status(500).json({ ok: false, error: error.message, stdout, stderr });
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        return res.json({ ok: true, stdout, stderr });
+      });
+      return;
+    }
+
+    if (!fs.existsSync(s.path)) {
+      return res.status(404).json({ ok: false, error: 'Pad niet gevonden: ' + s.path });
+    }
+
+    // Build PowerShell or CMD command
+    const isPs1 = s.type === 'ps1';
+    const isCmd = s.type === 'cmd';
+    if (s.background) {
+      // Fire-and-forget background run
+      let proc = null;
+      if (isPs1) {
+        // Prefer Windows PowerShell, fallback to PowerShell (Core)
+        let ps = 'powershell.exe';
+        try {
+          const w = spawnSync('where', ['powershell.exe']);
+          if (w.status !== 0) {
+            const w2 = spawnSync('where', ['pwsh.exe']);
+            if (w2.status === 0) ps = 'pwsh.exe'; else ps = 'powershell.exe';
+          }
+        } catch {}
+        proc = spawn(ps, ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', s.path], {
+          cwd: repoRoot, detached: true, stdio: 'ignore'
+        });
+      } else if (isCmd) {
+        proc = spawn('cmd.exe', ['/c', s.path], { cwd: repoRoot, detached: true, stdio: 'ignore' });
+      }
+      const pid = proc && proc.pid ? proc.pid : undefined;
+      if (proc) { try { proc.unref(); } catch {} }
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      return res.json({ ok: true, started: true, pid });
+    }
+    // Foreground: capture output
+    if (isPs1) {
+      // Prefer Windows PowerShell, fallback to PowerShell (Core)
+      let ps = 'powershell.exe';
+      try {
+        const w = spawnSync('where', ['powershell.exe']);
+        if (w.status !== 0) {
+          const w2 = spawnSync('where', ['pwsh.exe']);
+          if (w2.status === 0) ps = 'pwsh.exe'; else ps = 'powershell.exe';
+        }
+      } catch {}
+      const cmd = `${ps} -NoProfile -ExecutionPolicy Bypass -File "${s.path}"`;
+      exec(cmd, { cwd: repoRoot, timeout: 180000, maxBuffer: 10 * 1024 * 1024 }, (error, stdout, stderr) => {
+        if (error) return res.status(500).json({ ok: false, error: error.message, stdout, stderr });
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.json({ ok: true, stdout, stderr });
+      });
+    } else if (isCmd) {
+      const cmd = `cmd.exe /c "${s.path}"`;
+      exec(cmd, { cwd: repoRoot, timeout: 180000, maxBuffer: 10 * 1024 * 1024 }, (error, stdout, stderr) => {
+        if (error) return res.status(500).json({ ok: false, error: error.message, stdout, stderr });
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.json({ ok: true, stdout, stderr });
+      });
+    } else {
+      res.status(400).json({ ok: false, error: 'Onbekend script-type' });
+    }
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+}
+
+// Primary endpoint (POST)
+app.post('/scripts/run', async (req, res) => {
+  return handleScriptRun(req, res);
+});
+
+// Fallback endpoint (GET) to avoid CORS preflight issues
+// Example: /scripts/run?id=detect-base-and-health
+app.get('/scripts/run', async (req, res) => {
+  const id = req.query && req.query.id;
+  return handleScriptRun(req, res, id);
+});
 
 app.post('/upload', upload.single('file'), async (req, res) => {
   if (UPLOAD_DISABLED) {
@@ -196,7 +432,8 @@ app.get('/upload/check', async (req, res) => {
 // Simple health endpoint for uptime checks
 app.get('/health', (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.json({ ok: true, ts: Date.now() });
+  const now = Date.now();
+  res.json({ ok: true, ts: now, startedAt: STARTED_AT, uptimeMs: Math.max(0, now - STARTED_AT) });
 });
 
 // Diagnostics: verify GitHub token/repo access quickly
@@ -328,13 +565,21 @@ app.post('/logs/append', express.text({ type: '*/*' }), (req, res) => {
         }
       }
     }
-    const { message = '', versionTag = 'note', type = 'note' } = body || {};
+  let { message = '', versionTag = 'note', type = 'note' } = body || {};
     const logsPath = path.resolve(repoRoot, 'logs', 'logs.json');
     if (!fs.existsSync(logsPath)) {
       fs.mkdirSync(path.dirname(logsPath), { recursive: true });
       fs.writeFileSync(logsPath, JSON.stringify({ entries: [] }, null, 2));
     }
     const json = safeReadJson(logsPath, { entries: [] });
+    // Policy: indien dit een 'note' is en versionTag lijkt op een release (v* of release-*), prefix de message met het versienummer
+    try{
+      const looksRelease = /^v\d|^release[-\s]/i.test(String(versionTag||''));
+      const alreadyPrefixed = /^\s*release\b/i.test(String(message||''));
+      if (type === 'note' && looksRelease && !alreadyPrefixed){
+        message = `Release ${versionTag} — ${message}`.trim();
+      }
+    }catch{}
     const entry = { type, timestamp: new Date().toISOString(), versionTag, message };
     json.entries = Array.isArray(json.entries) ? json.entries : [];
     json.entries.push(entry);
@@ -349,13 +594,21 @@ app.post('/logs/append', express.text({ type: '*/*' }), (req, res) => {
 // Fallback: allow GET with query params (for clients that struggle with JSON bodies)
 app.get('/logs/append', (req, res) => {
   try {
-    const { message = '', versionTag = 'note', type = 'note' } = req.query || {};
+    let { message = '', versionTag = 'note', type = 'note' } = req.query || {};
     const logsPath = path.resolve(repoRoot, 'logs', 'logs.json');
     if (!fs.existsSync(logsPath)) {
       fs.mkdirSync(path.dirname(logsPath), { recursive: true });
       fs.writeFileSync(logsPath, JSON.stringify({ entries: [] }, null, 2));
     }
     const json = safeReadJson(logsPath, { entries: [] });
+    // Policy: indien dit een 'note' is en versionTag lijkt op een release, prefix de message
+    try{
+      const looksRelease = /^v\d|^release[-\s]/i.test(String(versionTag||''));
+      const alreadyPrefixed = /^\s*release\b/i.test(String(message||''));
+      if (String(type||'note') === 'note' && looksRelease && !alreadyPrefixed){
+        message = `Release ${versionTag} — ${message}`;
+      }
+    }catch{}
     const entry = { type: String(type||'note'), timestamp: new Date().toISOString(), versionTag: String(versionTag||'note'), message: String(message||'') };
     json.entries = Array.isArray(json.entries) ? json.entries : [];
     json.entries.push(entry);
@@ -608,6 +861,8 @@ app.get('/__diag', (req, res) => {
       repoRoot,
       node: process.version,
       port: PORT,
+      startedAt: STARTED_AT,
+      uptimeMs: Math.max(0, Date.now() - STARTED_AT),
       routes: listRoutes(),
       files: {
         newsJsonExists: fs.existsSync(newsPath),

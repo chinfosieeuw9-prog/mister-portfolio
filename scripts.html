@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="pragma" content="no-cache">
+  <meta http-equiv="expires" content="0">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Script Runner</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/status-indicators.js"></script>
+  <style>
+    body { background:#0b0b1a; color:#e5e7eb; font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; }
+    .wrap { max-width: 900px; margin: 0 auto; padding: 20px 12px; }
+    h1 { font-size: 1.6rem; margin: 8px 0 18px; color: #4ade80; }
+    .muted { color:#9ca3af; font-size: 0.95rem; }
+    .grid { display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
+    @media (max-width: 820px) { .grid { grid-template-columns: 1fr; } }
+    .card { background:#171735; border: 1px solid #2a2a5a; border-radius: 12px; padding: 14px; display:flex; flex-direction:column; gap: 10px; }
+    .card h3 { margin:0; font-size: 1rem; color:#e5e7eb; }
+    .card p { margin:0; font-size: .95rem; color:#cbd5e1; }
+  .row { display:flex; gap: 8px; align-items:center; flex-wrap:wrap; }
+  .row-justify { justify-content: space-between; }
+  .controls { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin: 6px 0 14px; }
+  .input { background:#0f0f1f; border:1px solid #2a2a5a; color:#e5e7eb; border-radius:8px; padding:8px 10px; }
+    .btn { background:#4ade80; border:0; color:#0b0b1a; font-weight:700; border-radius: 8px; padding: 8px 12px; cursor:pointer; }
+    .btn:hover { background:#22c55e; }
+    .pill { border:1px solid #2a2a5a; border-radius:999px; padding:2px 10px; color:#9ca3af; font-size:12px; }
+  /* status chips */
+  .chip { border:1px solid #2a2a5a; border-radius:999px; padding:2px 8px; font-size:12px; color:#9ca3af; display:inline-flex; align-items:center; gap:6px; }
+  .chip .dot { width:8px; height:8px; border-radius:999px; background:#6b7280; display:inline-block; }
+  .chip.ok { color:#bbf7d0; border-color:#1f8a4b; }
+  .chip.ok .dot { background:#22c55e; box-shadow:0 0 0 3px rgba(34,197,94,.15); }
+  .chip.warn { color:#fde68a; border-color:#9a6b1f; }
+  .chip.warn .dot { background:#f59e0b; box-shadow:0 0 0 3px rgba(245,158,11,.15); }
+  .chip.err { color:#fecaca; border-color:#8a1f1f; }
+  .chip.err .dot { background:#ef4444; box-shadow:0 0 0 3px rgba(239,68,68,.15); }
+  .chip.muted { color:#9ca3af; }
+  .chip + .chip { margin-left:6px; }
+    pre { background:#0b0b0b; border:1px solid #242438; border-radius:8px; color:#d1d5db; padding:10px; overflow:auto; font-size:12px; }
+    .out { margin-top:6px; }
+    .flex1 { flex:1; }
+    .hidden { display:none; }
+    .max260 { max-width:260px; }
+    .banner { background:#1f2937; border:1px solid #374151; color:#e5e7eb; border-radius:10px; padding:10px 12px; margin:10px 0; }
+    .banner strong{ color:#f59e0b; }
+  </style>
+  <script>
+    // Centraliseer backend helpers via StatusIndicators (indien beschikbaar)
+    window.getBackendBase = function(){ try{ return (window.StatusIndicators && StatusIndicators.getBase()) || (localStorage.getItem('backendBase')||'http://localhost:3002'); }catch{ return 'http://localhost:3002'; } }
+    window.detectBackendBaseOnce = function(){ return (window.StatusIndicators && StatusIndicators.detectBaseOnce()) || Promise.resolve(window.getBackendBase()); }
+  </script>
+  <script>
+    function normBase(u){ try { return String(u||'').trim().replace(/\/$/,''); } catch { return 'http://localhost:3002'; } }
+    // getBackendBase is geshimd hierboven
+    function setBackendBase(u, persist){
+      const v = normBase(u||'');
+      try { sessionStorage.setItem('backendBase', v); } catch{}
+      if (persist) { try { localStorage.setItem('backendBase', v); } catch{} }
+      const pill = document.getElementById('base-pill'); if (pill) pill.textContent = 'base: ' + v;
+      const inp = document.getElementById('base-input'); if (inp && !inp.value) inp.value = v;
+      try { updateBackendLamp(); } catch{}
+      return v;
+    }
+    async function updateBackendLamp(){
+      const base = getBackendBase();
+      const chip = document.getElementById('backend-chip');
+      if (!chip) return;
+      const label = chip.querySelector('.label');
+      chip.classList.remove('ok','warn','err','muted'); chip.classList.add('muted');
+      if (label) label.textContent = 'backend: checken…';
+      const t0 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+      try{
+        const r = await fetch(base + '/health', { cache:'no-store' });
+        if (r.ok){
+          const ms = Math.max(0, Math.round(((typeof performance !== 'undefined' && performance.now)?performance.now():Date.now()) - t0));
+          chip.classList.remove('muted','warn','err'); chip.classList.add('ok');
+          if (label) label.textContent = 'backend: online' + (ms? ` (${ms}ms)` : '');
+          return true;
+        }
+        chip.classList.remove('muted','ok','warn'); chip.classList.add('err');
+        if (label) label.textContent = 'backend: offline (HTTP '+r.status+')';
+        return false;
+      }catch(e){
+        chip.classList.remove('muted','ok','warn'); chip.classList.add('err');
+        if (label) label.textContent = 'backend: offline';
+        return false;
+      }
+    }
+    function updateLiveServerLamp(){
+      const chip = document.getElementById('live-chip');
+      if (!chip) return;
+      const label = chip.querySelector('.label');
+      const is8000 = /^(http:\/\/)?(localhost|127\.0\.0\.1)(:8000)/.test(location.href) || location.port === '8000';
+      chip.classList.remove('ok','warn','err','muted');
+      if (is8000){ chip.classList.add('ok'); if (label) label.textContent = 'live: 8000'; }
+      else { chip.classList.add('warn'); if (label) label.textContent = 'live: niet 8000'; }
+    }
+    // detectBackendBaseOnce is geshimd hierboven
+    function saveBackendBaseUrl(){
+      try { const inp = document.getElementById('base-input'); if (!inp) return; setBackendBase(inp.value, true); } catch{}
+    }
+    async function autoDetectBackendBase(){
+      try { await detectBackendBaseOnce(); } catch{}
+    }
+    function renderCards(intoEl, items){
+      intoEl.innerHTML = '';
+      items.forEach(s => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <div class="row">
+            <h3 class="flex1">${s.title||s.id}</h3>
+            <span class="pill">${s.background? 'background' : 'foreground'}</span>
+          </div>
+          <p>${s.desc||''}</p>
+          <div class="row">
+            <button class="btn" data-id="${s.id}">Run</button>
+            <span class="pill" id="status-${s.id}">wachten…</span>
+          </div>
+          <div class="out hidden" id="out-${s.id}"></div>
+        `;
+        intoEl.appendChild(card);
+      });
+      intoEl.querySelectorAll('button.btn').forEach(btn => {
+        btn.addEventListener('click', async () => { runScript(btn.getAttribute('data-id')); });
+      });
+    }
+
+    async function loadScripts(){
+      const base = await detectBackendBaseOnce();
+      try { updateBackendLamp(); } catch{}
+      try { updateLiveServerLamp(); } catch{}
+      const favEl = document.getElementById('fav');
+      const listEl = document.getElementById('list');
+      listEl.innerHTML = '<div class="muted">Laden…</div>';
+      try{
+        const r = await fetch(base + '/scripts/list', { cache:'no-store' });
+        const j = await r.json();
+        const arr = (j && j.scripts) || [];
+        if (!arr.length){ listEl.innerHTML = '<div class="muted">Geen scripts gevonden.</div>'; return; }
+        // Favorites
+  const favIds = ['open-scripts','start-backend-3002-safe','start-live-server-safe','open-admin-tabs','restart-backend-hard','detect-base-and-health'];
+        const fav = arr.filter(x => favIds.includes(x.id));
+        renderCards(favEl, fav);
+        renderCards(listEl, arr);
+        // hide banner if visible
+        try{ document.getElementById('offline')?.classList.add('hidden'); }catch{}
+      } catch(e){
+        listEl.innerHTML = '<div class="muted">Fout bij laden: '+(e.message||e)+'</div>';
+        const b = document.getElementById('offline');
+        if (b){
+          b.querySelector('.msg').textContent = 'Backend offline of geblokkeerd. Probeer 3002 of auto-detect.';
+          b.classList.remove('hidden');
+        }
+      }
+    }
+    async function runScript(id){
+      const base = getBackendBase();
+      const statusEl = document.getElementById('status-'+id);
+      const outEl = document.getElementById('out-'+id);
+      statusEl.textContent = 'bezig…'; statusEl.style.color = '#9ca3af';
+      outEl.style.display='none'; outEl.classList.remove('hidden'); outEl.innerHTML='';
+      try{
+        const r = await fetch(base + '/scripts/run', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id })
+        });
+        const j = await r.json().catch(()=>({}));
+        if (!r.ok){ throw new Error(j && j.error ? j.error : ('HTTP '+r.status)); }
+        if (j.started){
+          statusEl.textContent = j.pid ? `gestart (pid ${j.pid})` : 'gestart (background)';
+          statusEl.style.color = '#22c55e';
+        } else {
+          statusEl.textContent = 'klaar'; statusEl.style.color = '#22c55e';
+          const pre = document.createElement('pre');
+          pre.textContent = (j.stdout||'') + (j.stderr? ('\n-- STDERR --\n'+j.stderr) : '');
+          outEl.innerHTML = ''; outEl.appendChild(pre); outEl.style.display='block';
+        }
+      } catch(e){
+        // Retry with GET fallback (no preflight)
+        try{
+          const r2 = await fetch(base + '/scripts/run?id=' + encodeURIComponent(id), { cache:'no-store' });
+          const j2 = await r2.json().catch(()=>({}));
+          if (!r2.ok){ throw new Error(j2 && j2.error ? j2.error : ('HTTP '+r2.status)); }
+          if (j2.started){
+            statusEl.textContent = j2.pid ? `gestart (pid ${j2.pid})` : 'gestart (background)';
+            statusEl.style.color = '#22c55e';
+          } else {
+            statusEl.textContent = 'klaar'; statusEl.style.color = '#22c55e';
+            const pre = document.createElement('pre');
+            pre.textContent = (j2.stdout||'') + (j2.stderr? ('\n-- STDERR --\n'+j2.stderr) : '');
+            outEl.innerHTML = ''; outEl.appendChild(pre); outEl.style.display='block';
+          }
+          return;
+        } catch(err2){
+          statusEl.textContent = 'fout'; statusEl.style.color = '#ef4444';
+          outEl.classList.remove('hidden'); outEl.style.display='block';
+          outEl.innerHTML = '<pre>'+String((err2 && err2.message) || (e && e.message) || e)+'</pre>';
+          const b = document.getElementById('offline');
+          if (b){ b.querySelector('.msg').textContent = 'Kan script niet starten. Controleer of backend draait op 3002 en probeer Auto-detect.'; b.classList.remove('hidden'); }
+        }
+      }
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+      loadScripts();
+      // periodiek ping voor indicatoren
+      setInterval(() => { try{ updateBackendLamp(); }catch{} }, 7000);
+      setInterval(() => { try{ updateLiveServerLamp(); }catch{} }, 12000);
+    });
+  </script>
+</head>
+<body>
+  <div class="wrap">
+    <div class="row row-justify">
+      <h1>Script Runner</h1>
+      <div class="row" style="gap:6px; align-items:center;">
+        <span id="backend-chip" class="chip muted" title="Status van de backend (health)"><span class="dot"></span><span class="label">backend: —</span></span>
+        <span id="live-chip" class="chip muted" title="Status van de live server (8000)"><span class="dot"></span><span class="label">live: —</span></span>
+        <span id="base-pill" class="pill">base: —</span>
+      </div>
+    </div>
+    <div id="offline" class="banner hidden">
+      <div class="row" style="justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap;">
+        <div class="msg">Backend offline of niet gevonden.</div>
+        <div class="row" style="gap:6px;">
+          <button class="btn" onclick="setBackendBase('http://localhost:3002', true); loadScripts();">Probeer 3002</button>
+          <button class="btn" onclick="autoDetectBackendBase().then(loadScripts)">Auto-detect</button>
+          <button class="btn" onclick="location.href='http://localhost:8000/scripts.html'">Open via Live Server</button>
+        </div>
+      </div>
+    </div>
+    <p class="muted">Start je meest gebruikte scripts met één klik. Achtergrond-scripts blijven draaien; foreground-scripts tonen hieronder de uitvoer.</p>
+    <div class="controls">
+      <input id="base-input" type="url" class="input max260" placeholder="http://localhost:3002">
+      <button class="btn" onclick="saveBackendBaseUrl()">💾 Opslaan</button>
+      <button class="btn" onclick="autoDetectBackendBase()">🔍 Auto-detect</button>
+    </div>
+    <h2 style="font-size:1.1rem;color:#cbd5e1;margin:8px 0 10px;">Snelle acties</h2>
+    <div id="fav" class="grid" style="margin-bottom:10px;"></div>
+    <div id="list" class="grid"></div>
+  </div>
+</body>
+</html>

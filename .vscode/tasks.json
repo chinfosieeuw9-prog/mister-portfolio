@@ -41,5 +41,21 @@
 			"problemMatcher": [],
 			"group": "build"
 		}
+		,
+		{
+			"label": "Start Backend 3002 (script)",
+			"type": "shell",
+			"command": "powershell.exe",
+			"args": [
+				"-NoProfile",
+				"-ExecutionPolicy",
+				"Bypass",
+				"-Command",
+				"$env:__NO_PAUSE='1'; & .\\scripts\\start-backend-3002.ps1"
+			],
+			"isBackground": true,
+			"problemMatcher": [],
+			"group": "build"
+		}
 	]
 }

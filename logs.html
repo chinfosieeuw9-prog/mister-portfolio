@@ -20,11 +20,23 @@
         });
       } catch(e) {}
     })();
+      // Centraliseer backend helpers via StatusIndicators (indien beschikbaar)
+      window.getBackendBase = function(){ try{ return (window.StatusIndicators && StatusIndicators.getBase()) || (localStorage.getItem('backendBase')||'http://localhost:3002'); }catch{ return 'http://localhost:3002'; } }
+      window.detectBackend = async function(){
+        if (window.StatusIndicators && StatusIndicators.detectBaseOnce){ try{ await StatusIndicators.detectBaseOnce(); }catch{} return StatusIndicators.getBase(); }
+        // fallback op bestaande detectiestrategie
+        const cands = [getBackendBase(), 'http://localhost:3001','http://localhost:3002'];
+        for (const b of [...new Set(cands.map((u)=>String(u).trim().replace(/\/$/,'')))]){
+          try{ const r = await fetch(String(b).replace(/\/$/,'')+'/health',{cache:'no-store'}); if (r.ok){ try{ sessionStorage.setItem('backendBase', String(b).replace(/\/$/,'')); }catch{} return String(b).replace(/\/$/,''); } }catch{}
+        }
+        return String(cands[0]).trim().replace(/\/$/,'');
+      }
   </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Backup Logboek • mister.us.kg</title>
   <meta name="robots" content="noindex" />
+  <script src="js/status-indicators.js"></script>
   <style>
     :root{--bg:#0a0a0a;--card:#141414;--muted:#9ca3af;--fg:#fff;--accent:#5b21b6;--ok:#22c55e;--warn:#f59e0b;--err:#ef4444}
     *{box-sizing:border-box}
@@ -88,6 +100,7 @@
       <a href="admin.html" class="btn" title="Terug naar Admin">← Terug naar admin</a>
       <button id="runBtn" class="btn" title="Start volledige backup workflow">▶ Run workflow</button>
       <span id="runStatus" class="small muted"></span>
+      <span id="serverSince" class="small muted"></span>
   <input id="search" placeholder="Zoek op versie, type, API..." aria-label="Zoeken in logboek" />
   <select id="type" aria-label="Filter op type">
         <option value="">Alle types</option>
@@ -142,11 +155,20 @@
       const res = await fetch(base.replace(/\/$/,'') + '/health', { signal: ctrl.signal });
       clearTimeout(t);
       if (!res.ok) throw new Error('HTTP '+res.status);
+      const j = await res.json().catch(()=>({}));
       if (runBtn) runBtn.disabled = false;
       if (runStatus) { runStatus.textContent = 'backend online • '+base; runStatus.style.color = '#22c55e'; }
+      try{
+        const ss = document.getElementById('serverSince');
+        if (ss && j && j.startedAt){
+          const d = new Date(j.startedAt);
+          ss.textContent = 'server sinds: '+ d.toLocaleString();
+        }
+      }catch{}
     }catch(e){
       if (runBtn) runBtn.disabled = true;
       if (runStatus) { runStatus.textContent = 'backend offline'; runStatus.style.color = '#ef4444'; }
+      try{ const ss = document.getElementById('serverSince'); if (ss) ss.textContent = ''; }catch{}
     }
   }
 
@@ -262,6 +284,8 @@
 
   load();
   checkBackendHealth();
+  // Periodiek bijwerken server-sinds
+  setInterval(checkBackendHealth, 12000);
 
   // Large modal with message + raw JSON
   window.viewEntryDetails = function(idx){

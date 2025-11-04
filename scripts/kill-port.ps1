@@ -5,7 +5,7 @@ try {
   $conns = Get-NetTCPConnection -LocalPort $Port -ErrorAction Stop
   $pids = $conns | Select-Object -ExpandProperty OwningProcess -Unique
   if ($pids.Count -eq 0) { Write-Host "Geen proces gevonden op poort $Port"; } else {
-    foreach ($pid in $pids) { try { Stop-Process -Id $pid -Force } catch {} }
+    foreach ($procId in $pids) { try { Stop-Process -Id $procId -Force } catch {} }
     Write-Host "Killed PIDs: $($pids -join ', ')" -ForegroundColor Red
   }
 } catch {
@@ -15,7 +15,7 @@ try {
     $pids = @()
     foreach ($ln in $lines) { $parts = $ln -split "\s+"; if ($parts.Length -ge 5) { $pids += [int]$parts[-1] } }
     $pids = $pids | Select-Object -Unique
-    foreach ($pid in $pids) { try { Stop-Process -Id $pid -Force } catch {} }
+    foreach ($procId in $pids) { try { Stop-Process -Id $procId -Force } catch {} }
     if ($pids.Count -gt 0) { Write-Host "Killed PIDs: $($pids -join ', ')" -ForegroundColor Red } else { Write-Host "Geen PID gevonden" }
   }
 }

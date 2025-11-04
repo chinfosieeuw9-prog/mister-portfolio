@@ -99,6 +99,7 @@
                         <a href="logs.html" class="admin-btn" style="text-decoration:none;display:inline-block;">📊 Open logboek</a>
                         <button id="open-news-tab-btn" class="admin-btn" type="button">📰 Nieuwsbeheer</button>
                         <a href="explorer-demo.html" class="admin-btn" style="text-decoration:none;display:inline-block;">🗂️ Nieuwe Explorer</a>
+                        <a href="scripts.html" class="admin-btn" style="text-decoration:none;display:inline-block;">🧰 Script runner</a>
                         <a href="index.html" class="admin-btn" style="text-decoration:none;display:inline-block;">🏠 Naar Home</a>
                         <span id="workflow-status" style="font-size:12px;color:#9ca3af;margin-left:6px;"></span>
                         <button id="check-upload-btn" class="admin-btn" type="button">🧪 Check upload</button>
@@ -149,24 +150,51 @@
                                 out.textContent = 'Fout: '+(e.message || e);
                             }
                         });
-                        // Upload check
+                                                // Upload check (toon user/repo/branch/scopes/permissions + advies)
                         const chk = document.getElementById('check-upload-btn');
                         const outEl = document.getElementById('upload-check-output');
                         if (chk) chk.addEventListener('click', async ()=>{
-                            if (outEl){ outEl.textContent = 'Controleren…'; }
+                                                        if (outEl){ outEl.style.whiteSpace = 'normal'; outEl.innerHTML = '<em>Controleren…</em>'; }
                             try{
                                 const base = await detectBackendBaseOnce();
-                                const r = await fetch(base.replace(/\/$/,'') + '/upload/check', { cache:'no-store' });
-                                const j = await r.json().catch(()=>({}));
-                                const nice = j ? {
-                                    ok: j.ok===true,
-                                    user: j.user && (j.user.login||j.user.id||null),
-                                    repo: j.repo && (j.repo.full_name||null),
-                                    push: !!(j.repo && j.repo.permissions && j.repo.permissions.push),
-                                    branch: j.branch && (j.branch.name||null),
-                                    advice: j.advice||null
-                                } : null;
-                                if (outEl){ outEl.textContent = (nice?JSON.stringify(nice,null,2):'—') + '\n(base: '+base+')'; }
+                                                                const r = await fetch(base.replace(/\/$/,'') + '/upload/check', { cache:'no-store' });
+                                                                const j = await r.json().catch(()=>({}));
+
+                                                                const user = j && j.user ? (j.user.login || j.user.id || '-') : '-';
+                                                                const repoFull = j && j.repo ? (j.repo.full_name || '-') : '-';
+                                                                const branch = j && j.branch ? (j.branch.name || '-') : '-';
+                                                                const perms = (j && j.repo && j.repo.permissions) ? j.repo.permissions : {};
+                                                                const canPush = !!(perms && (perms.push || perms.admin));
+                                                                const scopes = j && j.token ? (j.token.scopes || null) : null;
+                                                                const advice = j && j.advice ? j.advice : (canPush ? 'Token lijkt voldoende rechten te hebben.' : 'Token mist push (write) rechten. Maak een token met "Contents: Read and write" of gebruik een classic token met "repo".');
+
+                                                                const statusColor = canPush ? '#22c55e' : '#ef4444';
+                                                                const statusText = canPush ? 'Gereed voor uploads' : 'Geen schrijfrechten';
+                                                                const scopeNote = scopes ? String(scopes) : '— (bij fine‑grained tokens staat dit soms leeg)';
+
+                                                                const detailsJson = `<details style="margin-top:8px;"><summary style="cursor:pointer;color:#9ca3af">Ruwe respons</summary><pre style="background:#0b0b0b;border:1px solid #222;border-radius:8px;padding:8px;color:#d1d5db;overflow:auto;font-size:12px;white-space:pre;">${
+                                                                        (()=>{ try { return JSON.stringify(j, null, 2).replace(/[<>&]/g, m=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[m])); } catch { return '—'; } })()
+                                                                }</pre></details>`;
+
+                                                                const html = `
+                                                                        <div style="display:grid;gap:8px;">
+                                                                            <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
+                                                                                <span style="border:1px solid #333;border-radius:999px;padding:2px 10px;color:${statusColor};">${statusText}</span>
+                                                                                <span style="border:1px solid #333;border-radius:999px;padding:2px 10px;color:#9ca3af;">base: ${base}</span>
+                                                                            </div>
+                                                                            <div style="display:grid;gap:6px;background:#0b0b0b;border:1px solid #222;border-radius:8px;padding:10px;">
+                                                                                <div><b>👤 User</b>: <span style="color:#e5e7eb;">${user}</span></div>
+                                                                                <div><b>📦 Repo</b>: <span style="color:#e5e7eb;">${repoFull}</span></div>
+                                                                                <div><b>🌿 Branch</b>: <span style="color:#e5e7eb;">${branch}</span> ${j && j.branch && j.branch.exists===false ? '<span style="color:#ef4444">(bestaat niet)</span>' : ''}</div>
+                                                                                <div><b>🔐 Rechten</b>: push=${canPush?'true':'false'} · admin=${perms && perms.admin?'true':'false'} · pull=${perms && perms.pull?'true':'false'}</div>
+                                                                                <div><b>🎫 Token scopes</b>: <span style="color:#cbd5e1;">${scopeNote}</span></div>
+                                                                            </div>
+                                                                            <div style="color:${canPush?'#22c55e':'#f59e0b'};">💡 ${advice}</div>
+                                                                            ${canPush ? '' : '<div style="font-size:12px;color:#9ca3af;">Tip: Zet in <code>upload-backend/.env</code> GITHUB_TOKEN met (fine‑grained) Toegang “Contents: Read and write” voor deze repo. Herstart daarna de backend.</div>'}
+                                                                            ${detailsJson}
+                                                                        </div>`;
+
+                                                                if (outEl){ outEl.innerHTML = html; }
                                 try{ updateAdminBackendChips(); }catch{}
                             } catch(e){ if (outEl){ outEl.textContent = '❌ '+(e.message||e); } }
                         });
@@ -613,6 +641,16 @@ node index.js</div>
 
     <!-- Load tab navigation and Supabase integration (ES module) -->
     <script type="module" src="js/admin-tabs-supabase.js"></script>
+        <script src="js/status-indicators.js"></script>
+        <script>
+            // 3) Centraliseer helpers: shim bestaande functies naar StatusIndicators
+            window.getBackendBase = function(){ try{ return (window.StatusIndicators && StatusIndicators.getBase()) || (localStorage.getItem('backendBase')||'http://localhost:3002'); }catch{ return 'http://localhost:3002'; } }
+            window.detectBackendBaseOnce = function(){ return (window.StatusIndicators && StatusIndicators.detectBaseOnce()) || Promise.resolve(window.getBackendBase()); }
+        </script>
+        <style>
+            /* 2) Vervang oude inline pills door de nieuwe dock: verberg de oude badges */
+            #admin-backend-chip, #admin-backend-base { display:none !important; }
+        </style>
     <script>
     window.addEventListener('error', function(e) {
         const bar = document.getElementById('admin-notification-bar');
