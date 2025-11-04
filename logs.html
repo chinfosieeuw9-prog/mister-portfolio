@@ -42,24 +42,28 @@
     :root{--bg:#181828;--card:#23234a;--muted:#9ca3af;--fg:#e3e6f0;--accent:#5b21b6;--ok:#22c55e;--warn:#f59e0b;--err:#ef4444}
     *{box-sizing:border-box}
     body{margin:0;background:var(--bg);color:var(--fg);font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif}
-    .container{max-width:1000px;margin:0 auto;padding:24px}
+  .container{max-width:860px;margin:0 auto;padding:24px}
     h1{font-size:20px;margin:0 0 12px}
     .sub{color:var(--muted);font-size:13px;margin-bottom:20px}
     .toolbar{display:flex;gap:8px;align-items:center;margin-bottom:14px}
     input,select{background:#1f1f1f;border:1px solid #333;color:var(--fg);padding:8px 10px;border-radius:6px}
     .card{background:var(--card);border:1.5px solid #333;border-radius:14px;padding:16px 16px;margin:10px 0;box-shadow:0 4px 16px #0002}
     .row{display:flex;justify-content:space-between;gap:10px;align-items:center}
-    .tag{display:inline-block;padding:2px 10px;border-radius:999px;border:1px solid #333;font-size:12px;color:var(--muted);background:rgba(0,0,0,.15)}
+  .tag{display:inline-block;padding:2px 10px;border-radius:999px;border:1px solid #333;font-size:12px;color:var(--muted);background:rgba(0,0,0,.15)}
     .tag.ok{color:var(--ok);border-color:#195b37}
     .tag.err{color:var(--err);border-color:#5b1d1d}
     .tag.warn{color:var(--warn);border-color:#5b4a1d}
+  .tag.type-backup{color:#4ade80;border-color:#195b37}
+  .tag.type-indexbackup{color:#60a5fa;border-color:#1e3a8a}
+  .tag.type-workflow{color:#fbbf24;border-color:#5b4a1d}
+  .tag.type-note{color:#c084fc;border-color:#4c1d95}
     .ver{font-weight:600}
     .muted{color:var(--muted)}
     .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:10px}
     .kv{background:#181828;border:1px solid #333;border-radius:8px;padding:10px;font-size:13px}
     .kv .k{color:var(--muted);display:block;margin-bottom:4px}
     .details{margin-top:10px;display:none}
-    .btn{background:#4ade80;border:0;color:#23234a;padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:700}
+  .btn{background:#4ade80;border:0;color:#23234a;padding:8px 12px;border-radius:6px;cursor:pointer;font-weight:700}
     .btn:hover{background:#22c55e}
     .nav-btn{ background:#111827; border:1px solid #374151; color:#e5e7eb; border-radius:999px; padding:6px 12px; cursor:pointer; font-weight:600; text-decoration:none; }
     .nav-btn:hover{ border-color:#6b7280; }
@@ -104,7 +108,8 @@
       <a href="index.html" class="nav-btn" title="Terug naar Home">← Home</a>
       <a href="admin.html" class="nav-btn" title="Open Admin">⚙️ Admin</a>
       <button class="nav-btn" onclick="location.href=location.pathname+'?v='+Date.now()" title="Harde refresh">↻ Refresh</button>
-      <button id="runBtn" class="btn" title="Start volledige backup workflow">▶ Run workflow</button>
+  <button id="runBtn" class="btn" title="Start volledige backup workflow">▶ Run workflow</button>
+  <button id="openLatestBtn" class="btn" title="Scroll naar laatste backup/index">📌 Open laatste backup</button>
       <span id="runStatus" class="small muted"></span>
       <span id="serverSince" class="small muted"></span>
   <input id="search" placeholder="Zoek op versie, type, API..." aria-label="Zoeken in logboek" />
@@ -154,6 +159,7 @@
   const elList = document.getElementById('list');
   const elSearch = document.getElementById('search');
   const elType = document.getElementById('type');
+  const elOpenLatest = document.getElementById('openLatestBtn');
   const runBtn = document.getElementById('runBtn');
   const runStatus = document.getElementById('runStatus');
   let entries = [];
@@ -203,6 +209,26 @@
   function fmt(ts){ try { return new Date(ts).toLocaleString(); } catch { return ts; } }
   function tag(txt, cls=''){ return '<span class="tag '+cls+'">'+txt+'</span>'; }
 
+  function latestBackupIndex(){
+    try{
+      if (!Array.isArray(entries) || !entries.length) return -1;
+      // voorkeur: item met artifacts.indexBackup of artifacts.zip; type backup/indexBackup
+      const preferred = entries
+        .map((e,i)=>({e,i}))
+        .filter(x=>{
+          const t = String(x.e.type||'').toLowerCase();
+          const art = x.e.artifacts||{};
+          return (t==='backup' || t==='indexbackup' || art.indexBackup || art.zip);
+        })
+        .sort((a,b)=> new Date(b.e.timestamp)-new Date(a.e.timestamp));
+      return preferred.length ? preferred[0].i : -1;
+    }catch{ return -1; }
+  }
+
+  function linkifyMaybe(v){
+    try{ const s=String(v||''); if(/^https?:\/\//i.test(s)){ return '<a href="'+s+'" target="_blank" rel="noopener">'+s+'</a>'; } return s||'-'; }catch{ return v||'-'; }
+  }
+
   function render(){
     const q = (elSearch.value||'').toLowerCase();
     const t = elType.value;
@@ -212,7 +238,8 @@
   elList.innerHTML = data.map((e, idx)=>{
       const site = e.site||{}; const apis = e.apis||{}; const git = e.git||{}; const art=e.artifacts||{};
       const okTag = site.online ? tag('online','ok') : tag('offline','err');
-      const typeTag = tag(e.type||'-');
+      const typeClass = 'type-'+String(e.type||'').toLowerCase();
+      const typeTag = tag(e.type||'-', typeClass);
       const ver = '<span class="ver">'+(e.versionTag||'-')+'</span>';
       const head = [
         '<div class="row">',
@@ -222,11 +249,11 @@
       ].join('');
       const grid = [
         '<div class="grid">',
-        '  <div class="kv"><span class="k">ZIP</span>'+(art.zip||'-')+'</div>',
-        '  <div class="kv"><span class="k">Index backup</span>'+(art.indexBackup||'-')+'</div>',
-        '  <div class="kv"><span class="k">Site status</span>'+(site.status||'-')+' @ '+(site.url||'-')+'</div>',
-        '  <div class="kv"><span class="k">Formspree</span>'+((apis.formspree&&apis.formspree.status)||'-')+' '+(apis.formspree&&apis.formspree.url?('<span class="muted small">('+(apis.formspree.url)+')</span>'):'')+'</div>',
-        '  <div class="kv"><span class="k">Ably Auth</span>'+((apis.ablyAuth&&apis.ablyAuth.status)||'-')+' '+(apis.ablyAuth&&apis.ablyAuth.url?('<span class="muted small">('+(apis.ablyAuth.url)+')</span>'):'')+'</div>',
+        '  <div class="kv"><span class="k">ZIP</span>'+linkifyMaybe(art.zip)+'</div>',
+        '  <div class="kv"><span class="k">Index backup</span>'+linkifyMaybe(art.indexBackup)+'</div>',
+        '  <div class="kv"><span class="k">Site status</span>'+(site.status||'-')+' @ '+linkifyMaybe(site.url)+'</div>',
+        '  <div class="kv"><span class="k">Formspree</span>'+((apis.formspree&&apis.formspree.status)||'-')+' '+(apis.formspree&&apis.formspree.url?('<span class="muted small">('+linkifyMaybe(apis.formspree.url)+')</span>'):'')+'</div>',
+        '  <div class="kv"><span class="k">Ably Auth</span>'+((apis.ablyAuth&&apis.ablyAuth.status)||'-')+' '+(apis.ablyAuth&&apis.ablyAuth.url?('<span class="muted small">('+linkifyMaybe(apis.ablyAuth.url)+')</span>'):'')+'</div>',
         '  <div class="kv"><span class="k">Git</span>'+(git.sha||'-')+' <span class="muted small">'+(git.message||'')+'</span></div>',
         '</div>'
       ].join('');
@@ -274,6 +301,13 @@
     render();
     renderChangelog();
     try{
+      // Enable 'Open laatste backup' knop
+      if (elOpenLatest){
+        const idx = latestBackupIndex();
+        elOpenLatest.disabled = idx < 0;
+      }
+    }catch{}
+    try{
       const sp = new URLSearchParams(location.search);
       const qts = sp.get('ts');
       if (qts){
@@ -312,6 +346,16 @@
   if (runBtn) runBtn.addEventListener('click', runWorkflow);
   elSearch.addEventListener('input', render);
   elType.addEventListener('change', render);
+  if (elOpenLatest) elOpenLatest.addEventListener('click', ()=>{
+    const idx = latestBackupIndex();
+    if (idx >= 0){
+      const e = entries[idx];
+      const id = 'log-'+String(e.timestamp||'').replace(/[^0-9A-Za-z:._-]/g,'');
+      const el = document.getElementById(id);
+      if (el){ el.scrollIntoView({ behavior:'smooth', block:'start' }); el.classList.add('plink-highlight'); setTimeout(()=>el.classList.remove('plink-highlight'), 2400); }
+      setTimeout(()=>viewEntryDetails(idx), 250);
+    }
+  });
 
   load();
   checkBackendHealth();

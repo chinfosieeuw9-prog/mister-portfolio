@@ -108,6 +108,7 @@
           <span id="si-chip-live" class="si-chip">live: —</span>
           <span id="si-pill-base" class="si-pill si-click" title="Klik om base te wisselen">base: —</span>
           <span id="si-pill-env" class="si-pill si-click" title="Klik om omgeving te wisselen">omgeving: —</span>
+          <a id="si-pill-live-tools" class="si-pill si-click" href="https://mister.us.kg/live-tools.html" target="_blank" rel="noopener" title="Open Live Tools (https)">Live Tools</a>
         `;
         document.body.appendChild(dock);
       }
