@@ -27,6 +27,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Paneel - Mister</title>
     <link rel="stylesheet" href="css/style.css?v=20251104-1">
+    <script src="js/gh-dispatch.js"></script>
     <style>
         body { background: #181828; color: #e3e6f0; font-family: 'Inter', sans-serif; }
         .admin-container { max-width: 480px; margin: 0 auto; padding: 32px 12px; }
@@ -133,6 +134,7 @@
                     <div style="display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 6px;align-items:center;">
                         <button id="run-workflow-btn" class="admin-btn">▶️ Run backup workflow</button>
                         <a href="logs.html" class="admin-btn">📊 Open logboek</a>
+                        <button class="admin-btn" type="button" onclick="GHDispatch.open('ci')">▶ CI (live)</button>
                         <button id="open-news-tab-btn" class="admin-btn" type="button">📰 Nieuwsbeheer</button>
                         <a href="explorer-demo.html" class="admin-btn">🗂️ Nieuwe Explorer</a>
                         <a href="scripts.html" class="admin-btn">🧰 Script runner</a>

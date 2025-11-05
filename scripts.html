@@ -1,6 +1,24 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
+  <script>
+    // Sterke cache-buster: plak ?v=<timestamp> aan CSS/JS zodat je altijd de nieuwste versie krijgt
+    (function(){
+      try{
+        var v = Date.now();
+        document.addEventListener('DOMContentLoaded', function(){
+          document.querySelectorAll('link[rel="stylesheet"][href]').forEach(function(link){
+            var href = link.getAttribute('href');
+            if (href && href.indexOf('?') === -1) { link.href = href + '?v=' + v; }
+          });
+          document.querySelectorAll('script[src]').forEach(function(s){
+            var src = s.getAttribute('src');
+            if (src && src.indexOf('?') === -1) { s.src = src + '?v=' + v; }
+          });
+        });
+      }catch{}
+    })();
+  </script>
   <meta charset="utf-8">
   <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="pragma" content="no-cache">

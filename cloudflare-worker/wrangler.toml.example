@@ -1,0 +1,20 @@
+name = "gh-dispatch-worker"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+# Set your zone's custom domain that may call the worker
+# Example to restrict CORS to your site only
+# [vars]
+# ALLOW_ORIGIN = "https://mister.us.kg"
+# GH_OWNER = "chinfosieeuw9-prog"
+# GH_REPO = "mister-portfolio"
+# ALLOWED_WORKFLOWS = "ci.yml"
+
+# Secrets to set via CLI (not committed):
+# wrangler secret put GH_TOKEN  # Fine-grained PAT with Actions: write for the repo
+
+# Optional: Bind the worker to a route under your production domain
+# Uncomment and set your zone name if you prefer routing via your site:
+# routes = [
+#   { pattern = "mister.us.kg/api/gh/dispatch*", zone_name = "mister.us.kg" }
+# ]

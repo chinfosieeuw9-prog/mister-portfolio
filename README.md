@@ -36,6 +36,29 @@ Productie loopt via Cloudflare (proxy) met GitHub Pages/Vercel erachter. Aanbevo
 - Workflows zijn te triggeren via de Live Tools pagina (via een Worker endpoint) of handmatig in GitHub (workflow_dispatch).
 - Zorg dat de Worker `GH_TOKEN` secret heeft met voldoende rechten voor `workflow`.
 
+### Worker route en 1‑klik dispatch
+
+- Route: `mister.us.kg/api/gh/dispatch*` (Workers & Pages → jouw Worker → Settings → Domains & Routes → Add route)
+- Endpoint accepteert POST `{ workflow: "ci.yml", ref: "main" }` en is al geïntegreerd in `live-tools.html`, `admin.html` en `logs.html`.
+- Optionele variabelen (Workers & Pages → Settings → Variables and Secrets):
+  - `ALLOW_ORIGIN = https://mister.us.kg`
+  - `ALLOWED_WORKFLOWS = ci.yml`
+
+## Security headers via Cloudflare (Transform Rules)
+
+Stel deze in op je ZONE (niet in het Worker‑scherm):
+
+1) Ga naar de zone `mister.us.kg` → Rules → Transform Rules → HTTP Response Header Modification → Create rule
+2) Rule name: `security-headers-baseline`
+3) If incoming requests match: `All incoming requests`
+4) Then (Modify response header): voeg/set de volgende headers (klik “Set new header” per regel)
+
+- Action: Set static, Header name: `X-Content-Type-Options`, Value: `nosniff`
+- Action: Set static, Header name: `Referrer-Policy`, Value: `strict-origin-when-cross-origin`
+- Action: Set static, Header name: `Permissions-Policy`, Value: `camera=(), microphone=(), geolocation=()`
+
+Opslaan/Deploy. Verifiëren kan via DevTools → Network → Response Headers of met curl.
+
 ## Logs & Backups
 
 - `logs/logs.json`: recente acties en backups.

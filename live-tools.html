@@ -1,6 +1,24 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
+  <script>
+    // Sterke cache-buster zoals op admin/logs: voeg ?v=<timestamp> toe aan CSS/JS zodat je nooit een oude versie ziet
+    (function(){
+      try{
+        var v = Date.now();
+        document.addEventListener('DOMContentLoaded', function(){
+          document.querySelectorAll('link[rel="stylesheet"][href]').forEach(function(link){
+            var href = link.getAttribute('href');
+            if (href && href.indexOf('?') === -1) { link.href = href + '?v=' + v; }
+          });
+          document.querySelectorAll('script[src]').forEach(function(s){
+            var src = s.getAttribute('src');
+            if (src && src.indexOf('?') === -1) { s.src = src + '?v=' + v; }
+          });
+        });
+      }catch{}
+    })();
+  </script>
   <meta charset="utf-8">
   <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="pragma" content="no-cache">
@@ -9,6 +27,7 @@
   <title>Live Tools</title>
   <link rel="stylesheet" href="css/style.css?v=20251104-1">
   <script src="js/status-indicators.js"></script>
+  <script src="js/gh-dispatch.js"></script>
   <style>
     body { background:#181828; color:#e3e6f0; font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; }
   .admin-container { max-width: 860px; margin: 0 auto; padding: 32px 12px; }
@@ -43,6 +62,7 @@
     <div class="admin-card">
       <div class="admin-title" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">Live Tools
         <span class="muted" style="font-size:12px;border:1px solid #333;border-radius:999px;padding:2px 8px;">operaties & links</span>
+        <span class="muted" title="versiestempel" style="font-size:11px;border:1px dashed #444;border-radius:999px;padding:2px 8px;">v-2025-11-05a</span>
       </div>
       <div class="row">
         <a class="nav-btn" href="index.html" title="Terug naar Home">← Home</a>
@@ -72,8 +92,19 @@
       <p class="muted">1‑klik via <code>/api/gh/dispatch</code> (Cloudflare Worker). Zo niet, dan openen we de GitHub UI.</p>
       <div id="dispatch-host-hint" class="muted" style="display:none;font-size:.9rem;">Je draait lokaal; 1‑klik roept de live endpoint <code>https://mister.us.kg/api/gh/dispatch</code> aan.</div>
       <div class="row">
-        <button class="nav-btn" onclick="openWorkflow('pages')" title="Start de Pages build/deploy workflow">▶ Pages bouwen</button>
-        <button class="nav-btn" onclick="openWorkflow('ci')" title="Start de CI workflow (tests)">▶ CI (tests)</button>
+        <button class="nav-btn" onclick="GHDispatch.open('pages')" title="Start de Pages build/deploy workflow">▶ Pages bouwen</button>
+        <button class="nav-btn" onclick="GHDispatch.open('ci')" title="Start de CI workflow (tests)">▶ CI (tests)</button>
+        <span id="dispatch-status-chip" class="muted" style="border:1px solid #333;border-radius:8px;padding:2px 8px;font-size:12px;">dispatch: —</span>
+      </div>
+    </div>
+
+    <div class="admin-card">
+      <h3 style="margin:0 0 6px;">Diagnostiek</h3>
+      <p class="muted">Snelle checks voor headers en Worker‑route (handig bij cache of propagatie).</p>
+      <div class="row">
+        <button class="nav-btn" onclick="checkHeaders()" title="Controleer 3 security headers">🔎 Headers check</button>
+        <button class="nav-btn" onclick="checkWorker()" title="Test /api/gh/dispatch bereikbaarheid">🔎 Worker check</button>
+        <span id="diag-out" class="muted" style="font-size:12px;border:1px solid #333;border-radius:8px;padding:2px 8px;">—</span>
       </div>
     </div>
 
@@ -111,7 +142,7 @@
         <a class="nav-btn" href="https://dashboard.hcaptcha.com/overview" target="_blank" rel="noopener">🛡️ hCaptcha</a>
         <a class="nav-btn" href="https://dashboard.render.com/" target="_blank" rel="noopener">⚙️ Render</a>
         <a class="nav-btn" href="https://dash.cloudflare.com/" target="_blank" rel="noopener" title="Open Cloudflare dashboard; kies daarna je account en zone">☁️ Cloudflare dashboard</a>
-        <a class="nav-btn" href="https://ably.com/dashboard" target="_blank" rel="noopener">� Ably</a>
+  <a class="nav-btn" href="https://ably.com/dashboard" target="_blank" rel="noopener">🛰️ Ably</a>
       </div>
       <div class="muted" style="font-size:.9rem;margin-top:8px;">Veilige dashboard‑links; geen tokens hier in de UI.</div>
     </div>
@@ -135,106 +166,75 @@
     </div>
   </div>
   <script>
-    // Kleine toast helper
-    function toast(msg, ok=true){
-      try{
-        const el = document.createElement('div');
-        el.textContent = msg;
-        el.style.cssText = `position:fixed;left:50%;transform:translateX(-50%);bottom:18px;padding:10px 14px;border-radius:10px;font-weight:700;z-index:9999;`+
-          (ok? 'background:#16a34a;color:#081b10;' : 'background:#ef4444;color:#210909;');
-        document.body.appendChild(el);
-        setTimeout(()=>{ el.remove(); }, 2500);
-      }catch{}
-    }
-
-    // Probeer Worker endpoint, val anders terug op GitHub UI (veilig, geen tokens op frontend)
-    async function tryDispatch(kind){
-      const readErr = async (res) => {
-        try{
-          const ct = res.headers.get('content-type')||'';
-          if (ct.includes('application/json')){
-            const j = await res.json();
-            return j?.message || JSON.stringify(j);
-          }
-          return await res.text();
-        }catch{return ''}
-      };
-      // Probeer meerdere varianten van workflow-id (GitHub accepteert bestandsnaam of id)
-      const candidates = [];
-      if (kind === 'ci') {
-        candidates.push('ci', 'ci.yml', '.github/workflows/ci.yml');
-      } else if (kind === 'pages') {
-        candidates.push('pages');
-      } else if (kind) {
-        candidates.push(kind);
-      } else {
-        candidates.push('ci', 'ci.yml', '.github/workflows/ci.yml');
-      }
-
-      const controller = new AbortController();
-      const t = setTimeout(()=>controller.abort(), 6500);
-      // Endpoint: als we NIET op mister.us.kg draaien (bijv. localhost), forceer dan de live URL
-      const onLiveHost = location.hostname === 'mister.us.kg' || location.hostname.endsWith('.mister.us.kg');
-      const endpoint = onLiveHost ? '/api/gh/dispatch' : 'https://mister.us.kg/api/gh/dispatch';
-      try{
-        for (let i=0;i<candidates.length;i++){
-          const wf = candidates[i];
-          const res = await fetch(endpoint, {
-            method: 'POST',
-            headers: { 'content-type': 'application/json' },
-            body: JSON.stringify({ workflow: wf, ref: 'main' }),
-            signal: controller.signal,
-          });
-          if (res.ok){
-            clearTimeout(t);
-            const data = await res.json().catch(()=>({}));
-            toast(data?.message || `Workflow '${wf}' gestart`, true);
-            return true;
-          }
-          // Als mis (404/422/403/…), log detail en probeer volgende kandidaat
-          const detail = await readErr(res);
-          console.warn(`[dispatch] ${wf} -> ${res.status} ${res.statusText} ${detail||''}`.trim());
-        }
-        clearTimeout(t);
-        toast('Dispatch niet gelukt (details in console). Open GitHub UI…', false);
-        return false;
-      }catch(e){
-        clearTimeout(t);
-        console.error('[dispatch] fout:', e);
-        return false;
-      }
-    }
-
-    // Toon hint wanneer we lokaal draaien
+    // Toon hint wanneer we lokaal draaien (Worker call gaat dan naar live domain)
     (function(){
-      const onLiveHost = location.hostname === 'mister.us.kg' || location.hostname.endsWith('.mister.us.kg');
-      if (!onLiveHost) {
-        const el = document.getElementById('dispatch-host-hint');
-        if (el) el.style.display = 'block';
-      }
+      try{
+        var h = location.hostname||'';
+        var onLive = (h === 'mister.us.kg' || h.endsWith('.mister.us.kg'));
+        if (!onLive) {
+          var el = document.getElementById('dispatch-host-hint');
+          if (el) el.style.display = 'block';
+        }
+      }catch{}
     })();
 
-    // Best-effort workflow openers. Veilig (geen tokens in frontend).
-    async function openWorkflow(kind){
-      // 1) Probeer 1‑klik via Worker
-      toast('Actie starten…');
-      const ok = await tryDispatch(kind);
-      if (ok) return; // Gelukt via Worker
+    // Kleine check: is de Worker route bereikbaar?
+    (function(){
+      try{
+        var chip = document.getElementById('dispatch-status-chip');
+        if (!chip) return;
+        var endpoint = (location.hostname === 'mister.us.kg' || location.hostname.endsWith('.mister.us.kg'))
+          ? '/api/gh/dispatch'
+          : 'https://mister.us.kg/api/gh/dispatch';
+        // Probeer CORS preflight (OPTIONS) – onze Worker antwoordt 204 als hij de route heeft
+        var ctrl = new AbortController();
+        var t = setTimeout(function(){ try{ctrl.abort();}catch{} }, 4000);
+        fetch(endpoint, { method:'OPTIONS', signal: ctrl.signal }).then(function(r){
+          clearTimeout(t);
+          if (r && (r.status === 204 || r.ok)){
+            chip.textContent = 'dispatch: live';
+            chip.style.color = '#22c55e'; chip.style.borderColor = '#195b37';
+          } else {
+            chip.textContent = 'dispatch: niet gevonden';
+            chip.style.color = '#f59e0b'; chip.style.borderColor = '#5b4a1d';
+            chip.title = 'Configureer de Worker‑route: mister.us.kg/api/gh/dispatch*';
+          }
+        }).catch(function(){
+          clearTimeout(t);
+          chip.textContent = 'dispatch: niet gevonden';
+          chip.style.color = '#f59e0b'; chip.style.borderColor = '#5b4a1d';
+          chip.title = 'Configureer de Worker‑route: mister.us.kg/api/gh/dispatch*';
+        });
+      }catch{}
+    })();
 
-      // 2) Fallback: open GitHub UI
-      const base = 'https://github.com/chinfosieeuw9-prog/mister-portfolio';
-      if (kind === 'ci'){
-        window.open(base + '/actions/workflows/ci.yml', '_blank', 'noopener');
-        toast('Worker niet ingesteld: open CI in GitHub', false);
-        return;
-      }
-      if (kind === 'pages'){
-        window.open(base + '/actions?query=workflow%3A%22pages+build+and+deployment%22', '_blank', 'noopener');
-        toast('Worker niet ingesteld: open Pages in GitHub', false);
-        return;
-      }
-      window.open(base + '/actions', '_blank', 'noopener');
-      toast('Worker niet ingesteld: open Actions in GitHub', false);
+    // Diagnostiek helpers
+    async function checkHeaders(){
+      try{
+        var out = document.getElementById('diag-out'); if (out) out.textContent = 'Headers checken…';
+        // Forceer no-store zodat we de echte response zien
+        var res = await fetch(location.pathname + '?check=' + Date.now(), { cache:'no-store' });
+        var h = res.headers;
+        var xcto = h.get('x-content-type-options')||'-';
+        var rp = h.get('referrer-policy')||'-';
+        var pp = h.get('permissions-policy')||'-';
+        var ok = (xcto.toLowerCase()==='nosniff' && rp.toLowerCase()==='strict-origin-when-cross-origin' && /camera=\(\),\s*microphone=\(\),\s*geolocation=\(\)/i.test(pp||''));
+        var msg = 'X-Content-Type-Options=' + xcto + ' • Referrer-Policy=' + rp + ' • Permissions-Policy=' + pp;
+        if (out) out.textContent = msg;
+        if (window.GHDispatch && GHDispatch.toast) GHDispatch.toast(ok ? 'Headers OK' : 'Headers ontbreken/afwijkend', ok);
+      }catch(e){ if (window.GHDispatch && GHDispatch.toast) GHDispatch.toast('Headers check faalde', false); }
+    }
+    async function checkWorker(){
+      try{
+        var out = document.getElementById('diag-out'); if (out) out.textContent = 'Worker checken…';
+        var endpoint = (location.hostname === 'mister.us.kg' || location.hostname.endsWith('.mister.us.kg'))
+          ? '/api/gh/dispatch'
+          : 'https://mister.us.kg/api/gh/dispatch';
+        var r = await fetch(endpoint, { method:'OPTIONS' });
+        var ok = (r && (r.status === 204 || r.ok));
+        if (out) out.textContent = 'Worker OPTIONS status: ' + (r && r.status);
+        if (window.GHDispatch && GHDispatch.toast) GHDispatch.toast(ok ? 'Worker route bereikbaar' : 'Worker route niet gevonden', ok);
+      }catch(e){ if (window.GHDispatch && GHDispatch.toast) GHDispatch.toast('Worker check faalde', false); }
     }
   </script>
   <script>

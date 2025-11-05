@@ -38,6 +38,7 @@
   <meta name="robots" content="noindex" />
   <link rel="stylesheet" href="css/style.css?v=20251104-1" />
   <script src="js/status-indicators.js"></script>
+  <script src="js/gh-dispatch.js"></script>
   <style>
     /* Admin-aligned palette */
     :root{--bg:#181828;--card:#23234a;--muted:#9ca3af;--fg:#e3e6f0;--accent:#5b21b6;--ok:#22c55e;--warn:#f59e0b;--err:#ef4444}
@@ -106,7 +107,8 @@
       <a href="index.html" class="nav-btn" title="Terug naar Home">← Home</a>
       <a href="admin.html" class="nav-btn" title="Open Admin">⚙️ Admin</a>
     <button class="nav-btn" onclick="location.href=location.pathname+'?v='+Date.now()" title="Harde refresh">↻ Refresh</button>
-    <button id="runBtn" class="admin-btn" title="Start volledige backup workflow">▶ Run workflow</button>
+  <button id="runBtn" class="admin-btn" title="Start volledige backup workflow">▶ Run workflow</button>
+  <button class="admin-btn" title="Start CI via Worker (live)" onclick="GHDispatch.open('ci')">▶ CI (live)</button>
     <button id="openLatestBtn" class="admin-btn" title="Scroll naar laatste backup/index">📌 Open laatste backup</button>
       <span id="runStatus" class="small muted"></span>
       <span id="serverSince" class="small muted"></span>
