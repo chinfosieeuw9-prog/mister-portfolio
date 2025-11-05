@@ -66,7 +66,7 @@ if ($formspreeUrl) {
 }
 
 # Ably Auth URL (default lokale upload-backend)
-$ablyAuthUrl = "http://localhost:3001/ably/token"; $ablyStatus = $null
+$ablyAuthUrl = "http://localhost:3002/ably/token"; $ablyStatus = $null
 try {
 	$ar = Invoke-WebRequest -Uri $ablyAuthUrl -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop
 	$ablyStatus = $ar.StatusCode

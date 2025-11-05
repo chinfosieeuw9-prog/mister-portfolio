@@ -287,4 +287,4 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-console.log('🚀 Mister Portfolio geladen! Probeer de Konami code: ↑↑↓↓←→←→BA');
+// console.log removed for cleaner console in production

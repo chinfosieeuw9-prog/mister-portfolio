@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="nl">
 <head>
     <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="pragma" content="no-cache">
@@ -82,6 +82,17 @@
     <!-- Supabase JS v2 for Realtime Presence -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
     <script src="js/status-indicators.js"></script>
+    <script>
+        // Perf: force lazy-loading and async decoding for all images
+        document.addEventListener('DOMContentLoaded', function(){
+            try{
+                document.querySelectorAll('img').forEach(function(img){
+                    if (!img.hasAttribute('loading')) img.setAttribute('loading','lazy');
+                    if (!img.hasAttribute('decoding')) img.setAttribute('decoding','async');
+                });
+            }catch{}
+        });
+    </script>
     
     <style>
         /* Reset and base */
@@ -118,7 +129,7 @@
         .container { position:relative; z-index:2; }
         .container { max-width:600px; margin:0 auto; padding:40px 20px; }
         
-        /* Header */
+    /* Header */
         .header { text-align:center; margin-bottom:40px; }
         .avatar {
             width:100px; height:100px; border-radius:50%;
@@ -335,6 +346,18 @@
             font-size: 12px;
             border: 1px solid rgba(147,134,234,0.35);
         }
+
+        /* Top navigation (consistent with Live Tools) */
+        .top-nav { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin: 10px 0 22px; }
+        .nav-btn { display:inline-block; background:#1a1a1a; color:#fff; border:1px solid #333; padding:6px 12px; border-radius:6px; text-decoration:none; font-size:13px; }
+        .nav-btn:hover { background:#222; border-color:#8b5cf6; }
+
+        /* Hero strip */
+        .hero-slim { text-align:center; margin: -10px 0 22px; }
+        .hero-title { font-size:22px; font-weight:800; margin-bottom:6px; }
+        .hero-sub { color:#bfc3d9; font-size:14px; margin-bottom:10px; }
+        .primary-cta { display:inline-block; background:#4ade80; color:#0b0b0b; border:1px solid #22c55e; padding:10px 14px; border-radius:8px; font-weight:800; text-decoration:none; }
+        .primary-cta:hover { filter: brightness(0.95); }
         
         /* Form Styling */
         .form-group {
@@ -381,8 +404,8 @@
             color: #000;
             border: none;
             border-radius: 8px;
-            padding: 12px 24px;
-            font-size: 14px;
+            padding: 10px 14px; /* compacter */
+            font-size: 13px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s ease;
@@ -413,8 +436,9 @@
         }
         
         .newsletter-btn {
-            padding: 12px 20px;
+            padding: 8px 12px; /* smaller breedte */
             white-space: nowrap;
+            font-size: 13px;
         }
         
         /* Admin Styling */
@@ -1295,27 +1319,14 @@
             }
         }
     </style>
-</head>
-<body>
-        
-        <!-- Site config (no secrets) -->
-        <script>
-            // CAPTCHA provider: 'hcaptcha' or 'recaptcha'
-            // Update the SITE KEY only; do NOT put any secret here.
-            window.CAPTCHA_PROVIDER = window.CAPTCHA_PROVIDER || 'hcaptcha';
-            // Public site key from your hCaptcha site
-            window.CAPTCHA_SITE_KEY = window.CAPTCHA_SITE_KEY || '4f1a4efe-fe14-4f3a-8420-2fcec5e27df4';
-
-            // Formspree endpoints
-            // Production endpoint (live site)
-            window.FORMSPREE_ENDPOINT = window.FORMSPREE_ENDPOINT || 'https://formspree.io/f/xgvpzgaz';
-            // Optional: Dev endpoint (used on localhost if provided)
+    <script>
+            // Formspree endpoint helper (moved out of <style> and into a proper <script>)
             window.FORMSPREE_DEV_ENDPOINT = window.FORMSPREE_DEV_ENDPOINT || '';
             // Helper to resolve which endpoint to use
             window.getFormspreeEndpoint = function() {
                 try {
                     const host = (location.hostname || '').toLowerCase();
-                    const isLocal = host === 'localhost' || host === '127.0.0.1';
+                    const isLocal = (host === 'localhost' || host === '127.0.0.1');
                     if (isLocal) {
                         const ls = (localStorage.getItem('devFormspreeEndpoint')||'').trim();
                         if (ls) return ls;
@@ -1324,7 +1335,9 @@
                 } catch {}
                 return window.FORMSPREE_ENDPOINT;
             };
-        </script>
+    </script>
+  </head>
+  <body>
 
     <!-- Upload Dialog -->
     <div id="uploadDialog" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); z-index:9999; align-items:center; justify-content:center;">
@@ -1346,15 +1359,25 @@
         </form>
     </div>
     <div class="container">
+        <!-- Compact navigatie bovenaan -->
+        <nav class="top-nav">
+            <a class="nav-btn" href="#top">🏠 Home</a>
+            <a class="nav-btn" href="live-tools.html">🛠️ Live Tools</a>
+            <a class="nav-btn" href="logs.html">📊 Logs</a>
+            <a class="nav-btn" href="scripts.html">🧰 Scripts</a>
+        </nav>
         <!-- Header -->
         <div class="header">
             <div class="avatar"></div>
             <h1 class="name">Mister</h1>
             <p class="title">Cloud | Azure | 365 | Python\C\C+ | Automation | Cybersecurity analyse</p>
         </div>
-        <div style="text-align:center;">
-            <span class="version-badge" id="site-version">v2025.11.01-15</span>
-        </div>
+        <!-- Hero NL -->
+        <section class="hero-slim" id="top">
+            <div class="hero-title">Ik bouw pragmatische oplossingen die werken.</div>
+            <div class="hero-sub">Web, cloud en automatisering – snel, veilig en onderhoudbaar.</div>
+        </section>
+        <!-- Version badge removed: version is shown next to the lock icon in the social bar -->
         
         <!-- Social Links -->
         <div class="social-links">
@@ -1373,19 +1396,20 @@
             <a href="#cv" class="social-link" onclick="openCVPopup(); return false;">
                 <span>📄</span>CV
             </a>
-            <a href="admin.html" class="social-link admin-login-btn" id="admin-login-btn">
-                <span>🔐</span>Admin
+            <a href="#contact" class="social-link">
+                <span>📬</span>Contact
             </a>
+            
         </div>
         
         <!-- Featured Card met afbeelding - Klikbaar voor profiel -->
         <div class="featured-card" onclick="openProfileModal()">
             <div class="featured-image">
-                <img src="background1.jpg?v=3" alt="About" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
+                <img src="background1.jpg?v=3" alt="Over mij" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;" loading="lazy" decoding="async">
             </div>
             <div class="featured-content">
-                <div class="featured-title">About</div>
-                <div class="featured-hint">Click to read more</div>
+                <div class="featured-title">Over mij</div>
+                <div class="featured-hint">Klik voor meer info</div>
             </div>
         </div>
         
@@ -1438,6 +1462,28 @@
                     <!-- Verzoek: op homepage geen 'Open all/Close all' meer; alleen categorieknoppen blijven. -->
                 </div>
                 <div id="software-explorer" style="margin-top:10px;"></div>
+            </div>
+        </div>
+
+        <!-- Projecten -->
+        <div class="card" id="projecten">
+            <div class="card-header">
+                <div class="card-icon">🧩</div>
+                <h2>Projecten</h2>
+            </div>
+            <div class="projects-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;">
+                <a class="project-card" href="https://mister.us.kg" target="_blank" rel="noopener" style="background:#1a1a1a;border:1px solid #333;border-radius:10px;padding:14px;text-decoration:none;color:#fff;">
+                    <div style="font-weight:700;">Portfolio website</div>
+                    <div style="color:#9ca3af;font-size:12px;">Static Pages + Cloudflare Worker</div>
+                </a>
+                <a class="project-card" href="https://github.com/chinfosieeuw9-prog/mister-portfolio" target="_blank" rel="noopener" style="background:#1a1a1a;border:1px solid #333;border-radius:10px;padding:14px;text-decoration:none;color:#fff;">
+                    <div style="font-weight:700;">CI/Pages workflow</div>
+                    <div style="color:#9ca3af;font-size:12px;">GitHub Actions dispatch via Worker</div>
+                </a>
+                <a class="project-card" href="#contact" style="background:#1a1a1a;border:1px solid #333;border-radius:10px;padding:14px;text-decoration:none;color:#fff;">
+                    <div style="font-weight:700;">Contact integratie</div>
+                    <div style="color:#9ca3af;font-size:12px;">Formspree + hCaptcha klaar</div>
+                </a>
             </div>
         </div>
         <!-- Links (uniform card-stijl) -->
@@ -1518,40 +1564,62 @@
             </div>
         </div>
 
-        <!-- Biometrische login demo -->
+        <!-- Marktvooruitzicht (TradingView mini widget) -->
         <div class="card">
             <div class="card-header">
-                <div class="card-icon">🔒</div>
-                <h2>Biometrische login (demo)</h2>
+                <div class="card-icon">📊</div>
+                <h2>Marktvooruitzicht</h2>
             </div>
-            <p>Ondersteuning via WebAuthn/Passkeys. Op compatibele apparaten gebruikt dit FaceID/TouchID of Windows Hello. Voor een volledige demo is een server nodig (registratie en verificatie).</p>
-            <div style="display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap;">
-                <button id="webauthn-check" class="tech-btn">✅ Controleer ondersteuning</button>
-                <span id="webauthn-status" style="color:#9ca3af"></span>
-            </div>
-            <div style="margin-top:8px;color:#9ca3af;font-size:12px;">Tip: WebAuthn vereist een server voor <em>register</em>/<em>login</em> (public/private keys). Deze demo test alleen apparaat-ondersteuning.</div>
+            <div id="market-mini" style="min-height:220px"></div>
+            <script type="text/javascript">
+                (function(){
+                    try{
+                        const host = 'https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js';
+                        const cfg = {
+                            locale: 'nl',
+                            dateRange: '1D',
+                            colorTheme: 'dark',
+                            isTransparent: true,
+                            autosize: true,
+                            symbols: [
+                                ['Bitcoin','CRYPTO:BTCUSD|1D'],
+                                ['Ethereum','CRYPTO:ETHUSD|1D']
+                            ]
+                        };
+                        const mount = document.getElementById('market-mini');
+                        if (mount){
+                            const s = document.createElement('script');
+                            s.src = host;
+                            s.async = true;
+                            s.innerHTML = JSON.stringify(cfg);
+                            mount.appendChild(s);
+                        }
+                    }catch(e){ console.warn('TradingView widget init error', e); }
+                })();
+            </script>
+            <div style="font-size:12px;color:#9ca3af;margin-top:6px">Data via TradingView • alleen informatie, geen advies.</div>
         </div>
         
-        <!-- Get in touch - Contact Form -->
-        <div class="card">
-            <h2>💬 Get in touch</h2>
-            <p>Please feel free to reach out and say hello.</p>
+        <!-- Contact -->
+        <div class="card" id="contact">
+            <h2>💬 Neem contact op</h2>
+            <p>Stuur gerust een bericht – ik reageer snel.</p>
             <form id="contact-form" class="contact-form">
                 <div class="form-group">
                     <input type="text" name="name" id="name" class="form-input" placeholder="Naam" required>
                 </div>
                 <div class="form-group">
-                    <input type="email" name="email" id="email" class="form-input" placeholder="Email" required>
+                    <input type="email" name="email" id="email" class="form-input" placeholder="E-mailadres" required>
                 </div>
                 <div class="form-group">
-                    <textarea name="message" id="message" class="form-input" placeholder="Je bericht..." rows="4" required></textarea>
+                    <textarea name="message" id="message" class="form-input" placeholder="Je bericht…" rows="4" required></textarea>
                 </div>
                 <!-- CAPTCHA widget renders here when configured -->
                 <div class="form-group" id="captcha-container" style="min-height: 0; margin-top: 6px;"></div>
                 <!-- Honeypots tegen spam -->
                 <input type="text" name="_gotcha" id="_gotcha" tabindex="-1" autocomplete="off" style="display:none">
                 <input type="text" name="company" id="company" tabindex="-1" autocomplete="off" style="display:none">
-                <button type="button" class="submit-btn" id="submit-btn">Verstuur</button>
+                <button type="button" class="submit-btn" id="submit-btn">Versturen</button>
             </form>
             <div id="form-status" style="margin-top: 12px; display: none;"></div>
         </div>
@@ -1884,7 +1952,7 @@
                             </div>
                             <div style="display:grid;gap:8px;grid-template-columns:1fr;">
                                 <label style="color:#9ca3af;font-size:12px;">Auth URL (aanbevolen)</label>
-                                <input id="ably-authurl" type="url" class="form-input" placeholder="http://localhost:3001/ably/token">
+                                <input id="ably-authurl" type="url" class="form-input" placeholder="http://localhost:3002/ably/token">
                                 <div style="font-size:12px;color:#9ca3af">Gebruik bij voorkeur een server endpoint dat Ably tokens uitgeeft; veiliger dan een API key in de client.</div>
                             </div>
                             <div style="display:grid;gap:8px;grid-template-columns:1fr;">
@@ -2050,6 +2118,12 @@
                         <img src="https://img.shields.io/badge/UptimeRobot-configureer--badge-555" alt="Uptime badge" style="height:18px;vertical-align:middle;">
                     </a>
                 </div>
+                <!-- Admin toegang + versie (verplaatst naar onder) -->
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center;">
+                    <a href="admin.html" class="social-link admin-login-btn" id="admin-login-btn">
+                        <span>🔐</span><small id="site-version" class="admin-ver" style="font-size:10px;margin-left:6px;opacity:0.8">v2025.11.01-15</small>
+                    </a>
+                </div>
                 <p class="footer-text" style="margin-top:4px;">
                     Made with ❤️ by mister@2025 • Version <span id="site-version-footer">v2025.11.01-15</span> •
                     <a href="#" class="text-link">chattgbt@gmail.com</a>
@@ -2132,16 +2206,8 @@
                     if (badgeA && href) badgeA.href = href;
                 } catch{}
                 if (!vEl || !lEl || !vCtx || !lCtx || typeof Chart === 'undefined') return;
-                const ns = 'mister.us.kg';
-                const todayKey = 'visits-' + new Date().toISOString().slice(0,10).replace(/-/g,'');
-                const api = (mode) => `https://api.countapi.xyz/${mode}/${encodeURIComponent(ns)}/${encodeURIComponent(todayKey)}`;
-                const fetchCount = async (hit=false) => {
-                    try {
-                        const res = await fetch(api(hit?'hit':'get'));
-                        const j = await res.json();
-                        return (j && typeof j.value === 'number') ? j.value : null;
-                    } catch { return null; }
-                };
+                // Telemetry uit: geen externe countapi-calls
+                const DISABLE_TELEMETRY = true;
                 // Charts
                 const visitorsChart = new Chart(vCtx, {
                     type: 'line',
@@ -2160,15 +2226,16 @@
                     if (chart.data.labels.length>30){ chart.data.labels.shift(); chart.data.datasets[0].data.shift(); }
                     chart.update();
                 };
-                // Update visitors count
-                (async()=>{
-                    const v = await fetchCount(true); // hit on load
-                    if (v!==null){ vEl.textContent = String(v); pushPoint(visitorsChart, v); }
-                })();
-                setInterval(async()=>{
-                    const v = await fetchCount(false);
-                    if (v!==null){ vEl.textContent = String(v); pushPoint(visitorsChart, v); }
-                }, 10000);
+                // Hook voor presence-updates -> dashboard
+                window.__updateLiveVisitors = function(n){
+                    try {
+                        const val = Math.max(0, Number(n)||0);
+                        if (vEl) vEl.textContent = String(val);
+                        if (!isNaN(val)) pushPoint(visitorsChart, val);
+                    } catch{}
+                };
+                // Init weergave
+                vEl.textContent = '—';
                 // Latency
                 async function measureLatency(){
                     try {
@@ -2189,32 +2256,7 @@
             } catch (e) { console.warn('initRealtimeDashboard failed', e); }
         }
 
-        // WebAuthn demo (capability check)
-        function initWebAuthnDemo(){
-            const btn = document.getElementById('webauthn-check');
-            const out = document.getElementById('webauthn-status');
-            if (!btn || !out) return;
-            btn.addEventListener('click', async ()=>{
-                if (!('PublicKeyCredential' in window)){
-                    out.style.color = '#ef4444';
-                    out.textContent = 'Niet ondersteund in deze browser.';
-                    return;
-                }
-                try {
-                    const available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
-                    if (available){
-                        out.style.color = '#22c55e';
-                        out.textContent = 'Ondersteund: platform authenticator aanwezig (FaceID/TouchID/Windows Hello).';
-                    } else {
-                        out.style.color = '#f59e0b';
-                        out.textContent = 'WebAuthn beschikbaar, maar geen platform authenticator gedetecteerd.';
-                    }
-                } catch (e) {
-                    out.style.color = '#ef4444';
-                    out.textContent = 'Fout bij detectie: ' + e.message;
-                }
-            });
-        }
+        // WebAuthn demo verwijderd (vervangen door Marktvooruitzicht)
 
         // Kleine status-indicator naast de Presence provider
         function setPresenceStatus(state){
@@ -2249,6 +2291,7 @@
                         // state: { key: [metas...] }
                         const total = Object.values(state).reduce((acc, arr)=>acc + (Array.isArray(arr)?arr.length:0), 0);
                         if (presEl) presEl.textContent = String(total);
+                        try { if (window.__updateLiveVisitors) window.__updateLiveVisitors(total); } catch{}
                     } catch(e){ console.warn('presence sync fail', e); }
                 };
                 channel.on('presence', { event:'sync' }, updateCount);
@@ -2271,26 +2314,60 @@
             try {
                 if (typeof Ably === 'undefined' || !Ably.Realtime) return; // library not loaded
                 const key = localStorage.getItem('ablyKey') || '';
-                const authUrl = localStorage.getItem('ablyAuthUrl') || 'http://localhost:3001/ably/token';
+                const authUrl = localStorage.getItem('ablyAuthUrl') || 'http://localhost:3002/ably/token';
                 const channelName = localStorage.getItem('ablyChannel') || 'presence-global';
-                const opts = authUrl ? { authUrl } : (key ? { key } : {});
-                const client = new Ably.Realtime({ ...opts, echoMessages:false });
-                setPresenceStatus('connecting');
-                client.connection.on('connected', ()=> setPresenceStatus('connected'));
-                client.connection.on('failed', ()=> setPresenceStatus('error'));
-                client.connection.on('disconnected', ()=> setPresenceStatus('error'));
-                const channel = client.channels.get(channelName);
+                let triedKeyFallback = false;
+
+                const useAuthOpts = authUrl ? { authUrl } : (key ? { key } : {});
+                let client = new Ably.Realtime({ ...useAuthOpts, echoMessages:false });
                 const presEl = document.getElementById('presence-now');
-                const updateFromMembers = ()=>{
-                    try { channel.presence.get((err, members)=>{ if (!err && presEl){ presEl.textContent = String(members?.length||0); } }); } catch{}
-                };
-                channel.attach(()=>{
-                    channel.presence.enter({ online_at: new Date().toISOString(), page: location.pathname }, ()=>{
-                        updateFromMembers();
-                        channel.presence.subscribe(['enter','leave','update','present'], updateFromMembers);
+
+                const bindConnHandlers = (c)=>{
+                    try {
+                        c.connection.off(); // prevent duplicate handlers when rebinding
+                    } catch{}
+                    setPresenceStatus('connecting');
+                    c.connection.on('connected', ()=> setPresenceStatus('connected'));
+                    c.connection.on('disconnected', ()=> setPresenceStatus('error'));
+                    c.connection.on('failed', ()=> {
+                        setPresenceStatus('error');
+                        // Fallback: als authUrl faalt en er is een key, probeer 1x met key
+                        if (!triedKeyFallback && authUrl && key){
+                            triedKeyFallback = true;
+                            try { c.close(); } catch{}
+                            try {
+                                client = new Ably.Realtime({ key, echoMessages:false });
+                                bindConnHandlers(client);
+                                setupPresence(client);
+                            } catch(e){ console.warn('Ably key fallback failed', e); }
+                        }
                     });
-                });
-                setInterval(updateFromMembers, 15000);
+                };
+
+                const setupPresence = (c)=>{
+                    try {
+                        const channel = c.channels.get(channelName);
+                        const updateFromMembers = ()=>{
+                            try {
+                                channel.presence.get((err, members)=>{
+                                    const cnt = (!err && Array.isArray(members)) ? members.length : 0;
+                                    if (presEl) presEl.textContent = String(cnt);
+                                    try { if (window.__updateLiveVisitors) window.__updateLiveVisitors(cnt); } catch{}
+                                });
+                            } catch{}
+                        };
+                        channel.attach(()=>{
+                            channel.presence.enter({ online_at: new Date().toISOString(), page: location.pathname }, ()=>{
+                                updateFromMembers();
+                                channel.presence.subscribe(['enter','leave','update','present'], updateFromMembers);
+                            });
+                        });
+                        setInterval(updateFromMembers, 15000);
+                    } catch(e){ console.warn('setupPresence failed', e); }
+                };
+
+                bindConnHandlers(client);
+                setupPresence(client);
             } catch(e){ console.warn('initAblyPresence failed', e); }
         }
 
@@ -2324,7 +2401,7 @@
                 const prov = document.getElementById('presence-provider'); if (prov) prov.value = provider;
                 const ak = document.getElementById('ably-key'); if (ak) ak.value = ablyKey;
                 const ac = document.getElementById('ably-channel'); if (ac) ac.value = ablyCh;
-                const au = document.getElementById('ably-authurl'); if (au) au.value = (localStorage.getItem('ablyAuthUrl')||'http://localhost:3001/ably/token');
+                const au = document.getElementById('ably-authurl'); if (au) au.value = (localStorage.getItem('ablyAuthUrl')||'http://localhost:3002/ably/token');
                 const bu = document.getElementById('uptime-badge-url'); if (bu) bu.value = bUrl;
                 const bl = document.getElementById('uptime-badge-link'); if (bl) bl.value = bHref;
                 const show = document.getElementById('sb-anon-show');
@@ -2369,12 +2446,12 @@
                 setTimeout(()=>location.reload(), 200);
             } catch(e){ alert('❌ Opslaan mislukt: '+e.message); }
         }
-        function saveAblySettings(){
+    function saveAblySettings(){
             try {
                 const key = document.getElementById('ably-key')?.value.trim()||'';
                 const ch = document.getElementById('ably-channel')?.value.trim()||'presence-global';
                 const provider = document.getElementById('presence-provider')?.value || 'ably';
-                const authUrl = document.getElementById('ably-authurl')?.value.trim()||'http://localhost:3001/ably/token';
+                const authUrl = document.getElementById('ably-authurl')?.value.trim()||'http://localhost:3002/ably/token';
                 localStorage.setItem('ablyKey', key);
                 localStorage.setItem('ablyChannel', ch);
                 localStorage.setItem('ablyAuthUrl', authUrl);
@@ -2410,12 +2487,12 @@
             }
             return run();
         }
-        async function testAblyPresence(){
+    async function testAblyPresence(){
             const status = document.getElementById('ably-test-status'); if (status){ status.style.color='#9ca3af'; status.textContent='Bezig met testen…'; }
             const run = async ()=>{
                 try {
                     const key = document.getElementById('ably-key')?.value.trim();
-                    const authUrl = document.getElementById('ably-authurl')?.value.trim() || 'http://localhost:3001/ably/token';
+                    const authUrl = document.getElementById('ably-authurl')?.value.trim() || 'http://localhost:3002/ably/token';
                     const chName = (document.getElementById('ably-channel')?.value.trim()||'presence-global') + '-test';
                     const opts = authUrl ? { authUrl } : { key };
                     const client = new Ably.Realtime(opts);
@@ -4340,8 +4417,16 @@
             `;
         }
         
-        function downloadSoftware(software) {
-            alert('Downloading ' + software + '...\n\nThis would normally start a download of the selected software package.');
+        function downloadSoftware(softwareLabel) {
+            // Route legacy buttons to the new public explorer
+            try {
+                // Open public explorer modal and optionally prefill search with the clicked label
+                openSoftwareExplorer('public', 'all');
+                setTimeout(() => { try { setPublicSearch(softwareLabel||''); } catch(_){} }, 250);
+            } catch (e) {
+                console.warn('downloadSoftware redirect failed', e);
+                alert('De software explorer wordt geladen. Probeer het opnieuw.');
+            }
         }
         
         function showAdminUpload() {
@@ -4858,6 +4943,7 @@ node index.js</div>
             const nameInput = document.getElementById('software-name');
             const categoryInput = document.getElementById('software-category');
             const descriptionInput = document.getElementById('software-description');
+            const urlInput = document.getElementById('software-url');
             
             console.log('📋 Form elements status:');
             console.log('  - File input found:', !!fileInput);
@@ -4876,6 +4962,7 @@ node index.js</div>
             const name = nameInput.value ? nameInput.value.trim() : '';
             const category = categoryInput.value || '';
             const description = descriptionInput ? descriptionInput.value.trim() : '';
+            const urlVal = urlInput ? (urlInput.value || '').trim() : '';
             
             console.log('📊 Current form values:');
             console.log('  - File selected:', file ? `✅ ${file.name} (${(file.size/1024/1024).toFixed(2)}MB)` : '❌ No file');
@@ -4923,7 +5010,8 @@ node index.js</div>
                     size: file.size,
                     uploadDate: new Date().toISOString(),
                     downloads: 0,
-                    icon: getFileIcon(file.name)
+                    icon: getFileIcon(file.name),
+                    url: urlVal
                 };
                 
                 console.log('💾 Creating software entry:', software);
@@ -4940,6 +5028,7 @@ node index.js</div>
                 nameInput.value = '';
                 categoryInput.value = '';
                 if (descriptionInput) descriptionInput.value = '';
+                if (urlInput) urlInput.value = '';
                 fileInput.value = '';
                 
                 // Update dropzone text
@@ -5088,7 +5177,8 @@ node index.js</div>
                             <option value="games">🎮 Games</option>
                             <option value="office">📊 Office</option>
                         </select>
-                        <textarea id="software-description" placeholder="Beschrijving (optioneel)" style="width: 100%; padding: 12px; margin-bottom: 16px; background: #2a2a2a; border: 1px solid #444; border-radius: 6px; color: white; box-sizing: border-box; height: 80px; resize: vertical;"></textarea>
+                        <textarea id="software-description" placeholder="Beschrijving (optioneel)" style="width: 100%; padding: 12px; margin-bottom: 12px; background: #2a2a2a; border: 1px solid #444; border-radius: 6px; color: white; box-sizing: border-box; height: 80px; resize: vertical;"></textarea>
+                        <input type="url" id="software-url" placeholder="Direct download URL (optioneel) — https://..." style="width: 100%; padding: 12px; margin-bottom: 16px; background: #2a2a2a; border: 1px solid #444; border-radius: 6px; color: white; box-sizing: border-box;" />
                         <div style="display: flex; gap: 12px; justify-content: flex-end;">
                             <button id="upload-software-btn" style="background: linear-gradient(135deg, #16a34a, #22c55e); border: none; color: white; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: bold;">⬆️ Upload</button>
                             <button onclick="closeUploadDialog()" style="background: linear-gradient(135deg, #dc2626, #ef4444); border: none; color: white; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: bold;">❌ Cancel</button>
@@ -5198,7 +5288,7 @@ node index.js</div>
             }
         }
 
-        function importSoftwareFromFile(file) {
+    function importSoftwareFromFile(file) {
             const reader = new FileReader();
             reader.onerror = () => alert('❌ Lezen mislukt');
             reader.onload = () => {
@@ -5221,7 +5311,9 @@ node index.js</div>
                             uploadDate: item.uploadDate || new Date().toISOString(),
                             downloads: Number(item.downloads)||0,
                             description: item.description || '',
-                            icon: item.icon || getFileIcon(item.filename||'unknown.bin')
+                            icon: item.icon || getFileIcon(item.filename||'unknown.bin'),
+                            // Optional direct download URL if provided in the import JSON
+                            url: item.url || item.href || item.link || ''
                         };
                         const key = String(s.id);
                         if (byId.has(key)) { skipped++; return; }
@@ -5295,26 +5387,7 @@ node index.js</div>
             }
             
             if (filteredSoftware.length === 0) {
-                // Show empty 3x3 placeholder grid so user sees the layout
-                const placeholderCount = 9;
-                const gridWrapper = document.createElement('div');
-                gridWrapper.className = 'software-grid';
-                for (let i = 0; i < placeholderCount; i++) {
-                    const ph = document.createElement('div');
-                    ph.className = 'software-item';
-                    ph.style.opacity = '0.6';
-                    ph.innerHTML = '<div class="software-icon">⬜</div><div class="software-name">Geen resultaten</div><div class="software-size">—</div>';
-                    gridWrapper.appendChild(ph);
-                }
-                container.appendChild(gridWrapper);
-                const hint = document.createElement('div');
-                hint.style.cssText = 'color:#888;margin-top:12px;text-align:center;';
-                if (explorerMode === 'admin' || scope === document) {
-                    hint.innerHTML = 'Geen software gevonden. <button class="tech-btn" onclick="showUploadDialog()" style="margin-left:8px;">⬆️ Upload</button>';
-                } else {
-                    hint.textContent = 'Geen software gevonden.';
-                }
-                container.appendChild(hint);
+                // Geen lege placeholder of melding meer op de homepage
                 return;
             }
             
@@ -5453,26 +5526,7 @@ node index.js</div>
             // verberg zoek/sort controls in overzichtsweergave
             try { const ctrls = document.getElementById('public-sw-controls'); if (ctrls) ctrls.style.display = 'none'; } catch{}
 
-            // Toolbar ook in overzicht tonen
-            const canBack = publicNavIndex > 0;
-            const canFwd = publicNavIndex < publicNavHistory.length - 1;
-            const backExtra = canBack ? '' : 'opacity:.5;pointer-events:none;';
-            const fwdExtra = canFwd ? '' : 'opacity:.5;pointer-events:none;';
-            const toolbar = document.createElement('div');
-            toolbar.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:10px;justify-content:space-between;';
-            const left = document.createElement('div');
-            left.style.cssText = 'display:flex;gap:8px;align-items:center;';
-            left.innerHTML = `
-                <button class=\"tech-btn\" style=\"background:#1d4ed8;color:#fff;${backExtra}\" onclick=\"publicNavBack()\" ${canBack?'':'disabled'}>⬅ Back</button>
-                <button class=\"tech-btn\" style=\"background:#0ea5e9;color:#fff;${fwdExtra}\" onclick=\"publicNavForward()\" ${canFwd?'':'disabled'}>➡ Forward</button>
-                <button class=\"tech-btn\" style=\"background:#ef4444;color:#fff;opacity:.5;pointer-events:none;\" disabled>✖ Close</button>
-            `;
-            const right = document.createElement('div');
-            right.style.cssText = 'display:flex;gap:8px;align-items:center;';
-            right.innerHTML = `<span style=\"color:#9ca3af\">📁 Overzicht</span><button class=\"tech-btn\" style=\"background:#22c55e;color:#111;\" onclick=\"publicExportFiltered()\">⬇ Download lijst</button>`;
-            toolbar.appendChild(left);
-            toolbar.appendChild(right);
-            publicExplorer.appendChild(toolbar);
+            // Toolbar (Back/Forward/Close/Overzicht/Download) hidden on homepage
 
             // Prepare data
             const byCat = {};
@@ -5514,61 +5568,13 @@ node index.js</div>
             const cats = Object.keys(byCat).sort();
 
             if (filtered.length === 0) {
-                const empty = document.createElement('div');
-                empty.style.cssText = 'color:#888;padding:8px;text-align:center;border:1px dashed #333;border-radius:8px;';
-                empty.textContent = 'Geen resultaten';
-                publicExplorer.appendChild(empty);
+                // Geen melding tonen wanneer er niets is; laat het stil zijn
                 return;
             }
 
-            // Build collapsible sections
-            cats.forEach(cat => {
-                const items = sorter(byCat[cat]);
-                const collapsed = !!publicCollapseState[cat];
-
-                const section = document.createElement('div');
-                section.style.marginBottom = '8px';
-
-                const header = document.createElement('div');
-                header.style.cssText = 'display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px;border:1px solid #333;border-radius:8px;background:#111827;color:#e5e7eb;';
-                const caret = document.createElement('span');
-                caret.textContent = collapsed ? '▶' : '▼';
-                caret.style.minWidth = '14px';
-                const title = document.createElement('div');
-                title.style.flex = '1';
-                title.innerHTML = `📁 ${cat} <span style="color:#9ca3af">(${items.length})</span>`;
-                const actions = document.createElement('div');
-                actions.innerHTML = `<button class="tech-btn" title="Open categorie" onclick="focusPublicCategory('${cat.replace(/'/g,"\\'")}')">↗ Open</button>`;
-                header.appendChild(caret);
-                header.appendChild(title);
-                header.appendChild(actions);
-
-                const list = document.createElement('div');
-                list.style.cssText = 'margin-top:6px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;';
-                if (collapsed) list.style.display = 'none';
-
-                items.forEach(file => {
-                    const el = document.createElement('div');
-                    el.className = 'software-item';
-                    el.style.cursor = 'pointer';
-                    el.title = `${file.filename} • ${new Date(file.uploadDate||Date.now()).toLocaleDateString()}`;
-                    el.innerHTML = `${file.icon||'📄'} ${file.name} <span style="color:#9ca3af">(${(file.size/1024/1024).toFixed(2)}MB)</span>`;
-                    el.onclick = () => downloadSoftwareFile(file);
-                    list.appendChild(el);
-                });
-
-                header.onclick = () => {
-                    const nowCollapsed = list.style.display !== 'none' ? true : false;
-                    list.style.display = nowCollapsed ? 'none' : '';
-                    caret.textContent = nowCollapsed ? '▶' : '▼';
-                    publicCollapseState[cat] = nowCollapsed;
-                    try { localStorage.setItem('publicCollapseState', JSON.stringify(publicCollapseState)); } catch {}
-                };
-
-                section.appendChild(header);
-                section.appendChild(list);
-                publicExplorer.appendChild(section);
-            });
+            // UX: geen uitklapbare categorie‑lijsten meer op de homepage.
+            // We laten het overzicht leeg; gebruikers openen een categorie via de knoppen.
+            return;
         }
 
         function publicExportFiltered(){
@@ -5685,33 +5691,14 @@ node index.js</div>
                 case 'dl_desc': items.sort((a,b)=>-byDl(a,b)); break;
             }
 
-            const canBack = publicNavIndex > 0;
-            const canFwd = publicNavIndex < publicNavHistory.length - 1;
-            const backExtra = canBack ? '' : 'opacity:.5;pointer-events:none;';
-            const fwdExtra = canFwd ? '' : 'opacity:.5;pointer-events:none;';
-
-            // toolbar
-            const toolbar = document.createElement('div');
-            toolbar.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:10px;justify-content:space-between;';
-            const left = document.createElement('div');
-            left.style.cssText = 'display:flex;gap:8px;align-items:center;';
-            left.innerHTML = `
-                <button class="tech-btn" style="background:#1d4ed8;color:#fff;${backExtra}" onclick="publicNavBack()" ${canBack?'':'disabled'}>⬅ Back</button>
-                <button class="tech-btn" style="background:#0ea5e9;color:#fff;${fwdExtra}" onclick="publicNavForward()" ${canFwd?'':'disabled'}>➡ Forward</button>
-                <button class="tech-btn" style="background:#ef4444;color:#fff;" onclick="publicCloseView()">✖ Close</button>
-            `;
-            const right = document.createElement('div');
-            right.style.cssText = 'display:flex;gap:8px;align-items:center;';
-            right.innerHTML = `<span style="color:#9ca3af">📁 ${category}</span><button class="tech-btn" style="background:#22c55e;color:#111;" onclick="publicExportCurrent()">⬇ Download lijst</button>`;
-            toolbar.appendChild(left);
-            toolbar.appendChild(right);
+            // toolbar verwijderd (Back/Forward/Close), compacter per verzoek
 
             const header = document.createElement('div');
             header.style.cssText = 'color:#e5e7eb;background:#0b1220;border:1px solid #333;border-radius:8px;padding:10px 12px;margin-bottom:8px;font-weight:700;display:flex;align-items:center;gap:8px;';
             header.innerHTML = `📁 ${category} <span style="color:#9ca3af;font-weight:500">(${items.length})</span>`;
 
             explorer.innerHTML = '';
-            explorer.appendChild(toolbar);
+            // geen toolbar meer
 
             // toon zoek/sort controls voor focus-view
             try {
@@ -5723,10 +5710,7 @@ node index.js</div>
             explorer.appendChild(header);
 
             if (items.length === 0){
-                const empty = document.createElement('div');
-                empty.style.cssText = 'color:#888;padding:8px;text-align:center;border:1px dashed #333;border-radius:8px;';
-                empty.textContent = 'Geen resultaten';
-                explorer.appendChild(empty);
+                // Geen lege-melding in categorie focus view
                 return;
             }
 
@@ -5743,16 +5727,85 @@ node index.js</div>
             explorer.appendChild(grid);
         }
         
-        function downloadSoftwareFile(software) {
-            software.downloads++;
-            localStorage.setItem('uploadedSoftware', JSON.stringify(uploadedSoftware));
-            addActivityLog(`📥 Download: ${software.name}`);
-            if (software.name.toLowerCase().includes('cv')) {
-                // Open de CV popup in plaats van alleen een alert
-                openCVPopup();
-                return;
+        async function downloadSoftwareFile(software) {
+            try {
+                // Increment and persist download count first
+                software.downloads = (software.downloads || 0) + 1;
+                try { localStorage.setItem('uploadedSoftware', JSON.stringify(uploadedSoftware)); } catch {}
+                addActivityLog(`📥 Download: ${software.name}`);
+
+                // Special case: CV opens the dedicated popup
+                if ((software.name||'').toLowerCase().includes('cv')) {
+                    openCVPopup();
+                    return;
+                }
+
+                // Preferred: direct URL provided on the software item
+                const directUrl = (software.url || '').trim();
+
+                // Helper to force a client-side download with Blob (mobile/desktop safe)
+                const triggerBlobDownload = (content, filename, mime) => {
+                    const blob = new Blob([content], { type: mime || 'application/octet-stream' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename || 'download.bin';
+                    a.rel = 'noopener noreferrer';
+                    document.body.appendChild(a);
+                    a.click();
+                    setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 0);
+                };
+
+                // Helper to open a URL; use download attr for same-origin, _blank for cross-origin
+                const triggerUrlDownload = (url, filename) => {
+                    const a = document.createElement('a');
+                    a.href = url;
+                    // If same-origin, ask browser to download; if cross-origin many browsers ignore download attr
+                    try {
+                        const sameOrigin = url.startsWith(location.origin) || url.startsWith('/') || url.startsWith('./') || url.startsWith('../');
+                        if (sameOrigin) {
+                            a.download = filename || '';
+                        } else {
+                            a.target = '_blank';
+                            a.rel = 'noopener noreferrer';
+                        }
+                    } catch {}
+                    document.body.appendChild(a);
+                    a.click();
+                    setTimeout(()=>{ a.remove(); }, 0);
+                };
+
+                if (directUrl && /^https?:\/\//i.test(directUrl)) {
+                    // Start download/open from provided URL
+                    triggerUrlDownload(directUrl, software.filename);
+                    return;
+                }
+
+                // Probeer standaard paden op dezelfde host als er geen directe URL is
+                const fname = encodeURIComponent(software.filename || (software.name||'download.bin'));
+                const cat = (software.category || '').toString().toLowerCase().replace(/\s+/g,'-');
+                const candidates = [
+                    `/downloads/${cat}/${fname}`,
+                    `/downloads/${fname}`,
+                    `/files/${cat}/${fname}`,
+                    `/files/${fname}`,
+                    `/${fname}`
+                ];
+
+                for (const path of candidates){
+                    try {
+                        const res = await fetch(path, { method: 'HEAD' });
+                        if (res && res.ok) { triggerUrlDownload(path, software.filename); return; }
+                    } catch {}
+                }
+
+                // Fallback: generate a small placeholder file so the UX clearly “downloads”
+                const placeholder = `This is a placeholder download for "${software.name}" (\nfilename: ${software.filename}\nsize: ${(software.size/1024/1024).toFixed(2)} MB).\n\nNo file URL is configured yet.\n\nAdmin: add a \"url\" to the software item (via JSON import) to enable real downloads.`;
+                triggerBlobDownload(placeholder, software.filename || 'download.txt', 'text/plain');
+            } catch (e) {
+                console.warn('downloadSoftwareFile error', e);
+                alert('Download kon niet worden gestart: ' + e.message);
             }
-            alert(`📥 Downloading ${software.name}...\n\nFile: ${software.filename}\nSize: ${(software.size/1024/1024).toFixed(2)}MB`);
         }
         
         function loadSubscriberList() {
@@ -6898,14 +6951,19 @@ node index.js</div>
                 loadNewsDisplay();
             })();
 
-            // Initialize realtime dashboard and WebAuthn demo
+            // Initialize realtime dashboard
             try { initRealtimeDashboard(); } catch(e){ console.warn(e); }
-            try { initWebAuthnDemo(); } catch(e){ console.warn(e); }
             // Detect backend base early and render status
             (async()=>{ try { await detectBackendBaseOnce(); renderBackendStatusPills(); const bInp = document.getElementById('backend-base-input'); if (bInp) bInp.value = getBackendBase(); } catch(e){ console.warn('backend base detect failed', e); } })();
             // Initialize Supabase presence (requires localStorage supabaseUrl/supabaseAnon)
             try {
-                const provider = localStorage.getItem('presenceProvider') || 'supabase';
+                // Defaults: als niets ingesteld is, kies Ably met lokale token endpoint
+                try {
+                    if (!localStorage.getItem('presenceProvider')) localStorage.setItem('presenceProvider','ably');
+                    if (!localStorage.getItem('ablyChannel')) localStorage.setItem('ablyChannel','presence-global');
+                    if (!localStorage.getItem('ablyAuthUrl')) localStorage.setItem('ablyAuthUrl','http://localhost:3002/ably/token');
+                } catch{}
+                const provider = localStorage.getItem('presenceProvider') || 'ably';
                 try {
                     const ind = document.getElementById('presence-provider-indicator');
                     if (ind) ind.textContent = 'Presence: ' + (provider === 'ably' ? 'Ably' : 'Supabase');

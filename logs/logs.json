@@ -790,6 +790,30 @@
       "timestamp": "2025-11-04T20:50:30.023Z",
       "versionTag": "release-v7.5",
       "message": "Workflow run voltooid (backend) in 40.0s. files: 1092, zip: 4.91 MB (C:\\Users\\Jordan\\Desktop\\mister-backups\\mister-backup-v7.5.zip) https: 200"
+    },
+    {
+      "type": "note",
+      "timestamp": "2025-11-05T09:29:24.016Z",
+      "versionTag": "ui-toasts-admin-news",
+      "message": "Deployed UI: toasts X-close, default 3.5s (overrideable); admin-only “+ nieuw” shortcut at Nieuws with session detection; auto-update footer version from logs/artifacts after workflow and on load."
+    },
+    {
+      "type": "note",
+      "timestamp": "2025-11-05T09:29:24.022Z",
+      "versionTag": "ui-admin-logs-actions",
+      "message": "Admin Logs: bewerken/verwijderen/pinnen per notitie; Changelog: pinned-first en 📌 badge; Download-knop voor logs.json; Sneltoets “n” opent notitieformulier."
+    },
+    {
+      "type": "note",
+      "timestamp": "2025-11-05T09:33:38.029Z",
+      "versionTag": "ui-toasts-admin-news",
+      "message": "Deployed UI: toasts X-close, default 3.5s (overrideable); admin-only “+ nieuw” shortcut at Nieuws with session detection; auto-update footer version from logs/artifacts after workflow and on load."
+    },
+    {
+      "type": "note",
+      "timestamp": "2025-11-05T09:33:38.035Z",
+      "versionTag": "ui-admin-logs-actions",
+      "message": "Admin Logs: bewerken/verwijderen/pinnen per notitie; Changelog: pinned-first en 📌 badge; Download-knop voor logs.json; Sneltoets “n” opent notitieformulier."
     }
   ]
 }
