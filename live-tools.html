@@ -29,13 +29,16 @@
   <script src="js/status-indicators.js"></script>
   <script src="js/gh-dispatch.js"></script>
   <style>
-    body { background:#181828; color:#e3e6f0; font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; }
-  .admin-container { max-width: 860px; margin: 0 auto; padding: 32px 12px; }
-  @media (max-width: 960px){ .admin-container { max-width: 92vw; } }
+    /* Match homepage: iets donkerdere / zwartere achtergrond */
+  body { color:#e3e6f0; font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; }
+    .admin-container { max-width: 860px; margin: 0 auto; padding: 32px 12px; }
+    @media (max-width: 960px){ .admin-container { max-width: 92vw; } }
     /* Gebruik dezelfde kaartvariabelen als site-breed */
-    .admin-card { background:#23234a; border-radius: var(--card-radius); box-shadow: var(--card-shadow); padding: 24px 18px; margin-bottom: 16px; border: var(--card-border-w) solid var(--card-border-color); transition: box-shadow .2s, border-color .2s; }
-    .admin-card:hover { border: calc(var(--card-border-w) + 1px) solid #8b5cf6; box-shadow: 0 8px 32px rgba(139,92,246,0.25), 0 4px 16px rgba(0,0,0,0.22); }
-  .admin-title { font-size:1.4rem; font-weight:700; margin:0 0 10px; color:#f3f4fa; }
+    /* Donkere kaartkleur zoals homepage */
+  .admin-card { border-radius: var(--card-radius); box-shadow: var(--card-shadow); padding: 24px 18px; margin-bottom: 16px; border: var(--card-border-w) solid var(--card-border-color); transition: box-shadow .2s, border-color .2s; }
+    /* Mild hover: subtiele glow to match homepage accent */
+    .admin-card:hover { border: calc(var(--card-border-w) + 1px) solid var(--accent-hover); box-shadow: 0 8px 32px rgba(139,92,246,0.06), 0 4px 16px rgba(0,0,0,0.32); }
+    .admin-title { font-size:1.4rem; font-weight:700; margin:0 0 10px; color:#f3f4fa; }
     .muted { color:#9ca3af; font-size: .95rem; }
     .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
     .admin-btn { background:#4ade80; color:#23234a; border:none; padding:8px 12px; border-radius:6px; font-weight:700; cursor:pointer; text-decoration:none; display:inline-block; }

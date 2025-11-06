@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Preview: Market Pulse & Mini Chat</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    body { background: #181828; color: #e3e6f0; font-family: 'Inter', sans-serif; }
+    .pulse-container { max-width: 420px; margin: 40px auto 24px; background: #23234a; border-radius: 18px; box-shadow: 0 8px 32px #0002; padding: 32px 24px; text-align: center; }
+    .pulse-title { font-size: 1.3em; font-weight: 700; margin-bottom: 18px; }
+    .gauge { width: 220px; height: 120px; margin: 0 auto 18px; display: block; }
+    .pulse-value { font-size: 2.2em; font-weight: 800; color: #22c55e; }
+    .pulse-label { color: #60a5fa; font-size: 1.1em; margin-bottom: 8px; }
+    .chatbox-container { max-width: 420px; margin: 0 auto; background: #23234a; border-radius: 18px; box-shadow: 0 8px 32px #0002; padding: 32px 24px; }
+    .chatbox-title { font-size: 1.2em; font-weight: 700; margin-bottom: 12px; }
+    .chat-messages { background: #181828; border-radius: 8px; min-height: 80px; max-height: 180px; overflow-y: auto; padding: 10px; margin-bottom: 12px; font-size: 1em; }
+    .chat-input-row { display: flex; gap: 8px; }
+    .chat-input { flex: 1; padding: 8px; border-radius: 6px; border: 1px solid #333; background: #181828; color: #e3e6f0; }
+    .chat-send { background: #2563eb; color: #fff; border: none; border-radius: 6px; padding: 8px 16px; font-weight: 700; cursor: pointer; }
+    .chat-send:hover { background: #1d4ed8; }
+    .msg-user { color: #38bdf8; font-weight: 600; }
+    .msg-ai { color: #a3e635; font-weight: 600; }
+    .msg-row { margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+  <div class="pulse-container">
+    <div class="pulse-title">Market Pulse: <span style="color:#a3e635">AI Trends</span></div>
+    <canvas id="gauge" class="gauge"></canvas>
+    <div class="pulse-label">AI Innovatie-index</div>
+    <div class="pulse-value" id="pulse-value">—</div>
+    <div style="font-size:13px;color:#9ca3af;">Deze "pulse" simuleert live AI trenddata.<br>Vervang door echte data of API voor productie.</div>
+  </div>
+  <div class="chatbox-container">
+    <div class="chatbox-title">Mini AI Chat (OpenAI demo)</div>
+    <div class="chat-messages" id="chat-messages">
+      <div class="msg-row"><span class="msg-ai">AI:</span> Stel mij een vraag over AI trends!</div>
+    </div>
+    <div class="chat-input-row">
+      <input type="text" id="chat-input" class="chat-input" placeholder="Typ je vraag...">
+      <button id="chat-send" class="chat-send">Verstuur</button>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script>
+    // Market Pulse Gauge (simulatie)
+    const ctx = document.getElementById('gauge').getContext('2d');
+    let pulseValue = Math.round(60 + Math.random()*40); // 60-100
+    let gaugeChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['AI Pulse', ''],
+        datasets: [{
+          data: [pulseValue, 100-pulseValue],
+          backgroundColor: ['#a3e635', '#23234a'],
+          borderWidth: 0,
+          cutout: '80%',
+        }]
+      },
+      options: {
+        rotation: -90,
+        circumference: 180,
+        plugins: { legend: { display: false } },
+        responsive: false,
+      }
+    });
+    function updatePulse() {
+      pulseValue = Math.round(60 + Math.random()*40);
+      gaugeChart.data.datasets[0].data[0] = pulseValue;
+      gaugeChart.data.datasets[0].data[1] = 100-pulseValue;
+      gaugeChart.update();
+      document.getElementById('pulse-value').textContent = pulseValue + ' / 100';
+    }
+    updatePulse();
+    setInterval(updatePulse, 4000);
+    // Mini Chatbox (simulatie, geen echte OpenAI call)
+    const chatMessages = document.getElementById('chat-messages');
+    const chatInput = document.getElementById('chat-input');
+    const chatSend = document.getElementById('chat-send');
+    function addMsg(sender, text) {
+      const row = document.createElement('div');
+      row.className = 'msg-row';
+      row.innerHTML = `<span class="msg-${sender}">${sender === 'user' ? 'Jij' : 'AI'}:</span> ${text}`;
+      chatMessages.appendChild(row);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+    chatSend.onclick = sendMsg;
+    chatInput.onkeydown = e => { if (e.key === 'Enter') sendMsg(); };
+    function sendMsg() {
+      const val = chatInput.value.trim();
+      if (!val) return;
+      addMsg('user', val);
+      chatInput.value = '';
+      setTimeout(() => {
+        // Demo AI-antwoord (vervang door echte OpenAI API-call)
+        addMsg('ai', 'Interessante vraag! AI trends laten een sterke groei zien in 2025, vooral op het gebied van generatieve modellen en automatisering.');
+      }, 900);
+    }
+  </script>
+</body>
+</html>

@@ -1564,40 +1564,50 @@
             </div>
         </div>
 
-        <!-- Marktvooruitzicht (TradingView mini widget) -->
+        <!-- Market Pulse (AI Trends) -->
         <div class="card">
             <div class="card-header">
-                <div class="card-icon">📊</div>
-                <h2>Marktvooruitzicht</h2>
+                <div class="card-icon">⚡</div>
+                <h2>Market Pulse: <span style="color:#a3e635">AI Trends</span></h2>
             </div>
-            <div id="market-mini" style="min-height:220px"></div>
-            <script type="text/javascript">
-                (function(){
-                    try{
-                        const host = 'https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js';
-                        const cfg = {
-                            locale: 'nl',
-                            dateRange: '1D',
-                            colorTheme: 'dark',
-                            isTransparent: true,
-                            autosize: true,
-                            symbols: [
-                                ['Bitcoin','CRYPTO:BTCUSD|1D'],
-                                ['Ethereum','CRYPTO:ETHUSD|1D']
-                            ]
-                        };
-                        const mount = document.getElementById('market-mini');
-                        if (mount){
-                            const s = document.createElement('script');
-                            s.src = host;
-                            s.async = true;
-                            s.innerHTML = JSON.stringify(cfg);
-                            mount.appendChild(s);
-                        }
-                    }catch(e){ console.warn('TradingView widget init error', e); }
-                })();
+            <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:220px;">
+                <canvas id="ai-pulse-gauge" width="220" height="120"></canvas>
+                <div style="color:#60a5fa;font-size:1.1em;margin:10px 0 4px;">AI Innovatie-index</div>
+                <div id="ai-pulse-value" style="font-size:2.2em;font-weight:800;color:#22c55e;">—</div>
+                <div style="font-size:13px;color:#9ca3af;">Deze "pulse" simuleert live AI trenddata.<br>Vervang door echte data of API voor productie.</div>
+            </div>
+            <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+            <script>
+                const ctx = document.getElementById('ai-pulse-gauge').getContext('2d');
+                let pulseValue = Math.round(60 + Math.random()*40); // 60-100
+                let gaugeChart = new Chart(ctx, {
+                  type: 'doughnut',
+                  data: {
+                    labels: ['AI Pulse', ''],
+                    datasets: [{
+                      data: [pulseValue, 100-pulseValue],
+                      backgroundColor: ['#a3e635', '#23234a'],
+                      borderWidth: 0,
+                      cutout: '80%',
+                    }]
+                  },
+                  options: {
+                    rotation: -90,
+                    circumference: 180,
+                    plugins: { legend: { display: false } },
+                    responsive: false,
+                  }
+                });
+                function updatePulse() {
+                  pulseValue = Math.round(60 + Math.random()*40);
+                  gaugeChart.data.datasets[0].data[0] = pulseValue;
+                  gaugeChart.data.datasets[0].data[1] = 100-pulseValue;
+                  gaugeChart.update();
+                  document.getElementById('ai-pulse-value').textContent = pulseValue + ' / 100';
+                }
+                updatePulse();
+                setInterval(updatePulse, 4000);
             </script>
-            <div style="font-size:12px;color:#9ca3af;margin-top:6px">Data via TradingView • alleen informatie, geen advies.</div>
         </div>
         
         <!-- Contact -->

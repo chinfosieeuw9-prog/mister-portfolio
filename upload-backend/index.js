@@ -34,8 +34,9 @@ if (!GITHUB_TOKEN || !GITHUB_REPO) {
   UPLOAD_DISABLED = true;
 }
 
-const PORT = process.env.PORT || 3001;
-const { ABLY_API_KEY } = process.env;
+const PORT = process.env.PORT ? Number(process.env.PORT) : 3002;
+const ABLY_API_KEY = (process.env.ABLY_API_KEY || '').trim();
+console.log('ABLY_API_KEY geladen:', ABLY_API_KEY ? '[ingesteld]' : '[leeg]', ABLY_API_KEY.length);
 
 
 app.use((req, res, next) => {
@@ -68,6 +69,11 @@ function detectCurrentVersionTag() {
   try {
     const logsPath = path.resolve(repoRoot, 'logs', 'logs.json');
     const artPath = path.resolve(repoRoot, 'artifacts', 'last-backup.json');
+  console.log(`✅ Upload backend draait op http://localhost:${PORT}`);
+  try {
+    const routes = listRoutes();
+    console.log('➡️  Routes:', routes.map(r=>`${r.methods.join(',')} ${r.path}`).join(' | '));
+  } catch {}
     // Prefer logs entries: last workflow/backup entry with versionTag
     if (fs.existsSync(logsPath)) {
       const j = safeReadJson(logsPath, { entries: [] });
@@ -470,12 +476,8 @@ app.get('/ably/token', async (req, res) => {
     if (!ABLY_API_KEY) return res.status(500).json({ error: 'ABLY_API_KEY ontbreekt op de server' });
     const rest = new Ably.Rest({ key: ABLY_API_KEY });
     const clientId = req.query.clientId || 'web-' + Math.random().toString(36).slice(2);
-    const tokenRequest = await new Promise((resolve, reject) => {
-      rest.auth.createTokenRequest({ clientId }, (err, tokenParams) => {
-        if (err) return reject(err);
-        resolve(tokenParams);
-      });
-    });
+    // Gebruik de promise-based variant van createTokenRequest
+    const tokenRequest = await rest.auth.createTokenRequest({ clientId });
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.json(tokenRequest);
   } catch (e) {

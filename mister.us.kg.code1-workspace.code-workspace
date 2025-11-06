@@ -1,0 +1,11 @@
+{
+	"folders": [
+		{
+			"name": "mister.us.kg",
+			"path": "."
+		}
+	],
+	"settings": {
+		"github.copilot.chat.virtualTools.threshold": 0
+	}
+}
