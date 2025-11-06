@@ -10,6 +10,25 @@ export default function handler(req, res) {
   }
 
   if (req.method === 'POST') {
+    // Helper: log backend actie
+    function logAdminAction(type, message, versionTag) {
+      try {
+        const fs = require('fs');
+        const path = require('path');
+        const logPath = path.join(process.cwd(), 'logs/logs.json');
+        let logs = { entries: [] };
+        if (fs.existsSync(logPath)) {
+          logs = JSON.parse(fs.readFileSync(logPath, 'utf8'));
+        }
+        logs.entries.unshift({
+          type,
+          message,
+          versionTag: versionTag || null,
+          timestamp: Date.now()
+        });
+        fs.writeFileSync(logPath, JSON.stringify(logs, null, 2));
+      } catch (err) { console.warn('Logboek entry mislukt:', err); }
+    }
     // Check if it's a file upload (multipart/form-data)
     if (req.headers['content-type'] && req.headers['content-type'].includes('multipart/form-data')) {
       // Gebruik formidable om het bestand te verwerken
@@ -18,6 +37,7 @@ export default function handler(req, res) {
       form.parse(req, (err, fields, files) => {
         if (err) {
           res.status(500).json({ success: false, message: 'Upload fout', error: err });
+            logAdminAction('admin-upload', 'Upload fout: ' + (err.message||err), null);
           return;
         }
         // Hier kun je het bestand opslaan of verwerken
@@ -28,6 +48,7 @@ export default function handler(req, res) {
           fields,
           files
         });
+          logAdminAction('admin-upload', 'Bestand ontvangen: ' + (files && Object.keys(files).join(',')), null);
       });
       return;
     }
@@ -41,11 +62,13 @@ export default function handler(req, res) {
           message: 'Login successful!',
           timestamp: new Date().toISOString()
         });
+        logAdminAction('admin-login', 'Login succesvol', null);
       } else {
         res.status(401).json({ 
           success: false, 
           message: 'Invalid password' 
         });
+        logAdminAction('admin-login', 'Login mislukt', null);
       }
       return;
     }
@@ -56,6 +79,7 @@ export default function handler(req, res) {
         message: 'Content updated successfully!',
         data: data
       });
+      logAdminAction('admin-edit-content', 'Content bijgewerkt', null);
       return;
     }
     // Analytics
@@ -69,6 +93,7 @@ export default function handler(req, res) {
           popularPages: ['/home', '/portfolio', '/contact']
         }
       });
+      logAdminAction('admin-analytics', 'Analytics opgevraagd', null);
       return;
     }
     res.status(400).json({ success: false, message: 'Unknown action' });

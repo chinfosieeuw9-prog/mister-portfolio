@@ -1,0 +1,61 @@
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f6f7fb;
+  color: #222;
+}
+header, footer {
+  background: #2d2d39;
+  color: #fff;
+  padding: 1.2em 2em;
+}
+header h1 {
+  margin: 0;
+  font-size: 2.2em;
+  letter-spacing: 1px;
+}
+footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1em;
+}
+.version {
+  opacity: 0.7;
+}
+main {
+  padding: 2.5em 1em 2em 1em;
+  max-width: 700px;
+  margin: 0 auto;
+}
+.cta-btn {
+  display: inline-block;
+  background: #e94e77;
+  color: #fff;
+  padding: 0.8em 2em;
+  border-radius: 30px;
+  text-decoration: none;
+  font-weight: bold;
+  margin: 1.5em 0;
+  transition: background 0.2s;
+}
+.cta-btn:hover {
+  background: #d13b65;
+}
+#ai-matches {
+  margin-top: 2em;
+}
+#matches-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5em;
+}
+.match-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(44,44,44,0.07);
+  padding: 1.2em;
+  min-width: 180px;
+  flex: 1 1 180px;
+}

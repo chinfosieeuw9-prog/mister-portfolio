@@ -14,6 +14,23 @@ module.exports = async (req, res) => {
   if (req.method !== 'POST') {
     console.log('Niet-POST request:', req.method);
     res.status(405).json({ error: 'Alleen POST toegestaan' });
+    // Log niet-POST poging
+    try {
+      const fs = require('fs');
+      const path = require('path');
+      const logPath = path.join(process.cwd(), 'logs/logs.json');
+      let logs = { entries: [] };
+      if (fs.existsSync(logPath)) {
+        logs = JSON.parse(fs.readFileSync(logPath, 'utf8'));
+      }
+      logs.entries.unshift({
+        type: 'openai-api',
+        message: 'Niet-POST request: ' + req.method,
+        versionTag: null,
+        timestamp: Date.now()
+      });
+      fs.writeFileSync(logPath, JSON.stringify(logs, null, 2));
+    } catch (err) { console.warn('Logboek entry mislukt:', err); }
     return;
   }
   console.log('POST request ontvangen');
@@ -26,6 +43,23 @@ module.exports = async (req, res) => {
     const data = Buffer.concat(buffers).toString();
     body = JSON.parse(data);
     console.log('Body succesvol geparsed:', body);
+    // Log ontvangen prompt
+    try {
+      const fs = require('fs');
+      const path = require('path');
+      const logPath = path.join(process.cwd(), 'logs/logs.json');
+      let logs = { entries: [] };
+      if (fs.existsSync(logPath)) {
+        logs = JSON.parse(fs.readFileSync(logPath, 'utf8'));
+      }
+      logs.entries.unshift({
+        type: 'openai-api',
+        message: 'Prompt ontvangen: ' + (body.prompt ? body.prompt.substring(0, 100) : ''),
+        versionTag: null,
+        timestamp: Date.now()
+      });
+      fs.writeFileSync(logPath, JSON.stringify(logs, null, 2));
+    } catch (err) { console.warn('Logboek entry mislukt:', err); }
   } catch (err) {
     console.error('Fout bij body parsing:', err);
     res.status(400).json({ error: 'Body niet leesbaar of geen geldige JSON', details: err.message });
@@ -58,8 +92,42 @@ module.exports = async (req, res) => {
     const data = await response.json();
     console.log('Data van OpenAI:', data);
     res.status(response.status).json(data);
+    // Log OpenAI response status
+    try {
+      const fs = require('fs');
+      const path = require('path');
+      const logPath = path.join(process.cwd(), 'logs/logs.json');
+      let logs = { entries: [] };
+      if (fs.existsSync(logPath)) {
+        logs = JSON.parse(fs.readFileSync(logPath, 'utf8'));
+      }
+      logs.entries.unshift({
+        type: 'openai-api',
+        message: 'OpenAI response status: ' + response.status,
+        versionTag: null,
+        timestamp: Date.now()
+      });
+      fs.writeFileSync(logPath, JSON.stringify(logs, null, 2));
+    } catch (err) { console.warn('Logboek entry mislukt:', err); }
   } catch (err) {
     console.error('Fout bij OpenAI request:', err);
     res.status(500).json({ error: 'Fout bij OpenAI request', details: err.message });
+    // Log fout
+    try {
+      const fs = require('fs');
+      const path = require('path');
+      const logPath = path.join(process.cwd(), 'logs/logs.json');
+      let logs = { entries: [] };
+      if (fs.existsSync(logPath)) {
+        logs = JSON.parse(fs.readFileSync(logPath, 'utf8'));
+      }
+      logs.entries.unshift({
+        type: 'openai-api',
+        message: 'Fout bij OpenAI request: ' + err.message,
+        versionTag: null,
+        timestamp: Date.now()
+      });
+      fs.writeFileSync(logPath, JSON.stringify(logs, null, 2));
+    } catch (err2) { console.warn('Logboek entry mislukt:', err2); }
   }
 };

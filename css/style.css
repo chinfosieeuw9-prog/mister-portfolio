@@ -1,3 +1,54 @@
+/* --- Footer (scripts.html & index.html) --- */
+.footer-col {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+}
+.footer-powered {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+.footer-powered-label {
+    opacity: 0.8;
+}
+.footer-powered-img {
+    width: 18px;
+    height: 18px;
+    background: #fff;
+    border-radius: 4px;
+    padding: 2px;
+    border: 1px solid #e3e6f0;
+}
+.footer-uptime-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+.footer-uptime-img {
+    height: 18px;
+    vertical-align: middle;
+}
+.footer-admin-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+.footer-version-badge {
+    font-size: 10px;
+    margin-left: 6px;
+    opacity: 0.8;
+}
+.footer-made {
+    margin-top: 4px;
+}
 /* Globale kaart-variabelen (site-breed te gebruiken) */
 :root {
     /* Subtiel standaard: neutrale rand, paarse hover */
@@ -12,25 +63,14 @@
 body::before {
     content: '';
     position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    pointer-events: none;
-    z-index: 100;
-    background: linear-gradient(to top, rgba(0,212,255,0.13) 0%, rgba(0,0,0,0) 60%);
-}
-/* --- Donkere vignette (donkerder aan de randen) over de hele site --- */
-body::before {
-    content: '';
-    position: fixed;
     top: 0;
     left: 0;
     width: 100vw;
     height: 100vh;
     pointer-events: none;
     z-index: 100;
-    background: radial-gradient(ellipse at 50% 55%, rgba(0,0,0,0) 60%, rgba(10,10,30,0.18) 100%);
+    background: radial-gradient(ellipse at 50% 55%, rgba(0,0,0,0) 60%, rgba(10,10,30,0.18) 100%),
+                linear-gradient(to top, rgba(0,212,255,0.13) 0%, rgba(0,0,0,0) 60%);
 }
 .skills-grid {
     display: grid;

@@ -133,6 +133,31 @@
     <div id="list"></div>
     <div class="footer">Tip: draai <code>full-backup-workflow.ps1</code> voor een volledige workflow entry met API- en cloudstatus.</div>
   </div>
+  <!-- Uniforme Footer met versie -->
+  <div class="footer">
+    <div class="footer-col">
+      <div class="footer-powered">
+        <span class="footer-powered-label">Powered by</span>
+        <img class="footer-powered-img" src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/openai.svg" alt="OpenAI" title="OpenAI">
+        <img class="footer-powered-img" src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/googlecloud.svg" alt="Google Cloud" title="Google Cloud">
+        <img class="footer-powered-img" src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/vercel.svg" alt="Vercel" title="Vercel">
+        <img class="footer-powered-img" src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/supabase.svg" alt="Supabase" title="Supabase">
+      </div>
+      <div class="footer-uptime-row">
+        <a id="footer-uptime" href="https://uptimerobot.com/" target="_blank" rel="noopener noreferrer" title="UptimeRobot status">
+          <img class="footer-uptime-img" src="https://img.shields.io/badge/UptimeRobot-configure--badge-555" alt="Uptime badge">
+        </a>
+      </div>
+      <div class="footer-admin-row">
+        <a href="admin.html" class="social-link admin-login-btn" id="admin-login-btn">
+          <span>🔐</span><small id="site-version" class="admin-ver footer-version-badge">v7.9</small>
+        </a>
+      </div>
+      <p class="footer-text footer-made">
+        Made with ❤️ by mister@2025 • Version <span id="site-version-footer">v7.9</span>
+      </p>
+    </div>
+  </div>
   <script>
   // Toon LIVE banner wanneer omgeving=live
   (function(){
@@ -163,6 +188,9 @@
   const runBtn = document.getElementById('runBtn');
   const runStatus = document.getElementById('runStatus');
   let entries = [];
+
+  // Toon standaard maar 5 logs, met 'Toon meer' knop
+  let logsToShow = 5;
 
   // --- Backend base helpers (reuse same keys as index.html) ---
   function normBase(u){ try{ return String(u||'').trim().replace(/\/$/,''); } catch{ return 'http://localhost:3001'; } }
@@ -235,7 +263,9 @@
     let data = entries.slice().sort((a,b)=> new Date(b.timestamp)-new Date(a.timestamp));
     if (t) data = data.filter(e=>e.type===t);
     if (q) data = data.filter(e=>JSON.stringify(e).toLowerCase().includes(q));
-  elList.innerHTML = data.map((e, idx)=>{
+    // Toon alleen de eerste logsToShow logs
+    const visible = data.slice(0, logsToShow);
+    elList.innerHTML = visible.map((e, idx)=>{
       const site = e.site||{}; const apis = e.apis||{}; const git = e.git||{}; const art=e.artifacts||{};
       const okTag = site.online ? tag('online','ok') : tag('offline','err');
       const typeClass = 'type-'+String(e.type||'').toLowerCase();
@@ -265,6 +295,22 @@
         + '</div>';
       return '<div class="card" id="'+tsId+'">'+head+grid+btns+'</div>';
     }).join('');
+    // Voeg 'Toon meer' knop toe als er meer zijn
+    if (data.length > logsToShow) {
+      const btn = document.createElement('button');
+      btn.textContent = 'Toon meer ↓';
+      btn.className = 'nav-btn';
+      btn.onclick = function(){ logsToShow += 5; render(); };
+      elList.appendChild(btn);
+    }
+    // Voeg 'Toon minder' knop toe als er meer dan 5 zichtbaar zijn
+    if (logsToShow > 5 && data.length > 5) {
+      const btn = document.createElement('button');
+      btn.textContent = 'Toon minder ↑';
+      btn.className = 'nav-btn';
+      btn.onclick = function(){ logsToShow = 5; render(); };
+      elList.appendChild(btn);
+    }
   }
 
   function renderChangelog(){
@@ -428,5 +474,39 @@
     document.body.appendChild(overlay);
   }
   </script>
+<script>
+// Versie auto-update uit logs/artifacts (zoals op index.html)
+(async function refreshVersionFromLogs(){
+  try {
+    let ver = null;
+    // Try logs.json first
+    try {
+      const r = await fetch('logs/logs.json?ts='+Date.now());
+      if (r.ok) {
+        const j = await r.json();
+        const arr = Array.isArray(j.entries) ? j.entries : [];
+        for (let i = arr.length - 1; i >= 0; i--) {
+          const e = arr[i];
+          if (e && (e.type === 'workflow' || e.type === 'backup') && e.versionTag){ ver = e.versionTag; break; }
+        }
+      }
+    } catch(e){ console.warn('read logs.json failed', e); }
+    // Fallback to artifacts/last-backup.json
+    if (!ver) {
+      try {
+        const r2 = await fetch('artifacts/last-backup.json?ts='+Date.now());
+        if (r2.ok){ const j2 = await r2.json(); if (j2 && j2.versionTag) ver = j2.versionTag; }
+      } catch(e){ console.warn('read last-backup.json failed', e); }
+    }
+    if (ver){
+      const badge = document.getElementById('site-version');
+      const foot = document.getElementById('site-version-footer');
+      if (badge) badge.textContent = ver;
+      if (foot) foot.textContent = ver;
+    }
+    return !!ver;
+  } catch(e){ console.warn('refreshVersionFromLogs error', e); return false; }
+})();
+</script>
 </body>
 </html>

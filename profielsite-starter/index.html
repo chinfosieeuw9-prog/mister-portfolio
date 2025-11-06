@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <title>Profielsite Starter</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div id="header"></div>
+  <main>
+    <h2>Welkom op je nieuwe profielsite!</h2>
+    <p>Deze site is een starter template. Voeg je eigen content toe in <code>main</code>.</p>
+  </main>
+  <div id="footer"></div>
+  <script src="js/version.js"></script>
+  <script src="js/components.js"></script>
+  <script>
+    document.getElementById('header').innerHTML = renderHeader();
+    document.getElementById('footer').innerHTML = renderFooter();
+    document.getElementById('site-version').textContent = window.SITE_VERSION;
+  </script>
+  <script src="js/main.js"></script>
+</body>
+</html>
