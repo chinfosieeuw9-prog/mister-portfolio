@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Joshua Project</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div id="header"></div>
+  <main>
+    <h2>Welcome to Joshua</h2>
+    <p>This is your new project space. Add your own content and ideas here!</p>
+  </main>
+  <div id="footer"></div>
+  <script src="js/version.js"></script>
+  <script src="js/components.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    document.getElementById('header').innerHTML = renderHeader();
+    document.getElementById('footer').innerHTML = renderFooter();
+    document.getElementById('site-version').textContent = window.SITE_VERSION;
+  </script>
+</body>
+</html>

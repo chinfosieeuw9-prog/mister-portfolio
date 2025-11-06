@@ -1,0 +1,72 @@
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f6f7fb;
+  color: #222;
+}
+header, footer {
+  background: #1a2233;
+  color: #fff;
+  padding: 1.2em 2em;
+}
+header h1 {
+  margin: 0;
+  font-size: 2.2em;
+  letter-spacing: 1px;
+}
+footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1em;
+}
+.version {
+  opacity: 0.7;
+}
+main {
+  padding: 2.5em 1em 2em 1em;
+  max-width: 700px;
+  margin: 0 auto;
+}
+#timeline {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(44,44,44,0.07);
+  padding: 2em;
+}
+#posts-list {
+  margin-bottom: 2em;
+}
+.post-card {
+  background: #f0f2f5;
+  border-radius: 8px;
+  padding: 1em;
+  margin-bottom: 1em;
+  box-shadow: 0 1px 3px rgba(44,44,44,0.04);
+}
+#new-post-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+}
+#post-content {
+  min-height: 60px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  padding: 0.7em;
+  font-size: 1em;
+}
+button[type="submit"] {
+  background: #3b82f6;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.7em 1.5em;
+  font-size: 1em;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+button[type="submit"]:hover {
+  background: #2563eb;
+}

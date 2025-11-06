@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mini Social Platform</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div id="header"></div>
+  <main>
+    <section id="timeline">
+      <h2>Timeline</h2>
+      <div id="posts-list">
+        <!-- Posts will appear here -->
+      </div>
+      <form id="new-post-form">
+        <textarea id="post-content" placeholder="What's on your mind?" required></textarea>
+        <button type="submit">Post</button>
+      </form>
+    </section>
+  </main>
+  <div id="footer"></div>
+  <script src="js/version.js"></script>
+  <script src="js/components.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    document.getElementById('header').innerHTML = renderHeader();
+    document.getElementById('footer').innerHTML = renderFooter();
+    document.getElementById('site-version').textContent = window.SITE_VERSION;
+  </script>
+</body>
+</html>
