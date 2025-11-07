@@ -1,6 +1,6 @@
-// OpenAI chat endpoint
+// ...existing code...
+// OpenAI chat endpoint (na app declaratie)
 import openaiHandler from '../api/openai.js';
-
 app.post('/api/openai', async (req, res) => {
   // Proxy naar bestaande handler
   return openaiHandler(req, res);
