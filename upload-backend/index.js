@@ -1,3 +1,10 @@
+// OpenAI chat endpoint
+import openaiHandler from '../api/openai.js';
+
+app.post('/api/openai', async (req, res) => {
+  // Proxy naar bestaande handler
+  return openaiHandler(req, res);
+});
 import express from 'express';
 import multer from 'multer';
 import axios from 'axios';
