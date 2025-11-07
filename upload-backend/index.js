@@ -39,10 +39,12 @@ const ABLY_API_KEY = (process.env.ABLY_API_KEY || '').trim();
 console.log('ABLY_API_KEY geladen:', ABLY_API_KEY ? '[ingesteld]' : '[leeg]', ABLY_API_KEY.length);
 
 
+// CORS: Allow all origins and common headers for cross-domain frontend
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
   if (req.method === 'OPTIONS') return res.sendStatus(200);
   next();
 });
