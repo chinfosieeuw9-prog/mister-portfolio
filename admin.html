@@ -130,6 +130,7 @@
                         <span id="admin-backend-chip" style="border:1px solid #333;border-radius:8px;padding:2px 8px;color:#9ca3af;font-size:12px">backend: —</span>
                         <span id="admin-backend-base" style="border:1px solid #333;border-radius:8px;padding:2px 8px;color:#9ca3af;font-size:12px">base: —</span>
                         <span id="admin-server-uptime" style="border:1px solid #333;border-radius:8px;padding:2px 8px;color:#9ca3af;font-size:12px">server sinds: —</span>
+                        <button id="test-knop-geel" class="admin-btn" style="background:#fde047;color:#181828;border:2px solid #facc15;font-weight:900;">TEST KNOP GEEL</button>
                     </div>
                     <div style="display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 6px;align-items:center;">
                         <button id="run-workflow-btn" class="admin-btn">▶️ Run backup workflow</button>
@@ -596,24 +597,85 @@ node index.js</div>
                     <div class="admin-tab-content-demo tab-cv" id="tab-cv">
                         <div class="admin-widget">
                             <h3 class="admin-widget-title">CV uploaden (alleen admin)</h3>
-                            <form id="cv-upload-form" class="cv-upload-demo">
-                                <input type="file" accept=".pdf" class="admin-input" required>
-                                <button type="submit" class="admin-btn">Uploaden</button>
-                            </form>
-                            <div id="cv-upload-msg" class="admin-demo-muted">(Demo: upload werkt niet, alleen UI)</div>
+                                <form id="cv-upload-form" class="cv-upload-demo">
+                                    <label for="cv-upload-input" class="admin-label">Selecteer CV-bestand (PDF, DOC, DOCX)</label>
+                                    <input type="file" id="cv-upload-input" accept=".pdf,.doc,.docx" class="admin-input" required placeholder="Kies je CV-bestand">
+                                    <button type="submit" class="admin-btn">Uploaden</button>
+                                </form>
+                                <div id="cv-upload-msg" class="admin-demo-muted"></div>
+                                <script type="module">
+                                import { supabase } from './js/supabase-client.js';
+                                document.getElementById('cv-upload-form').onsubmit = async function(e) {
+                                    e.preventDefault();
+                                    const input = document.getElementById('cv-upload-input');
+                                    const msg = document.getElementById('cv-upload-msg');
+                                    if (!input.files.length) { msg.textContent = 'Selecteer een bestand.'; msg.style.color = '#ef4444'; return; }
+                                    const file = input.files[0];
+                                    msg.textContent = 'Uploaden...'; msg.style.color = '#9ca3af';
+                                    const { data, error } = await supabase.storage.from('CV').upload(file.name, file, { upsert: true });
+                                    if (error) {
+                                        msg.textContent = 'Fout bij uploaden: ' + error.message;
+                                        msg.style.color = '#ef4444';
+                                    } else {
+                                        msg.textContent = 'Upload gelukt: ' + file.name;
+                                        msg.style.color = '#22c55e';
+                                        input.value = '';
+                                    }
+                                };
+                                </script>
                         </div>
                         <div class="admin-widget">
                             <h3 class="admin-widget-title">CV bekijken & downloaden</h3>
                             <div class="cv-admin-info">Alleen PDF beschikbaar voor privacy.</div>
-                            <button class="admin-btn" type="button" onclick="showCVAdminPopup()">Bekijk CV (PDF)</button>
-                            <div id="cv-admin-popup" class="cv-admin-popup-modal">
-                                <h3 class="cv-admin-popup-title">CV Voorbeeld (PDF)</h3>
-                                <embed src="cv/NEW CV 7-8.pdf" type="application/pdf" width="100%" height="220px" class="cv-admin-popup-embed">
-                                <input id="cv-admin-code" type="text" class="admin-input cv-admin-popup-input" placeholder="Voer code in om te downloaden">
-                                <button class="admin-btn cv-admin-popup-download" type="button" onclick="downloadCVAdmin()">Download CV (PDF)</button>
-                                <button class="admin-btn cv-admin-popup-close" type="button" onclick="closeCVAdminPopup()">Sluiten</button>
-                                <div id="cv-admin-msg" class="cv-admin-popup-msg"></div>
-                            </div>
+                            <form id="cv-upload-form-pdf" style="margin-bottom:10px;">
+                                <label for="cv-upload-input-pdf" class="admin-label">Upload PDF</label>
+                                <input type="file" id="cv-upload-input-pdf" accept=".pdf" class="admin-input" required placeholder="Kies PDF-bestand">
+                                <button type="submit" class="admin-btn">Upload PDF</button>
+                                <div id="cv-upload-msg-pdf" class="admin-form-msg"></div>
+                            </form>
+                            <form id="cv-upload-form-word" style="margin-bottom:10px;">
+                                <label for="cv-upload-input-word" class="admin-label">Upload Word (.doc/.docx)</label>
+                                <input type="file" id="cv-upload-input-word" accept=".doc,.docx" class="admin-input" required placeholder="Kies Word-bestand">
+                                <button type="submit" class="admin-btn">Upload Word</button>
+                                <div id="cv-upload-msg-word" class="admin-form-msg"></div>
+                            </form>
+                            <script type="module">
+                            import { supabase } from './js/supabase-client.js';
+                            document.getElementById('cv-upload-form-pdf').onsubmit = async function(e) {
+                                e.preventDefault();
+                                const input = document.getElementById('cv-upload-input-pdf');
+                                const msg = document.getElementById('cv-upload-msg-pdf');
+                                if (!input.files.length) { msg.textContent = 'Selecteer een PDF-bestand.'; msg.style.color = '#ef4444'; return; }
+                                const file = input.files[0];
+                                msg.textContent = 'Uploaden...'; msg.style.color = '#9ca3af';
+                                const { data, error } = await supabase.storage.from('CV').upload(file.name, file, { upsert: true });
+                                if (error) {
+                                    msg.textContent = 'Fout bij uploaden: ' + error.message;
+                                    msg.style.color = '#ef4444';
+                                } else {
+                                    msg.textContent = 'Upload gelukt: ' + file.name;
+                                    msg.style.color = '#22c55e';
+                                    input.value = '';
+                                }
+                            };
+                            document.getElementById('cv-upload-form-word').onsubmit = async function(e) {
+                                e.preventDefault();
+                                const input = document.getElementById('cv-upload-input-word');
+                                const msg = document.getElementById('cv-upload-msg-word');
+                                if (!input.files.length) { msg.textContent = 'Selecteer een Word-bestand.'; msg.style.color = '#ef4444'; return; }
+                                const file = input.files[0];
+                                msg.textContent = 'Uploaden...'; msg.style.color = '#9ca3af';
+                                const { data, error } = await supabase.storage.from('CV').upload(file.name, file, { upsert: true });
+                                if (error) {
+                                    msg.textContent = 'Fout bij uploaden: ' + error.message;
+                                    msg.style.color = '#ef4444';
+                                } else {
+                                    msg.textContent = 'Upload gelukt: ' + file.name;
+                                    msg.style.color = '#22c55e';
+                                    input.value = '';
+                                }
+                            };
+                            </script>
                         </div>
                         <div class="admin-widget">
                             <h3 class="admin-widget-title">CV-bestanden beheren</h3>

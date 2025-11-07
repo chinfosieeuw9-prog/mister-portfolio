@@ -45,7 +45,7 @@
       return v;
     }
     async function updateBackendLamp(){
-      const base = getBackendBase();
+      const base = 'https://mister-portfolio-backend.onrender.com';
       const chip = document.getElementById('backend-chip');
       if (!chip) return;
       const label = chip.querySelector('.label');
@@ -146,7 +146,7 @@
         </style>
         <script>
           // Centraliseer backend helpers via StatusIndicators (indien beschikbaar)
-          window.getBackendBase = function(){ try{ return (window.StatusIndicators && StatusIndicators.getBase()) || (localStorage.getItem('backendBase')||'http://localhost:3002'); }catch{ return 'http://localhost:3002'; } }
+          window.getBackendBase = function(){ try{ return (window.StatusIndicators && StatusIndicators.getBase()) || (localStorage.getItem('backendBase')||'https://mister-portfolio-backend.onrender.com'); }catch{ return 'https://mister-portfolio-backend.onrender.com'; } }
           window.detectBackendBaseOnce = function(){ return (window.StatusIndicators && StatusIndicators.detectBaseOnce()) || Promise.resolve(window.getBackendBase()); }
         </script>
         <script>

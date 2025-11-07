@@ -34,21 +34,47 @@ export default function handler(req, res) {
       // Gebruik formidable om het bestand te verwerken
       const formidable = require('formidable');
       const form = new formidable.IncomingForm({ multiples: false });
-      form.parse(req, (err, fields, files) => {
+      form.parse(req, async (err, fields, files) => {
         if (err) {
           res.status(500).json({ success: false, message: 'Upload fout', error: err });
-            logAdminAction('admin-upload', 'Upload fout: ' + (err.message||err), null);
+          logAdminAction('admin-upload', 'Upload fout: ' + (err.message||err), null);
           return;
         }
-        // Hier kun je het bestand opslaan of verwerken
-        // Voor nu: alleen bevestigen dat het ontvangen is
-        res.status(200).json({
-          success: true,
-          message: 'Bestand ontvangen!',
-          fields,
-          files
-        });
-          logAdminAction('admin-upload', 'Bestand ontvangen: ' + (files && Object.keys(files).join(',')), null);
+        // SUPABASE UPLOAD
+        try {
+          const { createClient } = require('@supabase/supabase-js');
+          const SUPABASE_URL = process.env.SUPABASE_URL;
+          const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
+          const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+          // PDF upload
+          if (files['pdf']) {
+            const pdfFile = files['pdf'];
+            const pdfData = require('fs').readFileSync(pdfFile.filepath);
+            const { data, error } = await supabase.storage.from('CV').upload(pdfFile.originalFilename, pdfData, { upsert: true });
+            if (error) {
+              res.status(500).json({ success: false, message: 'Supabase upload fout', error });
+              logAdminAction('admin-upload', 'Supabase upload fout: ' + error.message, null);
+              return;
+            }
+            logAdminAction('admin-upload', 'PDF geüpload: ' + pdfFile.originalFilename, null);
+          }
+          // Word upload
+          if (files['word']) {
+            const wordFile = files['word'];
+            const wordData = require('fs').readFileSync(wordFile.filepath);
+            const { data, error } = await supabase.storage.from('CV').upload(wordFile.originalFilename, wordData, { upsert: true });
+            if (error) {
+              res.status(500).json({ success: false, message: 'Supabase upload fout', error });
+              logAdminAction('admin-upload', 'Supabase upload fout: ' + error.message, null);
+              return;
+            }
+            logAdminAction('admin-upload', 'Word geüpload: ' + wordFile.originalFilename, null);
+          }
+          res.status(200).json({ success: true, message: 'Bestand geüpload naar Supabase!', fields, files });
+        } catch (e) {
+          res.status(500).json({ success: false, message: 'Supabase upload exception', error: e });
+          logAdminAction('admin-upload', 'Supabase upload exception: ' + (e.message||e), null);
+        }
       });
       return;
     }
