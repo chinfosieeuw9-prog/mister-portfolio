@@ -1357,7 +1357,57 @@
                 <button type="submit" style="background:#10b981; color:#fff; border:none; padding:8px 16px; border-radius:6px; cursor:pointer;">⬆️ Upload</button>
             </div>
         </form>
-    </div>
+        </div>
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatForm = document.getElementById('openai-chat-form');
+            const chatInput = document.getElementById('openai-chat-input');
+            const chatMessages = document.getElementById('openai-chat-messages');
+            if (chatForm && chatInput && chatMessages) {
+                chatForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    const userMsg = chatInput.value.trim();
+                    if (!userMsg) return;
+                    // Voeg user message toe aan chat
+                    const userDiv = document.createElement('div');
+                    userDiv.textContent = 'Jij: ' + userMsg;
+                    userDiv.style.marginBottom = '8px';
+                    chatMessages.appendChild(userDiv);
+                    chatInput.value = '';
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                    // Stuur naar backend
+                    try {
+                        const resp = await fetch('https://mister-portfolio-backend.onrender.com/api/openai', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ prompt: userMsg })
+                        });
+                        const data = await resp.json();
+                        let aiMsg = '';
+                        if (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) {
+                            aiMsg = data.choices[0].message.content;
+                        } else if (data.error) {
+                            aiMsg = 'Fout: ' + data.error;
+                        } else {
+                            aiMsg = 'Geen geldig antwoord ontvangen.';
+                        }
+                        const aiDiv = document.createElement('div');
+                        aiDiv.textContent = 'AI: ' + aiMsg;
+                        aiDiv.style.marginBottom = '12px';
+                        aiDiv.style.color = '#22c55e';
+                        chatMessages.appendChild(aiDiv);
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                    } catch (err) {
+                        const errDiv = document.createElement('div');
+                        errDiv.textContent = 'Fout bij verbinden met backend.';
+                        errDiv.style.color = '#ef4444';
+                        chatMessages.appendChild(errDiv);
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                    }
+                });
+            }
+        });
+        </script>
     <div class="container">
         <!-- Compact navigatie bovenaan -->
         <nav class="top-nav">
