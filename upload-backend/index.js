@@ -1,10 +1,4 @@
-// ...existing code...
-// Voeg OpenAI chat endpoint toe NA app-initialisatie
-import openaiHandler from '../api/openai.js';
-app.post('/api/openai', async (req, res) => {
-  // Proxy naar bestaande handler
-  return openaiHandler(req, res);
-});
+
 import express from 'express';
 import multer from 'multer';
 import axios from 'axios';
@@ -21,6 +15,12 @@ const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.resolve(__dirname, '.env') });
 
 const app = express();
+// Voeg OpenAI chat endpoint toe NA app-initialisatie
+import openaiHandler from '../api/openai.js';
+app.post('/api/openai', async (req, res) => {
+  // Proxy naar bestaande handler
+  return openaiHandler(req, res);
+});
 const STARTED_AT = Date.now();
 const upload = multer({ dest: 'tmp/' });
 
