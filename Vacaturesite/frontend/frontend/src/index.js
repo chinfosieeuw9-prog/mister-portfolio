@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./styles/Navbar.css";
 import "./styles/HomePage.css";
+import "./styles/Footer.css";
 
 const container = document.getElementById("root");
 const root = createRoot(container);

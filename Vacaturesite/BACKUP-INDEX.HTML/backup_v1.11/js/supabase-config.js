@@ -1,0 +1,3 @@
+// Supabase config voor mister.us.kg
+export const SUPABASE_URL = "https://tesqycomyyifqcwdpetp.supabase.co";
+export const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlc3F5Y29teXlpZnFjd2RwZXRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzNjE0MTAsImV4cCI6MjA3MTkzNzQxMH0.aPtjfcDLL0F70OFDIuJdG13kUZQz2e7FYHNrCW77EnU";

@@ -1199,6 +1199,41 @@
                                                    }
                                  },
                         "versionTag":  "v8.5"
+                    },
+                    {
+                        "site":  {
+                                     "status":  200,
+                                     "url":  "https://mister.us.kg",
+                                     "online":  true
+                                 },
+                        "durationMs":  63108,
+                        "type":  "workflow",
+                        "git":  {
+                                    "dirty":  false,
+                                    "message":  "Auto-backup 2025-11-10 17:00:57",
+                                    "sha":  "04f797e"
+                                },
+                        "timestamp":  "2025-11-10T17:01:07.8468499+01:00",
+                        "artifacts":  {
+                                          "zip":  "C:\\Users\\Jordan\\Desktop\\mister-backups\\mister-backup-v8.6.zip",
+                                          "zipBytes":  4938320,
+                                          "filesCount":  1127
+                                      },
+                        "cloudSync":  {
+                                          "target":  "C:\\Users\\Jordan\\OneDrive\\mister-backups",
+                                          "ok":  false
+                                      },
+                        "apis":  {
+                                     "ablyAuth":  {
+                                                      "url":  "http://localhost:3002/ably/token",
+                                                      "status":  200
+                                                  },
+                                     "formspree":  {
+                                                       "url":  null,
+                                                       "status":  null
+                                                   }
+                                 },
+                        "versionTag":  "v8.6"
                     }
                 ]
 }
