@@ -1,0 +1,81 @@
+.homepage-bg {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #e6f7fa 0%, #f4fff7 100%);
+}
+.hero {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 340px;
+  background: linear-gradient(120deg, #00bfae 0%, #3e7cb1 100%);
+  color: #fff;
+  text-align: center;
+  padding: 3rem 1rem 2rem 1rem;
+}
+.hero-content h1 {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+.hero-content p {
+  font-size: 1.2rem;
+  margin-bottom: 1.5rem;
+}
+.search-form {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.search-form input {
+  padding: 0.7rem 1.2rem;
+  border-radius: 20px;
+  border: none;
+  font-size: 1rem;
+  min-width: 180px;
+}
+.search-form button {
+  background: #f9b233;
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  padding: 0.7rem 1.5rem;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.search-form button:hover {
+  background: #e94f37;
+}
+.categories {
+  margin: 2.5rem auto 0 auto;
+  max-width: 900px;
+  padding: 0 1rem;
+}
+.categories h2 {
+  color: #3e7cb1;
+  margin-bottom: 1.2rem;
+  font-size: 1.4rem;
+}
+.category-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.2rem;
+  justify-content: center;
+}
+.category-card {
+  min-width: 140px;
+  padding: 1.2rem 1.5rem;
+  border-radius: 18px;
+  color: #fff;
+  font-weight: bold;
+  font-size: 1.1rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  text-align: center;
+  transition: transform 0.15s, box-shadow 0.15s;
+  cursor: pointer;
+}
+.category-card:hover {
+  transform: translateY(-4px) scale(1.04);
+  box-shadow: 0 6px 18px rgba(0,191,174,0.13);
+}
