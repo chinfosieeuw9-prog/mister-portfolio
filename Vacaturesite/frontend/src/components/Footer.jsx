@@ -1,5 +1,6 @@
+
 import React, { useEffect, useState } from "react";
-import { FaFacebookF, FaInstagram, FaXTwitter, FaGithub, FaYoutube } from "react-icons/fa6";
+import { FaFacebookF, FaInstagram, FaTwitter, FaGithub, FaYoutube } from "react-icons/fa";
 import "../App.css";
 import { getVersion } from "../utils/version";
 
@@ -15,11 +16,11 @@ export default function Footer() {
           © 2025 VitalJobs {version ? `(v${version})` : ""}. All rights reserved.
         </span>
         <div className="footer-socials">
-          <a href="#" aria-label="Facebook"><FaFacebookF /></a>
-          <a href="#" aria-label="Instagram"><FaInstagram /></a>
-          <a href="#" aria-label="X / Twitter"><FaXTwitter /></a>
-          <a href="#" aria-label="GitHub"><FaGithub /></a>
-          <a href="#" aria-label="YouTube"><FaYoutube /></a>
+          <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><FaFacebookF /></a>
+          <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><FaInstagram /></a>
+          <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter"><FaTwitter /></a>
+          <a href="https://github.com" target="_blank" rel="noopener noreferrer" aria-label="GitHub"><FaGithub /></a>
+          <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" aria-label="YouTube"><FaYoutube /></a>
         </div>
       </div>
     </footer>

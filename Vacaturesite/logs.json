@@ -1,0 +1,16 @@
+[
+  // Voorbeeld logstructuur voor backups
+  {
+    "timestamp": "2025-11-14T10:00:00Z",
+    "version": "1.12",
+    "status": "success",
+    "items": [
+      "index.html",
+      "api/",
+      "css/",
+      "js/",
+      "upload-backend/"
+    ],
+    "message": "Backup voltooid"
+  }
+]

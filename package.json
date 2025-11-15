@@ -8,5 +8,9 @@
   },
   "devDependencies": {
     "playwright": "^1.56.1"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.81.1",
+    "react-router-dom": "^7.9.6"
   }
 }

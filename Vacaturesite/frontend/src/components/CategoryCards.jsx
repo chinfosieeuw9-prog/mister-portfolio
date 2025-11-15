@@ -1,11 +1,13 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 const categories = [
-  { name: "Thuiszorg", badge: "Direct starten", color: "#00bfae" },
-  { name: "VVT", badge: "ZZP mogelijk", color: "#3e7cb1" },
-  { name: "GGZ", badge: "", color: "#f9b233" },
-  { name: "Gehandicaptenzorg", badge: "", color: "#e94f37" },
-  { name: "Jeugd", badge: "", color: "#6c63ff" },
+  { name: "Verpleegkundige", color: "#00bfae" },
+  { name: "Artsen", color: "#3e7cb1" },
+  { name: "Zorgassistent", color: "#f9b233" },
+  { name: "Paramedici", color: "#e94f37" },
+  { name: "Management", color: "#6c63ff" },
+  { name: "Overig", color: "#bdbdbd" },
 ];
 
 export default function CategoryCards() {
@@ -14,10 +16,14 @@ export default function CategoryCards() {
       <h2>Populaire categorieën</h2>
       <div className="category-list">
         {categories.map((cat) => (
-          <div key={cat.name} className="category-card" style={{ background: cat.color }}>
-            <div>{cat.name}</div>
-            {cat.badge && <span className="category-badge">{cat.badge}</span>}
-          </div>
+          <Link
+            key={cat.name}
+            to={`/vacatures?categorie=${encodeURIComponent(cat.name)}`}
+            className="category-card"
+            style={{ background: cat.color, textDecoration: "none" }}
+          >
+            {cat.name}
+          </Link>
         ))}
       </div>
     </section>

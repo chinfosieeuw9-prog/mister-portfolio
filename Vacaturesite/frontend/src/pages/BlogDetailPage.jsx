@@ -1,7 +1,7 @@
 import React from "react";
 import { useParams, Link } from "react-router-dom";
 import { blogposts } from "../data/blogposts";
-import JobAlertForm from "./JobAlertForm";
+import JobAlertForm from "../components/JobAlertForm";
 
 export default function BlogDetailPage() {
   const { slug } = useParams();
