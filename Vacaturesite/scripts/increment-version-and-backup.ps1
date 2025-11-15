@@ -2,11 +2,11 @@
 # PowerShell-script: versie ophogen en volledige backup maken (max 8 backups) met logging
 
 
-$versionFile = "../version.json"
-$backupDir = "../BACKUP-INDEX.HTML"
-$logFile = "../logs.json"
-$indexFile = "../frontend/public/index.html"
-$backupItems = @("../frontend/public/index.html", "../backend/api", "../frontend/css", "../frontend/js", "../backend/upload-backend")
+$versionFile = "./version.json"
+$backupDir = "./BACKUP-INDEX.HTML"
+$logFile = "./logs.json"
+$indexFile = "./frontend/public/index.html"
+$backupItems = @("./frontend/public/index.html", "./backend/api", "./frontend/css", "./frontend/js", "./backend/upload-backend")
 
 
 # Lees huidige versie
