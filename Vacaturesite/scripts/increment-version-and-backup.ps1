@@ -74,8 +74,20 @@ if ($backups.Count -gt 8) {
 if (!(Test-Path $logFile)) {
     Set-Content $logFile "[]" -Encoding UTF8
 }
-$logs = Get-Content $logFile | ConvertFrom-Json
-$logs = @($logs) + $logEntry
+try {
+    $logsRaw = Get-Content $logFile -Raw
+    if ($logsRaw.Trim().StartsWith("{")) {
+        $logs = @((ConvertFrom-Json $logsRaw))
+    }
+    elseif ($logsRaw.Trim().StartsWith("[")) {
+        $logs = ConvertFrom-Json $logsRaw
+    }
+    else {
+        $logs = @()
+    }
+}
+catch { $logs = @() }
+$logs = , $logEntry + $logs
 if ($logs.Count -gt 100) { $logs = $logs[-100..-1] } # max 100 logs bewaren
 $logs | ConvertTo-Json -Depth 5 | Set-Content $logFile -Encoding UTF8
 

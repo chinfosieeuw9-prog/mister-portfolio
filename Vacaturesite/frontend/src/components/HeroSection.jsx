@@ -14,12 +14,11 @@ const SparkleIcon = () => (
     </defs>
   </svg>
 );
-
-function HeroSection() {
-  const navigate = useNavigate();
+const navigate = useNavigate();
   const [keywords, setKeywords] = useState("");
   const [region, setRegion] = useState("");
   const [category, setCategory] = useState("");
+  const [activeTab, setActiveTab] = useState("vacatures");
   const categories = [
     "Verpleging",
     "Verzorging",
@@ -27,104 +26,184 @@ function HeroSection() {
     "Medisch",
     "Overig"
   ];
-  const regions = [
-    "Alle regio's",
-    "Breda",
-    "Roosendaal",
-    "Bergen op Zoom",
-    "Etten-Leur",
-    "Oudenbosch"
-  ];
-
-  function handleSubmit(e) {
-    e.preventDefault();
-    const params = [];
-    if (keywords) params.push(`functie=${encodeURIComponent(keywords)}`);
-    if (region && region !== "Alle regio's") params.push(`locatie=${encodeURIComponent(region)}`);
-    if (category && category !== "Alle categorieën") params.push(`categorie=${encodeURIComponent(category)}`);
-    navigate(`/vacatures${params.length ? "?" + params.join("&") : ""}`);
-  }
-
-  const aiSuggestie = getAISuggestie();
-
-  function handleAISuggestie(e) {
-    e.preventDefault();
-    setKeywords(aiSuggestie.split(" in ")[0] || "");
-    setRegion(aiSuggestie.split(" in ")[1] || "");
-    setCategory(aiSuggestie.split(" in ")[2] || "");
-    const params = [];
-    if (aiSuggestie.split(" in ")[0]) params.push(`functie=${encodeURIComponent(aiSuggestie.split(" in ")[0])}`);
-    if (aiSuggestie.split(" in ")[1]) params.push(`locatie=${encodeURIComponent(aiSuggestie.split(" in ")[1])}`);
-    if (aiSuggestie.split(" in ")[2]) params.push(`categorie=${encodeURIComponent(aiSuggestie.split(" in ")[2])}`);
-    navigate(`/vacatures${params.length ? "?" + params.join("&") : ""}`);
-  }
-
-  return (
-    <section className="hero-bg">
-      <div className="hero-content">
-        <h1>Vind jouw droombaan in de zorg</h1>
-        <p>AI-gedreven vacaturesite voor zorgprofessionals</p>
-        <form style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', background: '#fff', borderRadius: '0.7rem', boxShadow: '0 2px 16px rgba(0,0,0,0.07)', border: '2px solid #cfd2da', padding: '0.4rem 0.8rem', maxWidth: '1100px', margin: '0 auto' }} onSubmit={handleSubmit} autoComplete="off">
-          <input
-            type="text"
-            placeholder="Keywords"
-            value={keywords}
-            onChange={e => setKeywords(e.target.value)}
-            style={{ flex: 1, minWidth: 80, maxWidth: 180, border: 'none', outline: 'none', fontSize: '1.1rem', padding: '0.6rem 0.8rem', borderRadius: '0.4rem', background: '#f7f7fa' }}
-          />
-          <select
-            value={region}
-            onChange={e => setRegion(e.target.value)}
-            style={{ minWidth: 120, fontWeight: 600, borderRadius: '0.4rem', border: 'none', background: '#f7f7fa', fontSize: '1.1rem', padding: '0.6rem 0.8rem' }}
-          >
-            {regions.map((r, i) => (
-              <option key={i} value={r === "Alle regio's" ? "" : r}>{r}</option>
-            ))}
-          </select>
-          <select
-            value={category}
-            onChange={e => setCategory(e.target.value)}
-            style={{ minWidth: 120, fontWeight: 600, borderRadius: '0.4rem', border: 'none', background: '#f7f7fa', fontSize: '1.1rem', padding: '0.6rem 0.8rem' }}
-          >
-            <option value="">All Categories</option>
-            {categories.map((cat) => (
-              <option key={cat} value={cat}>{cat}</option>
-            ))}
-          </select>
-          <button type="submit" style={{ background: '#ff3576', color: '#fff', fontWeight: 'bold', border: 'none', borderRadius: '0.4rem', padding: '0.6rem 1.2rem', fontSize: '1.1rem', cursor: 'pointer', marginLeft: 4 }}>Search</button>
+        <form
+          style={{
+            display: 'flex',
+            width: '100%',
+            maxWidth: 900,
+            margin: '0 auto',
+            border: 'none',
+            background: 'linear-gradient(90deg,#f7f8fa 0%,#eaf3ff 100%)',
+            borderRadius: '2.5rem',
+            boxShadow: '0 6px 32px 0 #b3b8c522',
+            alignItems: 'center',
+            gap: 0,
+            position: 'relative',
+            zIndex: 2
+          }}
+          onSubmit={handleSubmit}
+        >
+          {/* ...input fields here... */}
           <button
-            style={{
-              background: '#0a2342',
-              color: '#7ee6fd',
-              borderRadius: '0.4rem',
-              marginLeft: 4,
-              boxShadow: '0 0 8px 1px #7ee6fd, 0 2px 12px 0 #0a2342',
-              padding: '0.6rem 2rem',
-              fontSize: '1.1rem',
-              border: 'none',
-              outline: 'none',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontWeight: 600,
-              fontFamily: 'inherit',
-              minWidth: 110,
-              minHeight: 0,
-              width: 'auto',
+            className="glass-btn"
+            ref={el => window._aiBtn = el}
+            type="button"
+            title="AI Suggestie"
+            onClick={e => {
+              handleAISuggestie(e);
+              const btn = e.currentTarget;
+              const ripple = document.createElement('span');
+              ripple.className = 'ripple';
+              ripple.style.width = ripple.style.height = '54px';
+              ripple.style.left = '0px';
+              ripple.style.top = '0px';
+              btn.appendChild(ripple);
+              setTimeout(() => ripple.remove(), 600);
+              // Confetti effect
+              for(let i=0;i<12;i++){
+                const conf = document.createElement('span');
+                conf.className = 'confetti';
+                conf.style.background = `hsl(${Math.random()*360},90%,60%)`;
+                conf.style.width = '6px';
+                conf.style.height = '6px';
+                conf.style.borderRadius = '50%';
+                conf.style.position = 'absolute';
+                conf.style.left = (27+Math.cos(i/12*2*Math.PI)*18)+'px';
+                conf.style.top = (27+Math.sin(i/12*2*Math.PI)*18)+'px';
+                conf.style.opacity = 1;
+                conf.animate([
+                  {transform:`translateY(0) scale(1)`,opacity:1},
+                  {transform:`translateY(${40+Math.random()*20}px) scale(${0.7+Math.random()*0.5})`,opacity:0.1}
+                ],{duration:700});
+                btn.appendChild(conf);
+                setTimeout(()=>conf.remove(),700);
+              }
+            }}
+          >
+            <svg width="32" height="32" viewBox="0 0 32 32">
+              <circle cx="16" cy="16" r="14" fill="#fff5"/>
+              <text x="16" y="22" textAnchor="middle" fontSize="13" fill="#fff" fontWeight="bold">AI</text>
+            </svg>
+          </button>
+          <button
+            className="glass-btn zoek"
+            ref={el => window._zoekBtn = el}
+            type="submit"
+            title="Zoek"
+            onClick={e => {
+              const btn = e.currentTarget;
+              const ripple = document.createElement('span');
+              ripple.className = 'ripple';
+              ripple.style.width = ripple.style.height = '54px';
+              ripple.style.left = '0px';
+              ripple.style.top = '0px';
+              btn.appendChild(ripple);
+              setTimeout(() => ripple.remove(), 600);
+              // Confetti effect
+              for(let i=0;i<12;i++){
+                const conf = document.createElement('span');
+                conf.className = 'confetti';
+                conf.style.background = `hsl(${Math.random()*360},90%,60%)`;
+                conf.style.width = '6px';
+                conf.style.height = '6px';
+                conf.style.borderRadius = '50%';
+                conf.style.position = 'absolute';
+                conf.style.left = (27+Math.cos(i/12*2*Math.PI)*18)+'px';
+                conf.style.top = (27+Math.sin(i/12*2*Math.PI)*18)+'px';
+                conf.style.opacity = 1;
+                conf.animate([
+                  {transform:`translateY(0) scale(1)`,opacity:1},
+                  {transform:`translateY(${40+Math.random()*20}px) scale(${0.7+Math.random()*0.5})`,opacity:0.1}
+                ],{duration:700});
+                btn.appendChild(conf);
+                setTimeout(()=>conf.remove(),700);
+              }
+            }}
+          >
+            <svg width="32" height="32" viewBox="0 0 32 32">
+              <circle cx="16" cy="16" r="14" fill="#fff5"/>
+              <circle cx="16" cy="17" r="6" fill="none" stroke="#fff" strokeWidth="2"/>
+              <line x1="24" y1="24" x2="20.5" y2="20.5" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+          </button>
+        </form>
+        {/* Zorg dat losse JSX na </form> in een fragment staat */}
+        <>
+          <circle cx="16" cy="16" r="14" fill="#fff5"/>
+          <text x="16" y="22" textAnchor="middle" fontSize="13" fill="#fff" fontWeight="bold">AI</text>
+        </>
             }}
             onClick={handleAISuggestie}
             type="button"
+            title="AI Suggestie"
           >
-            AI
+            <svg width="56" height="56" viewBox="0 0 56 56">
+              <circle cx="28" cy="28" r="26" fill="url(#aiCircle)"/>
+              <defs>
+                <linearGradient id="aiCircle" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stopColor="#5fd0ff"/>
+                  <stop offset="100%" stopColor="#2d9cdb"/>
+                </linearGradient>
+              </defs>
+              <text x="28" y="36" textAnchor="middle" fontSize="18" fill="#fff" fontWeight="bold">AI</text>
+            </svg>
           </button>
-        </form>
-        <div className="ai-suggestie-news" style={{textAlign:'center',marginTop:'1rem',fontWeight:500}}>
-          <span style={{color:'#2d9cdb'}}>AI Suggestie:</span> <span>{aiSuggestie}</span>
-        </div>
-      </div>
-    </section>
-
-  );
-}
-
-export default HeroSection;
+          <button
+            className="shine-anim"
+            ref={el => window._zoekBtn = el}
+            type="submit"
+            style={{
+              background: 'none',
+              width: 56,
+              height: 56,
+              marginLeft: 12,
+              border: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              padding: 0,
+              position: 'relative',
+              overflow: 'visible'
+            }}
+            <button
+              className="glass-btn zoek"
+              ref={el => window._zoekBtn = el}
+              type="submit"
+              onClick={e => {
+                const btn = e.currentTarget;
+                const ripple = document.createElement('span');
+                ripple.className = 'ripple';
+                ripple.style.width = ripple.style.height = '54px';
+                ripple.style.left = '0px';
+                ripple.style.top = '0px';
+                btn.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 600);
+                // Confetti effect
+                for(let i=0;i<12;i++){
+                  const conf = document.createElement('span');
+                  conf.className = 'confetti';
+                  conf.style.background = `hsl(${Math.random()*360},90%,60%)`;
+                  conf.style.width = '6px';
+                  conf.style.height = '6px';
+                  conf.style.borderRadius = '50%';
+                  conf.style.position = 'absolute';
+                  conf.style.left = (27+Math.cos(i/12*2*Math.PI)*18)+'px';
+                  conf.style.top = (27+Math.sin(i/12*2*Math.PI)*18)+'px';
+                  conf.style.opacity = 1;
+                  conf.animate([
+                    {transform:`translateY(0) scale(1)`,opacity:1},
+                    {transform:`translateY(${40+Math.random()*20}px) scale(${0.7+Math.random()*0.5})`,opacity:0.1}
+                  ],{duration:700});
+                  btn.appendChild(conf);
+                  setTimeout(()=>conf.remove(),700);
+                }
+              }}
+              title="Zoek"
+            >
+              <svg width="32" height="32" viewBox="0 0 32 32">
+                <circle cx="16" cy="16" r="14" fill="#fff5"/>
+                <circle cx="16" cy="17" r="6" fill="none" stroke="#fff" strokeWidth="2"/>
+                <line x1="24" y1="24" x2="20.5" y2="20.5" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+            </button>

@@ -26,10 +26,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 function App() {
   return (
     <>
-      {/* Debug overlay rechtsboven */}
-      <div style={{position:'fixed',top:10,right:10,zIndex:9999,background:'#222',color:'#fff',padding:'6px 16px',borderRadius:8,fontSize:14,opacity:0.85}}>
-        DEBUG {new Date().toLocaleTimeString()}
-      </div>
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<HomePage />} />

@@ -1,11 +1,24 @@
-﻿{
-    "message":  "Backup voltooid",
-    "version":  "1.12",
-    "items":  [
-                  "index.html",
-                  "api",
-                  "upload-backend"
-              ],
-    "timestamp":  "2025-11-15T19:12:38Z",
-    "status":  "success"
-}
+﻿[
+    {
+        "message":  "Backup voltooid",
+        "version":  "1.15",
+        "items":  [
+                      "index.html",
+                      "api",
+                      "upload-backend"
+                  ],
+        "timestamp":  "2025-11-15T19:21:33Z",
+        "status":  "success"
+    },
+    {
+        "message":  "Backup voltooid",
+        "version":  "1.14",
+        "items":  [
+                      "index.html",
+                      "api",
+                      "upload-backend"
+                  ],
+        "timestamp":  "2025-11-15T19:18:38Z",
+        "status":  "success"
+    }
+]
