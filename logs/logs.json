@@ -1689,6 +1689,41 @@
                                                    }
                                  },
                         "versionTag":  "v9.8"
+                    },
+                    {
+                        "site":  {
+                                     "status":  200,
+                                     "url":  "https://mister.us.kg",
+                                     "online":  true
+                                 },
+                        "durationMs":  1011233,
+                        "type":  "workflow",
+                        "git":  {
+                                    "dirty":  false,
+                                    "message":  "Auto-backup 2025-11-19 19:16:42",
+                                    "sha":  "d2ea982"
+                                },
+                        "timestamp":  "2025-11-19T19:16:53.5819474+01:00",
+                        "artifacts":  {
+                                          "zip":  "C:\\Users\\Jordan\\Desktop\\mister-backups\\mister-backup-v9.9.zip",
+                                          "zipBytes":  75897752,
+                                          "filesCount":  28971
+                                      },
+                        "cloudSync":  {
+                                          "target":  "C:\\Users\\Jordan\\OneDrive\\mister-backups",
+                                          "ok":  false
+                                      },
+                        "apis":  {
+                                     "ablyAuth":  {
+                                                      "url":  "http://localhost:3002/ably/token",
+                                                      "status":  "ERR"
+                                                  },
+                                     "formspree":  {
+                                                       "url":  null,
+                                                       "status":  null
+                                                   }
+                                 },
+                        "versionTag":  "v9.9"
                     }
                 ]
 }
